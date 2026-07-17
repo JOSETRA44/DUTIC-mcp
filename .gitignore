@@ -4,3 +4,5 @@ dist/
 .env
 # Datos de sesión / perfil de navegador (NUNCA versionar — contienen la sesión de Moodle)
 .dutic/
+# Skills materializadas por `npx skills` (se regeneran desde skills-lock.json)
+.agents/

@@ -8,7 +8,8 @@ import { getSemester } from "../core/config.js";
 import { isExpired, isValid, loadSession } from "../core/session.js";
 import { getEnrolledCourses, getCourseContents } from "../domain/courses.js";
 import { getAllTasks, getCourseTasks, getUpcomingTasks } from "../domain/tasks.js";
-import { downloadFile, listCourseFiles } from "../domain/resources.js";
+import { downloadFile, listCourseFiles, pullCourseFiles } from "../domain/resources.js";
+import { convertLocalPdfToMarkdown, readResourceAsMarkdown } from "../domain/documents.js";
 
 /**
  * En contexto MCP la renovación de sesión es "headless-only": si el SSO de Google sigue
@@ -129,6 +130,68 @@ server.registerTool(
   },
   async ({ url, destPath }) =>
     tool(() => withSession((s) => downloadFile(s, url, destPath), { mode: MCP_MODE })),
+);
+
+server.registerTool(
+  "dutic_read_resource",
+  {
+    title: "Leer un recurso como texto/Markdown",
+    description:
+      "Descarga un recurso del aula (PDF, texto…) y devuelve su CONTENIDO como Markdown listo " +
+      "para analizar, SIN gastar tokens en el binario. Convierte PDFs a texto automáticamente. " +
+      "Úsalo cuando el usuario quiera que analices, resumas o extraigas algo de un material del " +
+      "curso (sílabo, informe, guía, lectura). Para binarios no soportados (docx, imágenes) " +
+      "avisa y sugiere descargar. Acepta la URL de vista del módulo o de pluginfile.php.",
+    inputSchema: {
+      url: z.string().url(),
+      maxChars: z
+        .number()
+        .int()
+        .positive()
+        .default(24_000)
+        .describe("Máximo de caracteres a devolver (trunca lo demás)."),
+    },
+  },
+  async ({ url, maxChars }) =>
+    tool(() => withSession((s) => readResourceAsMarkdown(s, url, maxChars), { mode: MCP_MODE })),
+);
+
+server.registerTool(
+  "dutic_pull_course_files",
+  {
+    title: "Descargar todos los recursos de un curso",
+    description:
+      "Descarga en bloque todos los archivos/recursos de un curso a un directorio local. " +
+      "Devuelve la lista de archivos guardados con su tamaño.",
+    inputSchema: {
+      courseId: z.number().int().positive(),
+      destDir: z.string().describe("Directorio local de destino."),
+    },
+  },
+  async ({ courseId, destDir }) =>
+    tool(() => withSession((s) => pullCourseFiles(s, courseId, destDir), { mode: MCP_MODE })),
+);
+
+server.registerTool(
+  "dutic_pdf_to_markdown",
+  {
+    title: "Convertir un PDF local a Markdown",
+    description:
+      "Convierte un PDF que ya está en disco a Markdown/texto para analizarlo sin gastar tokens " +
+      "en el binario. Opcionalmente guarda el resultado en outPath. No requiere sesión de Moodle.",
+    inputSchema: {
+      filePath: z.string().describe("Ruta local del PDF."),
+      outPath: z.string().optional().describe("Si se indica, guarda el Markdown aquí."),
+      maxChars: z
+        .number()
+        .int()
+        .nonnegative()
+        .default(0)
+        .describe("Máximo de caracteres a devolver (0 = sin límite)."),
+    },
+  },
+  async ({ filePath, outPath, maxChars }) =>
+    tool(() => convertLocalPdfToMarkdown(filePath, outPath, maxChars)),
 );
 
 server.registerTool(

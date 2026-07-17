@@ -6,18 +6,31 @@ y **recursos**, y descarguen archivos.
 
 ## Por qué existe
 
-La app móvil previa sólo leía el **calendario** de Moodle, así que las tareas que un profesor crea sin
-publicar evento de calendario **quedaban invisibles** → entregas perdidas. Esta herramienta, además del
-calendario, **barre cada curso** (`core_course_get_contents`) para encontrar esas tareas ocultas y las
-marca con `hidden: true`.
+La app móvil previa sólo leía el **calendario/timeline** de Moodle, que sólo muestra tareas *accionables*
+(futuras y sin entregar). Las tareas sin fecha de calendario, ya vencidas o ya entregadas **quedaban
+invisibles** → entregas perdidas. Esta herramienta **barre cada curso** para descubrir todas las tareas,
+las marca con `hidden: true` cuando no salían en el timeline, y ordena por urgencia lo pendiente.
 
 ## Cómo funciona
 
-Igual que la app: no usa la API pública de web services, sino que **captura la cookie `MoodleSession` y el
-token `sesskey`** tras un login de **Google OAuth institucional**, y con ellos llama al endpoint AJAX
-interno de Moodle (`lib/ajax/service.php`). El login se hace con **Playwright manejando tu Google Chrome
-instalado** (no descarga Chromium). El perfil del navegador es persistente, así que el SSO de Google se
-mantiene vivo y renovar la sesión (que Moodle caduca a las ~6-8h) normalmente es automático.
+No usa la API pública de web services: **captura la cookie `MoodleSession` y el token `sesskey`** tras un
+login de **Google OAuth institucional** (Playwright manejando tu Chrome instalado, sin descargar Chromium),
+y con ellos llama al endpoint AJAX interno de Moodle (`lib/ajax/service.php`). El perfil del navegador es
+persistente, así que el SSO de Google se mantiene y la renovación de sesión suele ser automática.
+
+**Realidad de la API en la UNSA (importante):** los admins **bloquearon** varias funciones AJAX
+(`core_course_get_contents`, `mod_assign_get_assignments`) → devuelven "El servicio Web no está disponible".
+La ruta que sí funciona y usamos:
+
+| Necesidad | Fuente | Estado |
+|---|---|---|
+| Descubrir todas las tareas de un curso | `core_courseformat_get_state` (la que usa la propia página de curso; su `data` viene como *string* JSON) | ✅ |
+| Cursos matriculados | `core_course_get_enrolled_courses_by_timeline_classification` | ✅ |
+| Timeline (marca no-ocultas + fecha exacta) | `core_calendar_get_action_events_by_timesort` | ✅ (sólo accionables) |
+| Estado de entrega, nota, tiempo restante | *scraping* de `mod/assign/view.php` con Cheerio | ✅ |
+
+Los eventos de calendario de acción sólo aparecen cuando la tarea está pendiente y futura, por eso el
+estado de entrega real se obtiene scrapeando la página de cada tarea.
 
 ## Requisitos
 
@@ -54,6 +67,8 @@ dutic tasks --hidden         # SÓLO las tareas ocultas
 dutic courses                # cursos matriculados
 dutic course tasks <id>      # tareas de un curso (incluye ocultas)
 dutic course files <id>      # recursos de un curso
+dutic read <url>             # lee un recurso (PDF→Markdown) para analizarlo sin gastar tokens
+dutic md <archivo.pdf>       # convierte un PDF local a Markdown
 dutic pull <id> --dest ./x   # descarga todos los recursos de un curso
 ```
 
@@ -78,12 +93,59 @@ cliente MCP):
 
 En Claude Code: `claude mcp add dutic -- node C:\Users\USER\source\MCPs\dutic-mcp\dist\mcp\server.js`
 
-Herramientas expuestas: `dutic_list_tasks` (scope `upcoming`/`all`, `onlyHidden`), `dutic_list_courses`,
-`dutic_get_course_contents`, `dutic_get_course_tasks`, `dutic_list_course_files`, `dutic_download_file`,
-`dutic_session_status`, `dutic_refresh_session`.
+Herramientas expuestas (11): `dutic_list_tasks` (scope `upcoming`/`all`, `onlyHidden`, `detailed`),
+`dutic_list_courses`, `dutic_get_course_contents`, `dutic_get_course_tasks`, `dutic_list_course_files`,
+`dutic_download_file`, **`dutic_read_resource`** (recurso → Markdown para analizar sin gastar tokens),
+`dutic_pull_course_files`, **`dutic_pdf_to_markdown`** (PDF local → Markdown), `dutic_session_status`,
+`dutic_refresh_session`.
+
+### Analizar materiales sin gastar tokens
+
+`dutic_read_resource` / `dutic read <url>` descarga un recurso y devuelve su **contenido como texto
+Markdown** (convierte PDFs con `unpdf`, sin dependencias nativas), para que el agente lo analice sin
+volcar el binario al contexto. `dutic_pdf_to_markdown` / `dutic md` hace lo mismo con un PDF local.
+Limitación: las **carpetas** (mod/folder) de algunos temas de Moodle renderizan su árbol por JS y no
+exponen los enlaces; en ese caso usa el enlace directo del archivo o descárgalo y conviértelo con `md`.
 
 > El MCP renueva la sesión de forma **headless** si el SSO de Google sigue vivo. Si caducó del todo,
 > devuelve un aviso para que corras `dutic login` en una terminal (ahí sí puede abrirse el navegador).
+
+## Configuración multi-agente (Antigravity, OpenCode, mimocode, Claude Code…)
+
+El servidor MCP funciona con cualquier agente compatible con MCP. Para registrarlo en todos tus agentes
+instalados de una vez (preservando su config existente y con backup `*.dutic-bak`):
+
+```bash
+npm run setup        # build + instala la skill + configura los agentes
+# o por separado:
+npm run setup:agents # sólo registra el MCP en los agentes
+npm run setup:skill  # sólo copia la skill a los dirs de skills de los agentes
+```
+
+Esquemas usados automáticamente: `mcpServers` (Claude Code `~/.claude.json`, Antigravity
+`~/.antigravity/config/mcp_config.json`) y `mcp` con `type:"local"` (OpenCode `opencode.jsonc`,
+mimocode `mimocode.jsonc`). Reinicia cada agente tras configurarlo.
+
+## Skill `dutic` (instalable con `npx skills`)
+
+El repo incluye una skill en `skills/dutic/` que enseña a los agentes a usar este MCP (buscar tareas
+ocultas, priorizar lo pendiente, descargar recursos). Instálala en **todos** tus agentes con el gestor de
+skills del ecosistema:
+
+```bash
+# Desde una copia local del repo:
+npx skills add "C:\Users\USER\source\MCPs\dutic-mcp" -a '*' -s dutic -y
+
+# O, una vez publicado en GitHub:
+npx skills add <tu-usuario>/dutic-mcp -a '*' -s dutic -y
+```
+
+`-a '*'` instala en todos los agentes detectados. `npx skills list` muestra las instaladas.
+
+## Ordenamiento por urgencia
+
+`dutic tasks --all` ordena por urgencia: las **SIN ENTREGAR** van primero (por fecha de entrega, las
+vencidas/próximas arriba), y las entregadas/calificadas al fondo. La cabecera resume cuántas hay pendientes.
 
 ## Notas de seguridad
 

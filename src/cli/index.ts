@@ -15,6 +15,11 @@ import {
   listCourseFiles,
   pullCourseFiles,
 } from "../domain/resources.js";
+import {
+  convertLocalPdfToMarkdown,
+  readResourceAsMarkdown,
+} from "../domain/documents.js";
+import { writeFile } from "node:fs/promises";
 import { formatTaskLine } from "./format.js";
 
 const log = (msg: string) => process.stderr.write(msg + "\n");
@@ -68,9 +73,12 @@ program
             return;
           }
           const pending = list.filter((t) => t.submission === "not-submitted");
+          const allUnknown = list.every((t) => t.submission === "unknown");
           console.log(`\n${list.length} tarea(s)${opts.hidden ? " ocultas" : ""}:`);
           if (pending.length) {
             console.log(`🚨 ${pending.length} SIN ENTREGAR (ordenadas por urgencia arriba)\n`);
+          } else if (allUnknown) {
+            console.log("ℹ️ Estado de entrega no consultado (modo --fast). Quita --fast para verlo.\n");
           } else {
             console.log("✅ Nada pendiente por entregar.\n");
           }
@@ -170,6 +178,45 @@ program
       },
       { login: { onStatus: log } },
     );
+  });
+
+program
+  .command("read <url>")
+  .description("Lee un recurso (PDF/texto) y muestra su contenido como Markdown para analizar.")
+  .option("--out <file>", "Guarda el Markdown en un archivo en vez de imprimirlo.")
+  .option("--max <n>", "Máximo de caracteres.", "24000")
+  .action(async (url, opts) => {
+    await withSession(
+      async (session) => {
+        const r = await readResourceAsMarkdown(session, url, Number(opts.max));
+        if (r.markdown == null) {
+          log(`⚠️ ${r.note}`);
+          return;
+        }
+        if (opts.out) {
+          await writeFile(opts.out, r.markdown, "utf8");
+          console.log(`✅ ${r.filename} (${r.kind}, ${r.pages ?? "?"} pág) → ${opts.out}`);
+        } else {
+          log(`# ${r.filename} (${r.kind}${r.pages ? `, ${r.pages} pág` : ""})\n`);
+          console.log(r.markdown);
+        }
+      },
+      { login: { onStatus: log } },
+    );
+  });
+
+program
+  .command("md <pdfPath>")
+  .description("Convierte un PDF local a Markdown (para analizar sin gastar tokens).")
+  .option("--out <file>", "Guarda el Markdown en un archivo.")
+  .option("--max <n>", "Máximo de caracteres (0 = sin límite).", "0")
+  .action(async (pdfPath, opts) => {
+    const r = await convertLocalPdfToMarkdown(pdfPath, opts.out, Number(opts.max));
+    if (r.savedTo) {
+      console.log(`✅ ${r.pages} pág, ${r.totalChars} chars → ${r.savedTo}`);
+    } else {
+      console.log(r.markdown);
+    }
   });
 
 program
