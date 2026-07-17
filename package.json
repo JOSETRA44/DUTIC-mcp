@@ -4,11 +4,15 @@
   "description": "MCP server + CLI para el aula virtual DUTIC (Moodle) de la UNSA: tareas (incluidas las ocultas), cursos y recursos.",
   "type": "module",
   "bin": {
-    "dutic": "dist/cli/index.js"
+    "dutic": "dist/cli/index.js",
+    "dutic-mcp": "dist/mcp/server.js"
   },
   "main": "dist/mcp/server.js",
   "scripts": {
     "build": "tsc",
+    "setup": "npm run build && node scripts/install-skill.mjs && node scripts/setup-agents.mjs",
+    "setup:agents": "node scripts/setup-agents.mjs",
+    "setup:skill": "node scripts/install-skill.mjs",
     "dev:cli": "tsx src/cli/index.ts",
     "dev:mcp": "tsx src/mcp/server.ts",
     "start:mcp": "node dist/mcp/server.js",

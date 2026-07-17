@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "dutic": {
+      "command": "node",
+      "args": ["dist/mcp/server.js"],
+      "env": { "DUTIC_SEMESTER": "2026A" }
+    }
+  }
+}

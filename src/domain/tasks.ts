@@ -12,7 +12,33 @@ function cmidFromUrl(url: string | null | undefined): number | null {
   return m ? Number(m[1]) : null;
 }
 
-function sortByDue(a: Task, b: Task): number {
+/**
+ * Prioridad por estado de entrega: lo NO entregado es lo urgente y va primero, sin importar
+ * su fecha; lo ya entregado/calificado baja al fondo. Es el orden que evita perder entregas.
+ */
+function urgencyRank(t: Task): number {
+  switch (t.submission) {
+    case "not-submitted":
+      return 0;
+    case "unknown":
+      return 1;
+    case "submitted":
+      return 2;
+    case "graded":
+      return 3;
+    default:
+      return 1;
+  }
+}
+
+/**
+ * Ordena por urgencia: primero las pendientes (SIN ENTREGAR), y dentro de cada grupo por
+ * fecha de entrega ascendente (vencidas y próximas arriba; sin fecha al final del grupo).
+ */
+function sortByUrgency(a: Task, b: Task): number {
+  const ra = urgencyRank(a);
+  const rb = urgencyRank(b);
+  if (ra !== rb) return ra - rb;
   if (a.dueDate == null && b.dueDate == null) return 0;
   if (a.dueDate == null) return 1;
   if (b.dueDate == null) return -1;
@@ -166,7 +192,7 @@ export async function getAllTasks(
     tasks = await mapLimit(tasks, Math.max(concurrency, 6), (t) => enrichTask(session, t));
   }
 
-  tasks.sort(sortByDue);
+  tasks.sort(sortByUrgency);
   return { tasks, scanErrors };
 }
 
@@ -192,6 +218,6 @@ export async function getCourseTasks(
   if (enrich) {
     tasks = await mapLimit(tasks, 6, (t) => enrichTask(session, t));
   }
-  tasks.sort(sortByDue);
+  tasks.sort(sortByUrgency);
   return tasks;
 }

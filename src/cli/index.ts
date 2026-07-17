@@ -67,7 +67,13 @@ program
             console.log(JSON.stringify({ tasks: list, scanErrors }, null, 2));
             return;
           }
-          console.log(`\n${list.length} tarea(s)${opts.hidden ? " ocultas" : ""}:\n`);
+          const pending = list.filter((t) => t.submission === "not-submitted");
+          console.log(`\n${list.length} tarea(s)${opts.hidden ? " ocultas" : ""}:`);
+          if (pending.length) {
+            console.log(`🚨 ${pending.length} SIN ENTREGAR (ordenadas por urgencia arriba)\n`);
+          } else {
+            console.log("✅ Nada pendiente por entregar.\n");
+          }
           for (const t of list) console.log(formatTaskLine(t) + "\n");
           if (scanErrors.length) {
             log(`\n⚠️ ${scanErrors.length} curso(s) no se pudieron barrer:`);
