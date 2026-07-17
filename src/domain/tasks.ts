@@ -1,8 +1,8 @@
 import { postAjax } from "../core/moodleClient.js";
-import { MoodleApiError } from "../core/errors.js";
 import type { Session } from "../core/session.js";
 import type { Course, Task } from "../core/models.js";
-import { getCourseContents, getEnrolledCourses } from "./courses.js";
+import { getCourseState, getEnrolledCourses, type StateModule } from "./courses.js";
+import { getAssignDetail } from "./assign.js";
 import { mapLimit } from "./concurrency.js";
 
 /** Extrae el course module id (cmid) de una URL tipo mod/assign/view.php?id=123. */
@@ -12,14 +12,19 @@ function cmidFromUrl(url: string | null | undefined): number | null {
   return m ? Number(m[1]) : null;
 }
 
+function sortByDue(a: Task, b: Task): number {
+  if (a.dueDate == null && b.dueDate == null) return 0;
+  if (a.dueDate == null) return 1;
+  if (b.dueDate == null) return -1;
+  return a.dueDate - b.dueDate;
+}
+
 /**
- * Tareas próximas según el calendario (core_calendar_get_action_events_by_timesort).
- * Es exactamente lo que ve la app Flutter: rápido, pero omite tareas sin evento de calendario.
+ * Tareas del "timeline" del estudiante vía core_calendar_get_action_events_by_timesort.
+ * Es lo que la app previa mostraba: SÓLO tareas accionables (futuras y sin entregar). Las
+ * tareas ya entregadas, vencidas o sin fecha NO salen aquí — por eso "se esconden".
  */
-export async function getUpcomingTasks(
-  session: Session,
-  limitNum = 50,
-): Promise<Task[]> {
+export async function getUpcomingTasks(session: Session, limitNum = 50): Promise<Task[]> {
   const timesortFrom = Math.floor(Date.now() / 1000);
   const data = (await postAjax(
     session,
@@ -39,7 +44,6 @@ export async function getUpcomingTasks(
         url?: string;
         action?: { url?: string };
         course?: { id?: number; fullname?: string };
-        instance?: number;
       };
       const url = e.url ?? e.action?.url ?? null;
       return {
@@ -53,111 +57,98 @@ export async function getUpcomingTasks(
         source: "calendar" as const,
         hidden: false,
         submission: "unknown" as const,
+        grade: null,
+        timeRemaining: null,
         cmid: cmidFromUrl(url),
       } satisfies Task;
     });
 }
 
-interface AssignMeta {
-  duedate: number | null;
-  cutoffdate: number | null;
+/** Convierte un módulo assign del estado del curso en una Task preliminar. */
+function assignToTask(
+  m: StateModule,
+  course: { id: number; fullname: string },
+  timeline: Map<number, Task>,
+): Task {
+  const inTimeline = timeline.get(m.cmid);
+  return {
+    id: m.cmid,
+    name: m.name,
+    courseId: course.id,
+    courseName: course.fullname,
+    dueDate: inTimeline?.dueDate ?? null,
+    url: m.url,
+    description: null,
+    source: "course-scan",
+    hidden: !inTimeline, // no aparece en el timeline del estudiante → oculta
+    submission: "unknown",
+    grade: null,
+    timeRemaining: null,
+    cmid: m.cmid,
+  };
 }
 
-/**
- * Intenta obtener metadatos reales de las tareas (fecha de entrega) vía
- * mod_assign_get_assignments para un conjunto de cursos. Devuelve un mapa cmid -> meta.
- * Si la función no está habilitada como AJAX en este Moodle, devuelve mapa vacío (el
- * llamador degrada a la fecha del calendario / sin fecha).
- */
-async function fetchAssignMeta(
-  session: Session,
-  courseIds: number[],
-): Promise<Map<number, AssignMeta>> {
-  const byCmid = new Map<number, AssignMeta>();
-  if (courseIds.length === 0) return byCmid;
+/** Enriquecer una tarea scrapeando su página (estado de entrega, nota, fecha, tiempo restante). */
+async function enrichTask(session: Session, task: Task): Promise<Task> {
+  if (!task.url) return task;
   try {
-    const data = (await postAjax(session, "mod_assign_get_assignments", {
-      courseids: courseIds,
-    })) as { courses?: { assignments?: unknown[] }[] } | null;
-
-    for (const course of data?.courses ?? []) {
-      for (const araw of course.assignments ?? []) {
-        const a = araw as {
-          cmid: number;
-          duedate?: number;
-          cutoffdate?: number;
-        };
-        byCmid.set(a.cmid, {
-          duedate: a.duedate && a.duedate > 0 ? a.duedate : null,
-          cutoffdate: a.cutoffdate && a.cutoffdate > 0 ? a.cutoffdate : null,
-        });
-      }
-    }
-  } catch (err) {
-    if (!(err instanceof MoodleApiError)) throw err;
-    // Función no disponible → degradar silenciosamente.
+    const d = await getAssignDetail(session, task.url);
+    return {
+      ...task,
+      submission: d.submission,
+      grade: d.grade ?? task.grade,
+      dueDate: task.dueDate ?? d.dueDate,
+      timeRemaining: d.timeRemaining,
+    };
+  } catch {
+    return task; // no romper el barrido por un fallo puntual
   }
-  return byCmid;
 }
 
 export interface AllTasksResult {
   tasks: Task[];
-  /** Cursos que no se pudieron barrer (id -> motivo), para transparencia. */
   scanErrors: { courseId: number; courseName: string; reason: string }[];
 }
 
+export interface AllTasksOptions {
+  concurrency?: number;
+  courses?: Course[];
+  /** Si true (por defecto), scrapea cada tarea para su estado de entrega/nota. */
+  enrich?: boolean;
+}
+
 /**
- * Obtiene TODAS las tareas cruzando dos fuentes y deduplicando por cmid:
- *  1. Calendario (tareas con fecha próxima).
- *  2. Barrido de cada curso matriculado (core_course_get_contents) buscando módulos `assign`.
- *
- * Las tareas que salen sólo del barrido y no del calendario se marcan `hidden: true` — el
- * caso que causa entregas perdidas cuando el profesor no publica evento de calendario.
+ * Obtiene TODAS las tareas de todos los cursos, incluidas las OCULTAS (las que no aparecen en
+ * el timeline del estudiante). Estrategia validada para el Moodle de la UNSA:
+ *  1. core_courseformat_get_state por curso → descubre TODOS los módulos assign (fuente fiable;
+ *     core_course_get_contents y mod_assign_get_assignments están bloqueadas aquí).
+ *  2. core_calendar_get_action_events_by_timesort → marca cuáles están en el timeline (no ocultas)
+ *     y aporta su fecha de entrega exacta.
+ *  3. (enrich) scraping de mod/assign/view.php por tarea → estado de entrega, nota, tiempo restante.
  */
 export async function getAllTasks(
   session: Session,
-  opts: { concurrency?: number; courses?: Course[] } = {},
+  opts: AllTasksOptions = {},
 ): Promise<AllTasksResult> {
-  const { concurrency = 5 } = opts;
+  const { concurrency = 5, enrich = true } = opts;
 
-  const [calendarTasks, courses] = await Promise.all([
+  const [timelineTasks, courses] = await Promise.all([
     getUpcomingTasks(session).catch(() => [] as Task[]),
     opts.courses ? Promise.resolve(opts.courses) : getEnrolledCourses(session),
   ]);
 
-  // cmids ya conocidos por el calendario, para marcar el resto como oculto.
-  const calendarCmids = new Set(
-    calendarTasks.map((t) => t.cmid).filter((c): c is number => c != null),
-  );
+  const timeline = new Map<number, Task>();
+  for (const t of timelineTasks) if (t.cmid != null) timeline.set(t.cmid, t);
 
   const scanErrors: AllTasksResult["scanErrors"] = [];
 
-  // Barrer cada curso en paralelo (acotado).
+  // 1) Descubrir assigns por curso (concurrencia acotada).
   const perCourse = await mapLimit(courses, concurrency, async (course) => {
     try {
-      const sections = await getCourseContents(session, course.id);
-      const assignModules = sections
-        .flatMap((s) => s.modules)
-        .filter((m) => m.modname === "assign");
-
-      const meta = await fetchAssignMeta(session, [course.id]);
-
-      return assignModules.map((m) => {
-        const md = meta.get(m.cmid);
-        return {
-          id: m.cmid,
-          name: m.name,
-          courseId: course.id,
-          courseName: course.fullname,
-          dueDate: md?.duedate ?? null,
-          url: m.url,
-          description: null,
-          source: "course-scan" as const,
-          hidden: !calendarCmids.has(m.cmid),
-          submission: "unknown" as const,
-          cmid: m.cmid,
-        } satisfies Task;
-      });
+      const state = await getCourseState(session, course.id);
+      return state.modules
+        .filter((m) => m.module === "assign" && m.uservisible)
+        .map((m) => assignToTask(m, course, timeline));
     } catch (err) {
       scanErrors.push({
         courseId: course.id,
@@ -168,71 +159,39 @@ export async function getAllTasks(
     }
   });
 
-  // Fusionar: partir del calendario, añadir del barrido lo que no esté ya (por cmid).
-  const merged = new Map<string, Task>();
-  const keyOf = (t: Task) =>
-    t.cmid != null ? `cmid:${t.cmid}` : `ci:${t.courseId}:${t.name}`;
+  let tasks = perCourse.flat();
 
-  for (const t of calendarTasks) merged.set(keyOf(t), t);
-  for (const t of perCourse.flat()) {
-    const key = keyOf(t);
-    const existing = merged.get(key);
-    if (!existing) {
-      merged.set(key, t);
-    } else if (existing.dueDate == null && t.dueDate != null) {
-      // Completar la fecha real si el calendario no la traía.
-      merged.set(key, { ...existing, dueDate: t.dueDate });
-    }
+  // 2) Enriquecer con estado de entrega/nota (scraping), concurrencia acotada.
+  if (enrich) {
+    tasks = await mapLimit(tasks, Math.max(concurrency, 6), (t) => enrichTask(session, t));
   }
 
-  const tasks = [...merged.values()].sort((a, b) => {
-    if (a.dueDate == null) return 1;
-    if (b.dueDate == null) return -1;
-    return a.dueDate - b.dueDate;
-  });
-
+  tasks.sort(sortByDue);
   return { tasks, scanErrors };
 }
 
-/** Tareas de un solo curso (incluye ocultas). */
+/** Tareas de un solo curso (incluye ocultas), con estado de entrega. */
 export async function getCourseTasks(
   session: Session,
   courseId: number,
   courseName = "",
+  opts: { enrich?: boolean } = {},
 ): Promise<Task[]> {
-  const sections = await getCourseContents(session, courseId);
-  const assignModules = sections
-    .flatMap((s) => s.modules)
-    .filter((m) => m.modname === "assign");
-  const meta = await fetchAssignMeta(session, [courseId]);
+  const { enrich = true } = opts;
+  const [state, timelineTasks] = await Promise.all([
+    getCourseState(session, courseId),
+    getUpcomingTasks(session).catch(() => [] as Task[]),
+  ]);
+  const timeline = new Map<number, Task>();
+  for (const t of timelineTasks) if (t.cmid != null) timeline.set(t.cmid, t);
 
-  // Cruzar con el calendario para marcar cuáles NO estaban publicadas.
-  const calendarCmids = new Set(
-    (await getUpcomingTasks(session).catch(() => []))
-      .map((t) => t.cmid)
-      .filter((c): c is number => c != null),
-  );
+  let tasks = state.modules
+    .filter((m) => m.module === "assign" && m.uservisible)
+    .map((m) => assignToTask(m, { id: courseId, fullname: courseName }, timeline));
 
-  return assignModules
-    .map((m) => {
-      const md = meta.get(m.cmid);
-      return {
-        id: m.cmid,
-        name: m.name,
-        courseId,
-        courseName,
-        dueDate: md?.duedate ?? null,
-        url: m.url,
-        description: null,
-        source: "course-scan" as const,
-        hidden: !calendarCmids.has(m.cmid),
-        submission: "unknown" as const,
-        cmid: m.cmid,
-      } satisfies Task;
-    })
-    .sort((a, b) => {
-      if (a.dueDate == null) return 1;
-      if (b.dueDate == null) return -1;
-      return a.dueDate - b.dueDate;
-    });
+  if (enrich) {
+    tasks = await mapLimit(tasks, 6, (t) => enrichTask(session, t));
+  }
+  tasks.sort(sortByDue);
+  return tasks;
 }

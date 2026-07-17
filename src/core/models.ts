@@ -37,6 +37,10 @@ export const TaskSchema = z.object({
   source: z.enum(["calendar", "course-scan"]),
   hidden: z.boolean(),
   submission: SubmissionStatusSchema.default("unknown"),
+  /** Nota, si la tarea ya fue calificada (texto tal cual lo muestra Moodle, ej. "16,00 / 20,00"). */
+  grade: z.string().nullable().default(null),
+  /** Texto de "Tiempo restante" de Moodle, cuando aplica. */
+  timeRemaining: z.string().nullable().default(null),
   /** Course module id (cmid) — identificador único del módulo en el curso. */
   cmid: z.number().nullable().default(null),
 });
