@@ -67,6 +67,8 @@ dutic tasks --hidden         # SÓLO las tareas ocultas
 dutic courses                # cursos matriculados
 dutic course tasks <id>      # tareas de un curso (incluye ocultas)
 dutic course files <id>      # recursos de un curso
+dutic materials <id>         # todos los archivos del curso (expande carpetas)
+dutic study <id> --dest ./x  # baja materiales y convierte PDFs a Markdown para estudiar
 dutic read <url>             # lee un recurso (PDF→Markdown) para analizarlo sin gastar tokens
 dutic md <archivo.pdf>       # convierte un PDF local a Markdown
 dutic pull <id> --dest ./x   # descarga todos los recursos de un curso
@@ -93,19 +95,24 @@ cliente MCP):
 
 En Claude Code: `claude mcp add dutic -- node C:\Users\USER\source\MCPs\dutic-mcp\dist\mcp\server.js`
 
-Herramientas expuestas (11): `dutic_list_tasks` (scope `upcoming`/`all`, `onlyHidden`, `detailed`),
+Herramientas expuestas (13): `dutic_list_tasks` (scope `upcoming`/`all`, `onlyHidden`, `detailed`),
 `dutic_list_courses`, `dutic_get_course_contents`, `dutic_get_course_tasks`, `dutic_list_course_files`,
 `dutic_download_file`, **`dutic_read_resource`** (recurso → Markdown para analizar sin gastar tokens),
-`dutic_pull_course_files`, **`dutic_pdf_to_markdown`** (PDF local → Markdown), `dutic_session_status`,
-`dutic_refresh_session`.
+**`dutic_list_course_materials`** (todos los archivos, expande carpetas), **`dutic_study_course`**
+(baja + convierte PDFs a Markdown para estudiar), `dutic_pull_course_files`,
+**`dutic_pdf_to_markdown`** (PDF local → Markdown), `dutic_session_status`, `dutic_refresh_session`.
 
 ### Analizar materiales sin gastar tokens
 
 `dutic_read_resource` / `dutic read <url>` descarga un recurso y devuelve su **contenido como texto
 Markdown** (convierte PDFs con `unpdf`, sin dependencias nativas), para que el agente lo analice sin
 volcar el binario al contexto. `dutic_pdf_to_markdown` / `dutic md` hace lo mismo con un PDF local.
-Limitación: las **carpetas** (mod/folder) de algunos temas de Moodle renderizan su árbol por JS y no
-exponen los enlaces; en ese caso usa el enlace directo del archivo o descárgalo y conviértelo con `md`.
+Para preparar un curso entero, `dutic study <id>` / `dutic_study_course` baja todos los materiales y
+convierte los PDFs a `.md` organizados por carpeta.
+
+Las **carpetas** (mod/folder) se listan por HTTP (sus archivos se renderizan server-side dentro de
+`#folder_tree0`), así que `materials`/`study`/`read` las expanden solas. Muchas carpetas del aula están
+vacías (estructura creada sin subir archivos): eso es normal, se omiten.
 
 > El MCP renueva la sesión de forma **headless** si el SSO de Google sigue vivo. Si caducó del todo,
 > devuelve un aviso para que corras `dutic login` en una terminal (ahí sí puede abrirse el navegador).

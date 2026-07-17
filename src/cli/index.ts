@@ -13,11 +13,13 @@ import {
 import {
   downloadFile,
   listCourseFiles,
+  listCourseMaterials,
   pullCourseFiles,
 } from "../domain/resources.js";
 import {
   convertLocalPdfToMarkdown,
   readResourceAsMarkdown,
+  studyCourseMaterials,
 } from "../domain/documents.js";
 import { writeFile } from "node:fs/promises";
 import { formatTaskLine } from "./format.js";
@@ -175,6 +177,49 @@ program
       async (session) => {
         const r = await downloadFile(session, url, dest);
         console.log(`✅ Descargado ${r.bytes} bytes → ${r.path}`);
+      },
+      { login: { onStatus: log } },
+    );
+  });
+
+program
+  .command("materials <courseId>")
+  .description("Lista todos los materiales de un curso (expande carpetas).")
+  .option("--json", "Salida en JSON.")
+  .action(async (courseId, opts) => {
+    await withSession(
+      async (session) => {
+        const mats = await listCourseMaterials(session, Number(courseId));
+        if (opts.json) {
+          console.log(JSON.stringify(mats, null, 2));
+          return;
+        }
+        console.log(`\n${mats.length} material(es) en el curso ${courseId}:\n`);
+        for (const m of mats) {
+          console.log(`${m.folder ? `[${m.folder}] ` : ""}${m.filename}\n     ${m.url}`);
+        }
+      },
+      { login: { onStatus: log } },
+    );
+  });
+
+program
+  .command("study <courseId>")
+  .description("Descarga los materiales de un curso y convierte los PDFs a Markdown para estudiar.")
+  .option("--dest <dir>", "Directorio destino.", "./materiales")
+  .action(async (courseId, opts) => {
+    await withSession(
+      async (session) => {
+        const dest = `${opts.dest}/curso-${courseId}`;
+        log(`Descargando y convirtiendo materiales en ${dest} …`);
+        const items = await studyCourseMaterials(session, Number(courseId), dest);
+        const md = items.filter((i) => i.kind === "markdown").length;
+        const files = items.filter((i) => i.kind === "file").length;
+        const errs = items.filter((i) => i.kind === "error").length;
+        console.log(`✅ ${md} PDF→Markdown, ${files} otros archivo(s), ${errs} error(es) → ${dest}`);
+        for (const i of items.filter((x) => x.kind !== "error")) {
+          console.log(`   - ${i.savedTo}`);
+        }
       },
       { login: { onStatus: log } },
     );

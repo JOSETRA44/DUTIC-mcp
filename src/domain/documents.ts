@@ -1,6 +1,13 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
 import { extractText, getDocumentProxy } from "unpdf";
-import { fetchResourceBuffer, isFolderUrl, listFolderFiles } from "./resources.js";
+import {
+  fetchResourceBuffer,
+  isFolderUrl,
+  listCourseMaterials,
+  listFolderFiles,
+} from "./resources.js";
+import { mapLimit } from "./concurrency.js";
 import type { Session } from "../core/session.js";
 
 export interface ConvertedDoc {
@@ -51,7 +58,9 @@ export async function pdfBufferToMarkdown(
   buffer: Buffer,
   maxChars = 0,
 ): Promise<ConvertedDoc> {
-  const pdf = await getDocumentProxy(new Uint8Array(buffer));
+  // verbosity 0 (ERRORS) silencia los warnings de fuentes de pdf.js ("TT: undefined function")
+  // que no afectan al texto extraído. Es seguro con conversiones concurrentes (sin tocar consola).
+  const pdf = await getDocumentProxy(new Uint8Array(buffer), { verbosity: 0 });
   const { text, totalPages } = await extractText(pdf, { mergePages: true });
   const rawText: string = Array.isArray(text) ? (text as string[]).join("\n\n") : String(text);
   const full = textToMarkdown(rawText);
@@ -105,7 +114,7 @@ export async function readResourceAsMarkdown(
         kind: "binary",
         markdown: null,
         bytes: 0,
-        note: "No se pudieron listar los archivos de la carpeta.",
+        note: "La carpeta está vacía (sin archivos subidos).",
       };
     }
     const parts: string[] = [];
@@ -185,6 +194,61 @@ export async function readResourceAsMarkdown(
       `Tipo no convertible a texto (${contentType ?? "desconocido"}). ` +
       `Usa dutic_download_file para guardarlo y procesarlo con otra herramienta.`,
   };
+}
+
+export interface StudyMaterial {
+  filename: string;
+  folder: string | null;
+  savedTo: string;
+  kind: "markdown" | "file" | "error";
+  chars?: number;
+  error?: string;
+}
+
+const sanitize = (name: string) => name.replace(/[<>:"/\\|?*]+/g, "_").slice(0, 120);
+
+/**
+ * Descarga todos los materiales de un curso a `destDir` para estudiar offline: los PDFs se
+ * CONVIERTEN a Markdown (.md) para poder leerlos/analizarlos sin gastar tokens en el binario;
+ * el resto se guarda tal cual. Organiza por carpeta y devuelve un manifiesto de lo guardado.
+ */
+export async function studyCourseMaterials(
+  session: Session,
+  courseId: number,
+  destDir: string,
+  concurrency = 5,
+): Promise<StudyMaterial[]> {
+  const materials = await listCourseMaterials(session, courseId);
+  return mapLimit(materials, concurrency, async (m): Promise<StudyMaterial> => {
+    const sub = m.folder ? join(destDir, sanitize(m.folder)) : destDir;
+    try {
+      const { buffer, contentType } = await fetchResourceBuffer(session, m.url);
+      await mkdir(sub, { recursive: true });
+      if (looksLikePdf(buffer, contentType)) {
+        const doc = await pdfBufferToMarkdown(buffer, 0);
+        const out = join(sub, sanitize(m.filename).replace(/\.pdf$/i, "") + ".md");
+        await writeFile(out, `# ${m.filename}\n\n${doc.markdown}`, "utf8");
+        return {
+          filename: m.filename,
+          folder: m.folder,
+          savedTo: out,
+          kind: "markdown",
+          chars: doc.totalChars,
+        };
+      }
+      const out = join(sub, sanitize(m.filename));
+      await writeFile(out, buffer);
+      return { filename: m.filename, folder: m.folder, savedTo: out, kind: "file" };
+    } catch (e) {
+      return {
+        filename: m.filename,
+        folder: m.folder,
+        savedTo: "",
+        kind: "error",
+        error: (e as Error).message,
+      };
+    }
+  });
 }
 
 /** Convierte un PDF local a Markdown; opcionalmente lo guarda en outPath. */

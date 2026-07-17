@@ -58,7 +58,12 @@ Si el servidor MCP `dutic` está disponible, usa estas herramientas (son la fuen
   como texto/Markdown** (convierte PDFs automáticamente). Úsalo cuando el usuario quiera que
   analices, resumas o extraigas algo de un material (sílabo, informe, lectura, guía): así lees el
   texto directamente sin gastar tokens en el binario. Acepta URL de módulo o de pluginfile.php.
-- `dutic_pull_course_files` — args: `courseId`, `destDir`. Descarga en bloque todos los recursos.
+- `dutic_list_course_materials` — args: `courseId`. Lista TODOS los archivos del curso **expandiendo
+  las carpetas** (diapositivas, lecturas, prácticas) a sus archivos reales con URL directa.
+- `dutic_study_course` — args: `courseId`, `destDir`. **Descarga todos los materiales y convierte los
+  PDFs a Markdown** organizados por carpeta, para estudiar/analizar offline. Úsalo cuando el usuario
+  quiera "preparar/bajar el material para estudiar" de un curso.
+- `dutic_pull_course_files` — args: `courseId`, `destDir`. Descarga en bloque (expande carpetas).
 - `dutic_pdf_to_markdown` — args: `filePath`, `outPath?`, `maxChars`. Convierte un PDF que ya está
   en disco a Markdown (sin sesión). Útil tras descargar, o para PDFs locales del usuario.
 - `dutic_session_status` / `dutic_refresh_session` — estado y renovación de sesión.
@@ -68,10 +73,10 @@ Si el servidor MCP `dutic` está disponible, usa estas herramientas (son la fuen
 Cuando el usuario pida "analiza/resume/qué dice este material/PDF del curso", **no descargues el
 binario y lo pases crudo** (desperdicia tokens y no es legible). Usa `dutic_read_resource` con la
 URL del recurso: te devuelve texto limpio en Markdown que puedes leer y razonar directamente. Para
-PDFs ya descargados o del sistema de archivos del usuario, usa `dutic_pdf_to_markdown`. Si el
-recurso es una **carpeta** (mod/folder), algunos temas de Moodle no permiten listar sus archivos
-automáticamente; en ese caso, pídele al usuario el enlace directo del archivo, o que lo descargue y
-te pase la ruta a `dutic_pdf_to_markdown`.
+PDFs ya descargados o del sistema de archivos del usuario, usa `dutic_pdf_to_markdown`. Para preparar
+todo un curso de golpe (bajar y convertir sus PDFs para estudiar), usa `dutic_study_course`. Las
+**carpetas** (mod/folder) se expanden solas a sus archivos; muchas están vacías (el profe creó la
+estructura sin subir nada todavía) — eso es normal, no es un error.
 
 ## CLI `dutic` (alternativa / uso directo del usuario)
 
@@ -85,6 +90,8 @@ dutic tasks --all --fast    # sin scrapear estado de entrega (más rápido, meno
 dutic courses               # cursos matriculados
 dutic course tasks <id>     # tareas de un curso
 dutic course files <id>     # recursos de un curso
+dutic materials <id>        # lista todos los archivos del curso (expande carpetas)
+dutic study <id> --dest ./x # baja los materiales y convierte PDFs a Markdown para estudiar
 dutic read <url>            # lee un recurso (PDF→Markdown) para analizarlo sin gastar tokens
 dutic md <archivo.pdf>      # convierte un PDF local a Markdown
 dutic pull <id> --dest ./x  # descarga todos los recursos de un curso

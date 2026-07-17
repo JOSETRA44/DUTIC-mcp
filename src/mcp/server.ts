@@ -8,8 +8,17 @@ import { getSemester } from "../core/config.js";
 import { isExpired, isValid, loadSession } from "../core/session.js";
 import { getEnrolledCourses, getCourseContents } from "../domain/courses.js";
 import { getAllTasks, getCourseTasks, getUpcomingTasks } from "../domain/tasks.js";
-import { downloadFile, listCourseFiles, pullCourseFiles } from "../domain/resources.js";
-import { convertLocalPdfToMarkdown, readResourceAsMarkdown } from "../domain/documents.js";
+import {
+  downloadFile,
+  listCourseFiles,
+  listCourseMaterials,
+  pullCourseFiles,
+} from "../domain/resources.js";
+import {
+  convertLocalPdfToMarkdown,
+  readResourceAsMarkdown,
+  studyCourseMaterials,
+} from "../domain/documents.js";
 
 /**
  * En contexto MCP la renovación de sesión es "headless-only": si el SSO de Google sigue
@@ -154,6 +163,38 @@ server.registerTool(
   },
   async ({ url, maxChars }) =>
     tool(() => withSession((s) => readResourceAsMarkdown(s, url, maxChars), { mode: MCP_MODE })),
+);
+
+server.registerTool(
+  "dutic_list_course_materials",
+  {
+    title: "Listar materiales de un curso (carpetas expandidas)",
+    description:
+      "Lista TODOS los archivos descargables de un curso, expandiendo las carpetas a sus archivos " +
+      "reales (diapositivas, lecturas, prácticas…). Devuelve nombre, URL, sección y carpeta. Úsalo " +
+      "para saber qué materiales de estudio hay disponibles antes de leer o descargar.",
+    inputSchema: { courseId: z.number().int().positive() },
+  },
+  async ({ courseId }) =>
+    tool(() => withSession((s) => listCourseMaterials(s, courseId), { mode: MCP_MODE })),
+);
+
+server.registerTool(
+  "dutic_study_course",
+  {
+    title: "Preparar materiales de un curso para estudiar",
+    description:
+      "Descarga todos los materiales de un curso a un directorio y CONVIERTE los PDFs a Markdown " +
+      "(.md) organizados por carpeta, para estudiar/analizar offline sin gastar tokens en binarios. " +
+      "Devuelve el manifiesto de lo guardado. Úsalo cuando el usuario quiera 'preparar/bajar el " +
+      "material para estudiar' de un curso.",
+    inputSchema: {
+      courseId: z.number().int().positive(),
+      destDir: z.string().describe("Directorio local de destino."),
+    },
+  },
+  async ({ courseId, destDir }) =>
+    tool(() => withSession((s) => studyCourseMaterials(s, courseId, destDir), { mode: MCP_MODE })),
 );
 
 server.registerTool(

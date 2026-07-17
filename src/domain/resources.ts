@@ -7,10 +7,10 @@ import * as cheerio from "cheerio";
 import { CHROME_USER_AGENT } from "../core/config.js";
 import { SessionExpiredError } from "../core/errors.js";
 import { fetchUnsa } from "../core/http.js";
-import { extractPluginfileLinks } from "../core/browser.js";
 import type { Session } from "../core/session.js";
 import type { ResourceFile } from "../core/models.js";
 import { getCourseContents } from "./courses.js";
+import { mapLimit } from "./concurrency.js";
 
 function moodleHeaders(session: Session, referer?: string): Record<string, string> {
   const h: Record<string, string> = {
@@ -57,6 +57,61 @@ export async function listCourseFiles(
     }
   }
   return files;
+}
+
+export interface CourseMaterial {
+  filename: string;
+  /** URL descargable (pluginfile.php) o de vista del módulo (resource) que se resuelve al bajar. */
+  url: string;
+  modname: string;
+  section: string;
+  /** Nombre de la carpeta contenedora, si el archivo está dentro de un mod/folder. */
+  folder: string | null;
+}
+
+/**
+ * Lista TODOS los archivos descargables de un curso, **expandiendo las carpetas** a sus archivos
+ * reales (los recursos `resource` quedan como URL de módulo, que se resuelve al descargar). Las
+ * carpetas vacías se omiten. Las carpetas se expanden en paralelo (acotado).
+ */
+export async function listCourseMaterials(
+  session: Session,
+  courseId: number,
+  concurrency = 8,
+): Promise<CourseMaterial[]> {
+  const sections = await getCourseContents(session, courseId);
+  const out: CourseMaterial[] = [];
+  const folderJobs: { section: string; name: string; url: string }[] = [];
+
+  for (const section of sections) {
+    for (const m of section.modules) {
+      if (!m.url) continue;
+      if (m.modname === "resource") {
+        out.push({
+          filename: m.name,
+          url: m.url,
+          modname: "resource",
+          section: section.name,
+          folder: null,
+        });
+      } else if (m.modname === "folder") {
+        folderJobs.push({ section: section.name, name: m.name, url: m.url });
+      }
+    }
+  }
+
+  const expanded = await mapLimit(folderJobs, concurrency, async (j) => {
+    const files = await listFolderFiles(session, j.url).catch(() => [] as FolderFile[]);
+    return files.map((f) => ({
+      filename: f.filename,
+      url: f.url,
+      modname: "folder",
+      section: j.section,
+      folder: j.name,
+    }));
+  });
+  for (const arr of expanded) out.push(...arr);
+  return out;
 }
 
 /**
@@ -132,24 +187,27 @@ export function isFolderUrl(url: string): boolean {
 }
 
 /**
- * Lista los archivos de una carpeta (mod/folder). Su árbol se renderiza por JavaScript, así que
- * se usa un navegador headless para obtener los enlaces reales de pluginfile.php.
+ * Lista los archivos de una carpeta (mod/folder). Moodle renderiza el árbol de archivos
+ * server-side dentro de `#folder_tree0` como enlaces `<a href="pluginfile.php/...">`, así que
+ * basta HTTP + cheerio (rápido, sin navegador). Una carpeta vacía devuelve lista vacía.
  */
 export async function listFolderFiles(
   session: Session,
   folderUrl: string,
 ): Promise<FolderFile[]> {
-  const links = await extractPluginfileLinks(session, folderUrl);
-  const files = links
-    .filter((u) => /mod_folder\/content/.test(u))
-    .map((u) => {
-      const path = new URL(u).pathname;
-      const last = path.split("/").filter(Boolean).pop() ?? "archivo";
-      return { filename: decodeURIComponent(last), url: u };
-    });
-  // Dedup por URL.
+  const html = await getHtml(session, folderUrl);
+  const $ = cheerio.load(html);
+  const files: FolderFile[] = [];
   const seen = new Set<string>();
-  return files.filter((f) => (seen.has(f.url) ? false : (seen.add(f.url), true)));
+  $('#folder_tree0 a[href*="pluginfile.php"]').each((_, a) => {
+    const href = $(a).attr("href");
+    if (!href || seen.has(href)) return;
+    seen.add(href);
+    const text = $(a).text().trim();
+    const filename = text || decodeURIComponent(new URL(href).pathname.split("/").pop() ?? "archivo");
+    files.push({ filename, url: href });
+  });
+  return files;
 }
 
 export interface FetchedResource {
@@ -208,23 +266,28 @@ export async function fetchResourceBuffer(
   };
 }
 
-/** Descarga todos los recursos de un curso a un directorio destino. */
+const sanitize = (name: string) => name.replace(/[<>:"/\\|?*]+/g, "_").slice(0, 120);
+
+/**
+ * Descarga TODOS los materiales de un curso a un directorio destino, expandiendo carpetas y
+ * organizando los archivos en subdirectorios por carpeta. Descarga en paralelo (acotado) y no
+ * se detiene por un fallo puntual.
+ */
 export async function pullCourseFiles(
   session: Session,
   courseId: number,
   destDir: string,
+  concurrency = 6,
 ): Promise<DownloadResult[]> {
-  const files = await listCourseFiles(session, courseId);
-  const results: DownloadResult[] = [];
-  for (const f of files) {
-    if (f.modname === "url") continue; // enlaces externos, no archivos
-    const safeName = f.filename.replace(/[<>:"/\\|?*]+/g, "_").slice(0, 120);
+  const materials = await listCourseMaterials(session, courseId);
+  const results = await mapLimit(materials, concurrency, async (f) => {
+    const subDir = f.folder ? join(destDir, sanitize(f.folder)) : destDir;
+    const dest = join(subDir, sanitize(f.filename));
     try {
-      const r = await downloadFile(session, f.fileurl, join(destDir, safeName));
-      results.push(r);
+      return await downloadFile(session, f.url, dest);
     } catch {
-      // Continuar con el resto de archivos aunque uno falle.
+      return null;
     }
-  }
-  return results;
+  });
+  return results.filter((r): r is DownloadResult => r !== null);
 }
