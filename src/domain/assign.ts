@@ -1,7 +1,7 @@
 import * as cheerio from "cheerio";
 import { CHROME_USER_AGENT } from "../core/config.js";
 import { SessionExpiredError } from "../core/errors.js";
-import { unsaAgent } from "../core/http.js";
+import { fetchUnsa } from "../core/http.js";
 import type { Session } from "../core/session.js";
 import type { SubmissionStatus } from "../core/models.js";
 
@@ -55,13 +55,11 @@ function classifySubmission(estadoEntrega: string, estadoCalif: string): Submiss
  * cuando la tarea está pendiente y futura — no sirven para tareas ya entregadas o vencidas.
  */
 export async function getAssignDetail(session: Session, url: string): Promise<AssignDetail> {
-  const res = await fetch(url, {
+  const res = await fetchUnsa(url, {
     headers: {
       Cookie: `MoodleSession=${session.moodleSession}`,
       "User-Agent": CHROME_USER_AGENT,
     },
-    dispatcher: unsaAgent,
-    redirect: "follow",
   });
   if (res.status === 302 || res.status === 303) throw new SessionExpiredError();
   const html = await res.text();

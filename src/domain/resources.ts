@@ -6,7 +6,7 @@ import { pipeline } from "node:stream/promises";
 import * as cheerio from "cheerio";
 import { CHROME_USER_AGENT } from "../core/config.js";
 import { SessionExpiredError } from "../core/errors.js";
-import { unsaAgent } from "../core/http.js";
+import { fetchUnsa } from "../core/http.js";
 import type { Session } from "../core/session.js";
 import type { ResourceFile } from "../core/models.js";
 import { getCourseContents } from "./courses.js";
@@ -21,11 +21,7 @@ function moodleHeaders(session: Session, referer?: string): Record<string, strin
 }
 
 async function getHtml(session: Session, url: string): Promise<string> {
-  const res = await fetch(url, {
-    headers: moodleHeaders(session),
-    dispatcher: unsaAgent,
-    redirect: "follow",
-  });
+  const res = await fetchUnsa(url, { headers: moodleHeaders(session) });
   if (res.status === 302 || res.status === 303) throw new SessionExpiredError();
   const text = await res.text();
   if (/login\/index\.php|loginform/i.test(text) && /\/login\//.test(res.url)) {
@@ -103,11 +99,8 @@ export async function downloadFile(
   const realUrl = await resolvePluginFileUrl(session, url);
   await mkdir(dirname(destPath), { recursive: true });
 
-  const res = await fetch(realUrl, {
-    headers: moodleHeaders(session, url),
-    dispatcher: unsaAgent,
-    redirect: "follow",
-  });
+  // Descarga con timeout más amplio (archivos grandes).
+  const res = await fetchUnsa(realUrl, { headers: moodleHeaders(session, url) }, 120_000);
   if (res.status === 302 || res.status === 303) throw new SessionExpiredError();
   if (!res.ok || !res.body) {
     throw new Error(`No se pudo descargar (HTTP ${res.status}): ${realUrl}`);

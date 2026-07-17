@@ -123,6 +123,14 @@ async function launchContext(headless: boolean): Promise<BrowserContext> {
       });
     } catch (err) {
       lastErr = err;
+      const msg = String((err as Error)?.message ?? "");
+      // Perfil bloqueado: otra instancia de dutic o un Chrome con este perfil ya está abierto.
+      if (/existing browser session|ProcessSingleton|SingletonLock|已经|has been closed/i.test(msg)) {
+        throw new Error(
+          `El perfil del navegador (${BROWSER_PROFILE_DIR}) ya está en uso. ` +
+            `Cierra otras ventanas/instancias de DUTIC y reintenta.`,
+        );
+      }
     }
   }
   throw new Error(

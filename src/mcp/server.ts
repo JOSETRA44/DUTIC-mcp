@@ -54,13 +54,17 @@ server.registerTool(
     inputSchema: {
       scope: z.enum(["upcoming", "all"]).default("upcoming"),
       onlyHidden: z.boolean().default(false).describe("Con scope='all', devolver sólo las ocultas."),
+      detailed: z
+        .boolean()
+        .default(true)
+        .describe("Con scope='all', scrapear el estado de entrega y la nota de cada tarea."),
     },
   },
-  async ({ scope, onlyHidden }) =>
+  async ({ scope, onlyHidden, detailed }) =>
     tool(async () => {
       if (scope === "all" || onlyHidden) {
         return withSession(async (s) => {
-          const { tasks, scanErrors } = await getAllTasks(s);
+          const { tasks, scanErrors } = await getAllTasks(s, { enrich: detailed });
           return { tasks: onlyHidden ? tasks.filter((t) => t.hidden) : tasks, scanErrors };
         }, { mode: MCP_MODE });
       }

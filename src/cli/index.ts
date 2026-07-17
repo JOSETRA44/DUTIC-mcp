@@ -55,12 +55,13 @@ program
   .description("Lista tus tareas. Por defecto las próximas del calendario.")
   .option("--all", "Barre todos los cursos para incluir tareas ocultas.")
   .option("--hidden", "Muestra sólo las tareas ocultas (implica --all).")
+  .option("--fast", "No scrapear el estado de entrega de cada tarea (más rápido).")
   .option("--json", "Salida en JSON.")
   .action(async (opts) => {
     await withSession(
       async (session) => {
         if (opts.all || opts.hidden) {
-          const { tasks, scanErrors } = await getAllTasks(session);
+          const { tasks, scanErrors } = await getAllTasks(session, { enrich: !opts.fast });
           const list = opts.hidden ? tasks.filter((t) => t.hidden) : tasks;
           if (opts.json) {
             console.log(JSON.stringify({ tasks: list, scanErrors }, null, 2));
@@ -114,11 +115,14 @@ const course = program.command("course").description("Operaciones sobre un curso
 course
   .command("tasks <courseId>")
   .description("Tareas de un curso (incluye ocultas).")
+  .option("--fast", "No scrapear el estado de entrega de cada tarea.")
   .option("--json", "Salida en JSON.")
   .action(async (courseId, opts) => {
     await withSession(
       async (session) => {
-        const list = await getCourseTasks(session, Number(courseId));
+        const list = await getCourseTasks(session, Number(courseId), "", {
+          enrich: !opts.fast,
+        });
         if (opts.json) {
           console.log(JSON.stringify(list, null, 2));
           return;

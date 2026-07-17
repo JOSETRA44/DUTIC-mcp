@@ -17,19 +17,28 @@ export const SessionSchema = z.object({
 });
 export type Session = z.infer<typeof SessionSchema>;
 
-/** TTL conservador: Moodle expira ~8h; marcamos caducada a las 6h para renovar con margen. */
-const SESSION_TTL_MS = 6 * 60 * 60 * 1000;
+/**
+ * TTL sólo informativo (para `status` y para decidir un refresco proactivo). NO se usa como
+ * puerta dura: las sesiones de Moodle de la UNSA duran más de lo que sugiere este valor, así
+ * que la autoridad real es el servidor — si responde requireloginerror, renovamos. Gatear por
+ * tiempo provocaba re-logins prematuros con la sesión aún viva.
+ */
+const SESSION_TTL_MS = 10 * 60 * 60 * 1000;
 
 export function isExpired(session: Session): boolean {
   return Date.now() - session.capturedAt >= SESSION_TTL_MS;
 }
 
+/**
+ * Una sesión es "usable" si tiene cookie y sesskey. No se descarta por antigüedad: se intenta
+ * usar y, si el servidor la rechaza, el cliente renueva. Así se reutiliza al máximo la sesión
+ * viva y se evita abrir el navegador sin necesidad.
+ */
 export function isValid(session: Session | null): session is Session {
   return (
     session !== null &&
     session.moodleSession.length > 0 &&
-    session.sesskey.length > 0 &&
-    !isExpired(session)
+    session.sesskey.length > 0
   );
 }
 

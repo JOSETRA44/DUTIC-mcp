@@ -22,7 +22,24 @@ export function relativeDue(epochSeconds: number | null): string {
   return `(en ${days}d)`;
 }
 
+const SUBMISSION_LABEL: Record<string, string> = {
+  submitted: "✅ Enviada",
+  "not-submitted": "⚠️ SIN ENTREGAR",
+  graded: "🎓 Calificada",
+  unknown: "",
+};
+
 export function formatTaskLine(t: Task): string {
-  const flag = t.hidden ? "🔒OCULTA" : "📅";
-  return `${flag}  ${t.name}\n     ${t.courseName}\n     Entrega: ${formatDate(t.dueDate)} ${relativeDue(t.dueDate)}${t.url ? `\n     ${t.url}` : ""}`;
+  const flag = t.hidden ? "🔒 OCULTA" : "📅 en timeline";
+  const sub = SUBMISSION_LABEL[t.submission] ?? "";
+  const gradeStr = t.grade ? ` · Nota: ${t.grade}` : "";
+  const lines = [
+    `${flag}  ${t.name}`,
+    `     ${t.courseName}`,
+    `     Entrega: ${formatDate(t.dueDate)} ${relativeDue(t.dueDate)}`,
+  ];
+  if (sub || gradeStr) lines.push(`     Estado: ${sub}${gradeStr}`);
+  if (t.timeRemaining) lines.push(`     ${t.timeRemaining}`);
+  if (t.url) lines.push(`     ${t.url}`);
+  return lines.join("\n");
 }

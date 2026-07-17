@@ -22,3 +22,26 @@ export function isUnsaUrl(url: string): boolean {
     return false;
   }
 }
+
+/**
+ * fetch contra el aula virtual con timeout duro (AbortController) y el dispatcher que acepta
+ * la CA privada de la UNSA. Sin este timeout, una petición colgada bloquea todo el barrido.
+ */
+export async function fetchUnsa(
+  url: string,
+  init: RequestInit = {},
+  timeoutMs = 25_000,
+): Promise<Response> {
+  const ac = new AbortController();
+  const timer = setTimeout(() => ac.abort(), timeoutMs);
+  try {
+    return await fetch(url, {
+      ...init,
+      signal: ac.signal,
+      dispatcher: unsaAgent,
+      redirect: init.redirect ?? "follow",
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+}
