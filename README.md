@@ -64,11 +64,15 @@ dutic status                 # estado de la sesión y semestre
 dutic tasks                  # tareas próximas (rápido, del calendario)
 dutic tasks --all            # + barrido de cursos (incluye ocultas)
 dutic tasks --hidden         # SÓLO las tareas ocultas
+dutic grades [id]            # notas: resumen de todos, o detalle de un curso
+dutic task <cmid>            # detalle de tarea: consigna, fechas, adjuntos, conflicto de fechas
+dutic people <id> [--email]  # compañeros del curso (con correo institucional)
+dutic person <texto>         # busca a alguien por nombre o correo en todos tus cursos
+dutic teachers <id>          # docentes del curso
 dutic courses                # cursos matriculados
 dutic course tasks <id>      # tareas de un curso (incluye ocultas)
-dutic course files <id>      # recursos de un curso
-dutic materials <id>         # todos los archivos del curso (expande carpetas)
-dutic study <id> --dest ./x  # baja materiales y convierte PDFs a Markdown para estudiar
+dutic materials <id> [--section "Tema 2"]  # archivos por unidad/sección
+dutic study <id> [--section "Tema 2"]      # baja + convierte a Markdown (por unidad)
 dutic read <url>             # lee un recurso (PDF→Markdown) para analizarlo sin gastar tokens
 dutic md <archivo.pdf>       # convierte un PDF local a Markdown
 dutic pull <id> --dest ./x   # descarga todos los recursos de un curso
@@ -95,7 +99,11 @@ cliente MCP):
 
 En Claude Code: `claude mcp add dutic -- node C:\Users\USER\source\MCPs\dutic-mcp\dist\mcp\server.js`
 
-Herramientas expuestas (13): `dutic_list_tasks` (scope `upcoming`/`all`, `onlyHidden`, `detailed`),
+Herramientas expuestas (19): **`dutic_get_assignment_detail`** (consigna, adjuntos, fechas y
+**conflicto de fechas**), **`dutic_list_participants`** / **`dutic_find_person`** /
+**`dutic_get_person_profile`** / **`dutic_get_course_teachers`** (personas y correos),
+**`dutic_get_grades`** (notas: resumen o detalle),
+`dutic_list_tasks` (scope `upcoming`/`all`, `onlyHidden`, `detailed`),
 `dutic_list_courses`, `dutic_get_course_contents`, `dutic_get_course_tasks`, `dutic_list_course_files`,
 `dutic_download_file`, **`dutic_read_resource`** (recurso → Markdown para analizar sin gastar tokens),
 **`dutic_list_course_materials`** (todos los archivos, expande carpetas), **`dutic_study_course`**

@@ -19,6 +19,18 @@ import {
   readResourceAsMarkdown,
   studyCourseMaterials,
 } from "../domain/documents.js";
+import {
+  getAllGrades,
+  getCourseGrades,
+  type CourseGrades,
+} from "../domain/grades.js";
+import { getAssignDetail } from "../domain/assign.js";
+import {
+  findPeople,
+  getCourseTeachers,
+  getPersonProfile,
+  listCourseParticipants,
+} from "../domain/people.js";
 
 /**
  * En contexto MCP la renovación de sesión es "headless-only": si el SSO de Google sigue
@@ -166,17 +178,138 @@ server.registerTool(
 );
 
 server.registerTool(
+  "dutic_get_assignment_detail",
+  {
+    title: "Detalle completo de una tarea",
+    description:
+      "Devuelve TODO lo de una tarea: la consigna/instrucciones completas, los archivos adjuntos " +
+      "a la consigna (guías, rúbricas — puedes leerlos con dutic_read_resource), fechas oficiales " +
+      "de apertura y cierre, estado de entrega, nota y quién calificó. IMPORTANTE: incluye " +
+      "`dateConflict` y `datesInDescription` — los docentes a veces escriben en el texto una fecha " +
+      "distinta a la configurada en Moodle; si dateConflict es true, AVISA al usuario de la " +
+      "discrepancia. Úsalo cuando el usuario pregunte qué pide una tarea o cuándo se entrega.",
+    inputSchema: {
+      cmid: z.number().int().positive().describe("Course module id de la tarea."),
+    },
+  },
+  async ({ cmid }) =>
+    tool(() =>
+      withSession(
+        (s) => getAssignDetail(s, `${s.siteUrl}/mod/assign/view.php?id=${cmid}`),
+        { mode: MCP_MODE },
+      ),
+    ),
+);
+
+server.registerTool(
+  "dutic_list_participants",
+  {
+    title: "Participantes de un curso",
+    description:
+      "Lista los participantes visibles de un curso (nombre, rol, grupo, último acceso). Si el " +
+      "curso usa grupos separados, Moodle sólo muestra a los del grupo del usuario — es lo mismo " +
+      "que ve en la web. Úsalo para saber quiénes son sus compañeros o de qué grupo es alguien.",
+    inputSchema: { courseId: z.number().int().positive() },
+  },
+  async ({ courseId }) =>
+    tool(() => withSession((s) => listCourseParticipants(s, courseId), { mode: MCP_MODE })),
+);
+
+server.registerTool(
+  "dutic_find_person",
+  {
+    title: "Buscar una persona por nombre o correo",
+    description:
+      "Busca entre los participantes de TODOS los cursos del usuario por nombre o por correo " +
+      "institucional. Si la consulta contiene '@' resuelve los correos de los perfiles para poder " +
+      "buscar por correo. Devuelve nombre, curso, grupo, último acceso y correo cuando aplica.",
+    inputSchema: {
+      query: z.string().min(2).describe("Nombre (o parte) o correo a buscar."),
+      withEmail: z
+        .boolean()
+        .optional()
+        .describe("Fuerza resolver el correo de cada coincidencia (más lento)."),
+    },
+  },
+  async ({ query, withEmail }) =>
+    tool(() => withSession((s) => findPeople(s, query, { withEmail }), { mode: MCP_MODE })),
+);
+
+server.registerTool(
+  "dutic_get_person_profile",
+  {
+    title: "Perfil de una persona",
+    description:
+      "Perfil de un participante: correo institucional, zona horaria y cursos que comparte contigo. " +
+      "Necesita el userId (lo da dutic_list_participants o dutic_find_person).",
+    inputSchema: {
+      userId: z.number().int().positive(),
+      courseId: z.number().int().positive().optional(),
+    },
+  },
+  async ({ userId, courseId }) =>
+    tool(() => withSession((s) => getPersonProfile(s, userId, courseId), { mode: MCP_MODE })),
+);
+
+server.registerTool(
+  "dutic_get_course_teachers",
+  {
+    title: "Docentes de un curso",
+    description:
+      "Identifica a los docentes del curso combinando los contactos del curso, los roles del " +
+      "listado y —lo que suele funcionar en esta aula— el nombre de quien calificó las tareas. " +
+      "Úsalo cuando el usuario pregunte quién es su profesor de un curso.",
+    inputSchema: { courseId: z.number().int().positive() },
+  },
+  async ({ courseId }) =>
+    tool(() => withSession((s) => getCourseTeachers(s, courseId), { mode: MCP_MODE })),
+);
+
+server.registerTool(
+  "dutic_get_grades",
+  {
+    title: "Ver calificaciones",
+    description:
+      "Devuelve las calificaciones del usuario. Sin courseId: resumen de TODOS los cursos (nota " +
+      "total + cuántos ítems quedan por calificar). Con courseId: detalle por ítem (nota, rango, " +
+      "porcentaje, peso). Úsalo cuando el usuario pregunte por sus notas, promedio, o cómo va en un curso.",
+    inputSchema: {
+      courseId: z
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .describe("Si se indica, detalle de ese curso; si no, resumen de todos."),
+    },
+  },
+  async ({ courseId }) =>
+    tool(() =>
+      withSession<CourseGrades | CourseGrades[]>(
+        (s) => (courseId ? getCourseGrades(s, courseId) : getAllGrades(s)),
+        { mode: MCP_MODE },
+      ),
+    ),
+);
+
+server.registerTool(
   "dutic_list_course_materials",
   {
     title: "Listar materiales de un curso (carpetas expandidas)",
     description:
       "Lista TODOS los archivos descargables de un curso, expandiendo las carpetas a sus archivos " +
-      "reales (diapositivas, lecturas, prácticas…). Devuelve nombre, URL, sección y carpeta. Úsalo " +
-      "para saber qué materiales de estudio hay disponibles antes de leer o descargar.",
-    inputSchema: { courseId: z.number().int().positive() },
+      "reales (diapositivas, lecturas, prácticas…). Devuelve nombre, URL, sección (unidad) y carpeta. " +
+      "Úsalo para saber qué materiales hay, y por qué unidad, antes de leer o descargar. Con `section` " +
+      "filtras a una unidad concreta.",
+    inputSchema: {
+      courseId: z.number().int().positive(),
+      section: z
+        .string()
+        .optional()
+        .describe("Filtra por nombre de unidad/sección (subcadena, ignora acentos)."),
+    },
   },
-  async ({ courseId }) =>
-    tool(() => withSession((s) => listCourseMaterials(s, courseId), { mode: MCP_MODE })),
+  async ({ courseId, section }) =>
+    tool(() => withSession((s) => listCourseMaterials(s, courseId, { section }), { mode: MCP_MODE })),
 );
 
 server.registerTool(
@@ -187,14 +320,19 @@ server.registerTool(
       "Descarga todos los materiales de un curso a un directorio y CONVIERTE los PDFs a Markdown " +
       "(.md) organizados por carpeta, para estudiar/analizar offline sin gastar tokens en binarios. " +
       "Devuelve el manifiesto de lo guardado. Úsalo cuando el usuario quiera 'preparar/bajar el " +
-      "material para estudiar' de un curso.",
+      "material para estudiar' de un curso. Con `section` bajas sólo esa unidad — útil para no " +
+      "descargar todo de golpe cuando el usuario quiere estudiar una unidad concreta.",
     inputSchema: {
       courseId: z.number().int().positive(),
       destDir: z.string().describe("Directorio local de destino."),
+      section: z
+        .string()
+        .optional()
+        .describe("Sólo materiales de esta unidad/sección (subcadena)."),
     },
   },
-  async ({ courseId, destDir }) =>
-    tool(() => withSession((s) => studyCourseMaterials(s, courseId, destDir), { mode: MCP_MODE })),
+  async ({ courseId, destDir, section }) =>
+    tool(() => withSession((s) => studyCourseMaterials(s, courseId, destDir, { section }), { mode: MCP_MODE })),
 );
 
 server.registerTool(
@@ -207,10 +345,14 @@ server.registerTool(
     inputSchema: {
       courseId: z.number().int().positive(),
       destDir: z.string().describe("Directorio local de destino."),
+      section: z
+        .string()
+        .optional()
+        .describe("Sólo materiales de esta unidad/sección (subcadena)."),
     },
   },
-  async ({ courseId, destDir }) =>
-    tool(() => withSession((s) => pullCourseFiles(s, courseId, destDir), { mode: MCP_MODE })),
+  async ({ courseId, destDir, section }) =>
+    tool(() => withSession((s) => pullCourseFiles(s, courseId, destDir, { section }), { mode: MCP_MODE })),
 );
 
 server.registerTool(

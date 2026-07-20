@@ -41,6 +41,19 @@ export const TaskSchema = z.object({
   grade: z.string().nullable().default(null),
   /** Texto de "Tiempo restante" de Moodle, cuando aplica. */
   timeRemaining: z.string().nullable().default(null),
+  /** Archivos adjuntos a la consigna (guías, rúbricas) — legibles con read_resource. */
+  attachments: z
+    .array(z.object({ filename: z.string(), url: z.string() }))
+    .default([]),
+  /**
+   * true si la consigna menciona una fecha distinta (>1 día) a la fecha oficial de cierre.
+   * Señal de alerta: el profesor escribió otra fecha en el texto.
+   */
+  dateConflict: z.boolean().default(false),
+  /** Fechas encontradas dentro del texto de la consigna. */
+  datesInDescription: z
+    .array(z.object({ text: z.string(), epoch: z.number().nullable() }))
+    .default([]),
   /** Course module id (cmid) — identificador único del módulo en el curso. */
   cmid: z.number().nullable().default(null),
 });

@@ -1,18 +1,14 @@
 #!/usr/bin/env node
 import { Command } from "commander";
-import { ensureSession, withSession } from "../core/auth.js";
+import { writeFile } from "node:fs/promises";
+import { withSession } from "../core/auth.js";
 import { loginWithPlaywright } from "../core/login.js";
 import { getSemester } from "../core/config.js";
 import { isExpired, isValid, loadSession } from "../core/session.js";
 import { getEnrolledCourses } from "../domain/courses.js";
-import {
-  getAllTasks,
-  getCourseTasks,
-  getUpcomingTasks,
-} from "../domain/tasks.js";
+import { getAllTasks, getCourseTasks, getUpcomingTasks } from "../domain/tasks.js";
 import {
   downloadFile,
-  listCourseFiles,
   listCourseMaterials,
   pullCourseFiles,
 } from "../domain/resources.js";
@@ -21,23 +17,35 @@ import {
   readResourceAsMarkdown,
   studyCourseMaterials,
 } from "../domain/documents.js";
-import { writeFile } from "node:fs/promises";
+import { getAllGrades, getCourseGrades, type CourseGrades } from "../domain/grades.js";
+import { getAssignDetail } from "../domain/assign.js";
+import {
+  findPeople,
+  getCourseTeachers,
+  getPersonProfile,
+  listCourseParticipants,
+} from "../domain/people.js";
 import { formatTaskLine } from "./format.js";
+import { banner, c, mark, progressBar, rule, table } from "./ui.js";
+
+const fmtDate = (e: number | null | undefined) =>
+  e == null ? "—" : new Date(e * 1000).toLocaleString("es-PE");
 
 const log = (msg: string) => process.stderr.write(msg + "\n");
+const out = (msg = "") => process.stdout.write(msg + "\n");
 
 const program = new Command();
 program
   .name("dutic")
-  .description("CLI del aula virtual DUTIC (Moodle UNSA): tareas, cursos y recursos.")
-  .version("0.1.0");
+  .description("CLI del aula virtual DUTIC (Moodle UNSA): tareas, notas, cursos y materiales.")
+  .version("0.2.0");
 
 program
   .command("login")
   .description("Inicia sesión con Google y guarda la sesión de Moodle.")
   .action(async () => {
     await loginWithPlaywright({ headless: false, onStatus: log });
-    log("✅ Sesión guardada.");
+    out(`${mark.ok()} Sesión guardada.`);
   });
 
 program
@@ -45,24 +53,27 @@ program
   .description("Muestra el estado de la sesión y el semestre.")
   .action(async () => {
     const s = await loadSession();
-    console.log(`Semestre configurado: ${getSemester()}`);
+    out(banner("DUTIC", `semestre ${getSemester()}`));
     if (!s) {
-      console.log("Sesión: ninguna. Ejecuta `dutic login`.");
+      out(`${mark.warn()} Sin sesión. Ejecuta ${c.cyan("dutic login")}.`);
       return;
     }
-    console.log(`Sitio: ${s.siteUrl}`);
-    console.log(`Capturada: ${new Date(s.capturedAt).toLocaleString("es-PE")}`);
-    console.log(
-      `Estado: ${isValid(s) ? "✅ válida" : isExpired(s) ? "⏰ caducada" : "⚠️ incompleta"}`,
-    );
+    const estado = isValid(s)
+      ? c.green("válida")
+      : isExpired(s)
+        ? c.yellow("caducada")
+        : c.red("incompleta");
+    out(`${mark.info()} sitio:     ${s.siteUrl}`);
+    out(`${mark.info()} capturada: ${new Date(s.capturedAt).toLocaleString("es-PE")}`);
+    out(`${mark.info()} estado:    ${estado}`);
   });
 
 program
   .command("tasks")
-  .description("Lista tus tareas. Por defecto las próximas del calendario.")
+  .description("Lista tus tareas. Por defecto las próximas del timeline.")
   .option("--all", "Barre todos los cursos para incluir tareas ocultas.")
   .option("--hidden", "Muestra sólo las tareas ocultas (implica --all).")
-  .option("--fast", "No scrapear el estado de entrega de cada tarea (más rápido).")
+  .option("--fast", "No scrapear el estado de entrega (más rápido).")
   .option("--json", "Salida en JSON.")
   .action(async (opts) => {
     await withSession(
@@ -70,37 +81,158 @@ program
         if (opts.all || opts.hidden) {
           const { tasks, scanErrors } = await getAllTasks(session, { enrich: !opts.fast });
           const list = opts.hidden ? tasks.filter((t) => t.hidden) : tasks;
-          if (opts.json) {
-            console.log(JSON.stringify({ tasks: list, scanErrors }, null, 2));
-            return;
-          }
+          if (opts.json) return out(JSON.stringify({ tasks: list, scanErrors }, null, 2));
           const pending = list.filter((t) => t.submission === "not-submitted");
-          const allUnknown = list.every((t) => t.submission === "unknown");
-          console.log(`\n${list.length} tarea(s)${opts.hidden ? " ocultas" : ""}:`);
-          if (pending.length) {
-            console.log(`🚨 ${pending.length} SIN ENTREGAR (ordenadas por urgencia arriba)\n`);
-          } else if (allUnknown) {
-            console.log("ℹ️ Estado de entrega no consultado (modo --fast). Quita --fast para verlo.\n");
-          } else {
-            console.log("✅ Nada pendiente por entregar.\n");
-          }
-          for (const t of list) console.log(formatTaskLine(t) + "\n");
+          out(banner("Tareas", `${list.length} en total${opts.hidden ? " · ocultas" : ""}`));
+          if (pending.length) out(`${mark.err()} ${c.boldRed(`${pending.length} SIN ENTREGAR`)} ${c.dim("(orden por urgencia)")}`);
+          else if (list.every((t) => t.submission === "unknown")) out(`${mark.info()} ${c.dim("estado no consultado (--fast)")}`);
+          else out(`${mark.ok()} nada pendiente por entregar.`);
+          out();
+          for (const t of list) out(formatTaskLine(t) + "\n");
           if (scanErrors.length) {
-            log(`\n⚠️ ${scanErrors.length} curso(s) no se pudieron barrer:`);
-            for (const e of scanErrors) log(`   - ${e.courseName}: ${e.reason}`);
+            log(c.yellow(`\n${scanErrors.length} curso(s) no se pudieron barrer:`));
+            for (const e of scanErrors) log(`  ${mark.bullet()} ${e.courseName}: ${e.reason}`);
           }
         } else {
           const list = await getUpcomingTasks(session);
-          if (opts.json) {
-            console.log(JSON.stringify(list, null, 2));
-            return;
-          }
-          console.log(`\n${list.length} tarea(s) próxima(s):\n`);
-          for (const t of list) console.log(formatTaskLine(t) + "\n");
-          log("💡 Usa `dutic tasks --all` para incluir tareas ocultas (no publicadas en el calendario).");
+          if (opts.json) return out(JSON.stringify(list, null, 2));
+          out(banner("Tareas próximas", `${list.length} en el timeline`));
+          out();
+          for (const t of list) out(formatTaskLine(t) + "\n");
+          log(c.dim(`Sugerencia: ${c.cyan("dutic tasks --all")} incluye las tareas ocultas.`));
         }
       },
       { mode: "interactive", login: { onStatus: log } },
+    );
+  });
+
+program
+  .command("task <cmid>")
+  .description("Detalle completo de una tarea: consigna, fechas, adjuntos y estado de entrega.")
+  .option("--json", "Salida en JSON.")
+  .action(async (cmid, opts) => {
+    await withSession(
+      async (session) => {
+        const url = `${session.siteUrl}/mod/assign/view.php?id=${cmid}`;
+        const d = await getAssignDetail(session, url);
+        if (opts.json) return out(JSON.stringify(d, null, 2));
+        out(banner("Detalle de tarea", `cmid ${cmid}`));
+        out(`  ${c.dim("estado:")}   ${d.submission === "not-submitted" ? c.boldRed("SIN ENTREGAR") : c.green(d.submission)}`);
+        out(`  ${c.dim("apertura:")} ${fmtDate(d.openDate)}`);
+        out(`  ${c.dim("cierre:")}   ${c.bold(fmtDate(d.closeDate))}`);
+        if (d.grade) out(`  ${c.dim("nota:")}     ${d.grade}${d.gradedBy ? c.dim(` (por ${d.gradedBy})`) : ""}`);
+        if (d.timeRemaining) out(`  ${c.dim("resta:")}    ${d.timeRemaining}`);
+        if (d.dateConflict) {
+          out("");
+          out(`${mark.err()} ${c.boldRed("CONFLICTO DE FECHAS")}`);
+          out(`  La consigna menciona: ${d.datesInDescription.map((x) => c.yellow(x.text)).join(", ")}`);
+          out(`  pero Moodle cierra el ${c.bold(fmtDate(d.closeDate))}. ${c.dim("Confirma con el docente.")}`);
+        }
+        if (d.description) {
+          out("\n" + rule("consigna"));
+          out("  " + d.description.slice(0, 1200));
+        }
+        if (d.attachments.length) {
+          out("\n" + rule("adjuntos de la consigna"));
+          for (const a of d.attachments) out(`  ${mark.bullet()} ${a.filename}\n    ${c.gray(a.url)}`);
+        }
+      },
+      { login: { onStatus: log } },
+    );
+  });
+
+program
+  .command("people <courseId>")
+  .description("Participantes visibles del curso (compañeros de tu grupo).")
+  .option("--email", "Resuelve el correo de cada uno (más lento).")
+  .option("--json", "Salida en JSON.")
+  .action(async (courseId, opts) => {
+    await withSession(
+      async (session) => {
+        const ppl = await listCourseParticipants(session, Number(courseId));
+        const rows = await Promise.all(
+          ppl.map(async (p) => {
+            let email = "";
+            if (opts.email) {
+              const prof = await getPersonProfile(session, p.userId, Number(courseId), p.name).catch(() => null);
+              email = prof?.email ?? "—";
+            }
+            return [p.name, p.role ?? "—", p.group ?? "—", p.lastAccess ?? "—", ...(opts.email ? [email] : [])];
+          }),
+        );
+        if (opts.json) return out(JSON.stringify(ppl, null, 2));
+        out(banner("Participantes", `${ppl.length} · curso ${courseId}`));
+        out(
+          table(
+            [
+              { header: "nombre" },
+              { header: "rol", color: c.dim },
+              { header: "grupo", color: c.dim },
+              { header: "último acceso", color: c.dim },
+              ...(opts.email ? [{ header: "correo", color: c.cyan }] : []),
+            ],
+            rows,
+          ),
+        );
+      },
+      { login: { onStatus: log } },
+    );
+  });
+
+program
+  .command("person <query>")
+  .description("Busca una persona en tus cursos por nombre o correo.")
+  .option("--json", "Salida en JSON.")
+  .action(async (query, opts) => {
+    await withSession(
+      async (session) => {
+        const found = await findPeople(session, query);
+        if (opts.json) return out(JSON.stringify(found, null, 2));
+        out(banner("Personas", `"${query}" · ${found.length} resultado(s)`));
+        for (const p of found) {
+          out(`${mark.arrow()} ${c.bold(p.name)}`);
+          out(`  ${c.dim("curso:")} ${p.courseName}  ${c.dim("grupo:")} ${p.group ?? "—"}`);
+          if (p.email) out(`  ${c.dim("correo:")} ${c.cyan(p.email)}`);
+          out(`  ${c.dim("último acceso:")} ${p.lastAccess ?? "—"}`);
+        }
+      },
+      { login: { onStatus: log } },
+    );
+  });
+
+program
+  .command("teachers <courseId>")
+  .description("Docentes del curso (deducidos de contactos y de quién califica).")
+  .action(async (courseId) => {
+    await withSession(
+      async (session) => {
+        const t = await getCourseTeachers(session, Number(courseId));
+        out(banner("Docentes", `curso ${courseId}`));
+        if (!t.length) out(`${mark.warn()} No se pudo identificar docentes (el aula no los expone).`);
+        for (const n of t) out(`  ${mark.bullet()} ${n}`);
+      },
+      { login: { onStatus: log } },
+    );
+  });
+
+program
+  .command("grades [courseId]")
+  .description("Muestra tus calificaciones. Sin curso: resumen de todos; con curso: detalle.")
+  .option("--json", "Salida en JSON.")
+  .action(async (courseId, opts) => {
+    await withSession(
+      async (session) => {
+        if (courseId) {
+          const g = await getCourseGrades(session, Number(courseId));
+          if (opts.json) return out(JSON.stringify(g, null, 2));
+          renderCourseGrades(g);
+        } else {
+          const all = await getAllGrades(session);
+          if (opts.json) return out(JSON.stringify(all, null, 2));
+          renderGradesSummary(all);
+        }
+      },
+      { login: { onStatus: log } },
     );
   });
 
@@ -112,15 +244,18 @@ program
     await withSession(
       async (session) => {
         const courses = await getEnrolledCourses(session);
-        if (opts.json) {
-          console.log(JSON.stringify(courses, null, 2));
-          return;
-        }
-        console.log(`\n${courses.length} curso(s):\n`);
-        for (const c of courses) {
-          console.log(`[${c.id}] ${c.fullname}`);
-          if (c.contacts.length) console.log(`      Docente(s): ${c.contacts.join(", ")}`);
-        }
+        if (opts.json) return out(JSON.stringify(courses, null, 2));
+        out(banner("Cursos", `${courses.length} matriculados`));
+        out(
+          table(
+            [
+              { header: "id", align: "right", color: c.dim },
+              { header: "curso" },
+              { header: "docente(s)", color: c.dim },
+            ],
+            courses.map((cr) => [String(cr.id), cr.fullname, cr.contacts.join(", ") || "—"]),
+          ),
+        );
       },
       { login: { onStatus: log } },
     );
@@ -131,52 +266,16 @@ const course = program.command("course").description("Operaciones sobre un curso
 course
   .command("tasks <courseId>")
   .description("Tareas de un curso (incluye ocultas).")
-  .option("--fast", "No scrapear el estado de entrega de cada tarea.")
+  .option("--fast", "No scrapear el estado de entrega.")
   .option("--json", "Salida en JSON.")
   .action(async (courseId, opts) => {
     await withSession(
       async (session) => {
-        const list = await getCourseTasks(session, Number(courseId), "", {
-          enrich: !opts.fast,
-        });
-        if (opts.json) {
-          console.log(JSON.stringify(list, null, 2));
-          return;
-        }
-        console.log(`\n${list.length} tarea(s) en el curso ${courseId}:\n`);
-        for (const t of list) console.log(formatTaskLine(t) + "\n");
-      },
-      { login: { onStatus: log } },
-    );
-  });
-
-course
-  .command("files <courseId>")
-  .description("Archivos/recursos de un curso.")
-  .option("--json", "Salida en JSON.")
-  .action(async (courseId, opts) => {
-    await withSession(
-      async (session) => {
-        const files = await listCourseFiles(session, Number(courseId));
-        if (opts.json) {
-          console.log(JSON.stringify(files, null, 2));
-          return;
-        }
-        console.log(`\n${files.length} recurso(s) en el curso ${courseId}:\n`);
-        for (const f of files) console.log(`[${f.modname}] ${f.filename}\n     ${f.fileurl}`);
-      },
-      { login: { onStatus: log } },
-    );
-  });
-
-program
-  .command("download <url> <dest>")
-  .description("Descarga un archivo por su URL a la ruta destino.")
-  .action(async (url, dest) => {
-    await withSession(
-      async (session) => {
-        const r = await downloadFile(session, url, dest);
-        console.log(`✅ Descargado ${r.bytes} bytes → ${r.path}`);
+        const list = await getCourseTasks(session, Number(courseId), "", { enrich: !opts.fast });
+        if (opts.json) return out(JSON.stringify(list, null, 2));
+        out(banner("Tareas del curso", `${list.length} · curso ${courseId}`));
+        out();
+        for (const t of list) out(formatTaskLine(t) + "\n");
       },
       { login: { onStatus: log } },
     );
@@ -184,19 +283,27 @@ program
 
 program
   .command("materials <courseId>")
-  .description("Lista todos los materiales de un curso (expande carpetas).")
+  .description("Lista los materiales de un curso, agrupados por unidad/sección.")
+  .option("--section <texto>", "Filtra por unidad/sección (subcadena).")
   .option("--json", "Salida en JSON.")
   .action(async (courseId, opts) => {
     await withSession(
       async (session) => {
-        const mats = await listCourseMaterials(session, Number(courseId));
-        if (opts.json) {
-          console.log(JSON.stringify(mats, null, 2));
-          return;
-        }
-        console.log(`\n${mats.length} material(es) en el curso ${courseId}:\n`);
+        const mats = await listCourseMaterials(session, Number(courseId), { section: opts.section });
+        if (opts.json) return out(JSON.stringify(mats, null, 2));
+        out(banner("Materiales", `${mats.length} archivo(s) · curso ${courseId}`));
+        const bySection = new Map<string, typeof mats>();
         for (const m of mats) {
-          console.log(`${m.folder ? `[${m.folder}] ` : ""}${m.filename}\n     ${m.url}`);
+          const key = m.section || "(sin sección)";
+          (bySection.get(key) ?? bySection.set(key, []).get(key)!).push(m);
+        }
+        for (const [section, items] of bySection) {
+          out("\n" + rule(section));
+          for (const m of items) {
+            const tag = m.folder ? c.dim(`[${m.folder}] `) : "";
+            out(`  ${mark.bullet()} ${tag}${m.filename}`);
+            out(`    ${c.gray(m.url)}`);
+          }
         }
       },
       { login: { onStatus: log } },
@@ -207,19 +314,23 @@ program
   .command("study <courseId>")
   .description("Descarga los materiales de un curso y convierte los PDFs a Markdown para estudiar.")
   .option("--dest <dir>", "Directorio destino.", "./materiales")
+  .option("--section <texto>", "Sólo una unidad/sección (subcadena).")
   .action(async (courseId, opts) => {
     await withSession(
       async (session) => {
         const dest = `${opts.dest}/curso-${courseId}`;
-        log(`Descargando y convirtiendo materiales en ${dest} …`);
-        const items = await studyCourseMaterials(session, Number(courseId), dest);
+        out(banner("Preparar para estudiar", `curso ${courseId}${opts.section ? ` · ${opts.section}` : ""}`));
+        const bar = progressBar(1, "  descargando");
+        const items = await studyCourseMaterials(session, Number(courseId), dest, {
+          section: opts.section,
+          onProgress: (done, total, name) => bar.update(done, name.slice(0, 30)),
+        });
+        bar.done();
         const md = items.filter((i) => i.kind === "markdown").length;
         const files = items.filter((i) => i.kind === "file").length;
         const errs = items.filter((i) => i.kind === "error").length;
-        console.log(`✅ ${md} PDF→Markdown, ${files} otros archivo(s), ${errs} error(es) → ${dest}`);
-        for (const i of items.filter((x) => x.kind !== "error")) {
-          console.log(`   - ${i.savedTo}`);
-        }
+        out(`${mark.ok()} ${c.bold(String(md))} PDF→Markdown · ${files} otros · ${errs ? c.red(`${errs} error(es)`) : "0 errores"}`);
+        out(`  ${c.dim("destino:")} ${dest}`);
       },
       { login: { onStatus: log } },
     );
@@ -234,16 +345,13 @@ program
     await withSession(
       async (session) => {
         const r = await readResourceAsMarkdown(session, url, Number(opts.max));
-        if (r.markdown == null) {
-          log(`⚠️ ${r.note}`);
-          return;
-        }
+        if (r.markdown == null) return log(`${mark.warn()} ${r.note}`);
         if (opts.out) {
           await writeFile(opts.out, r.markdown, "utf8");
-          console.log(`✅ ${r.filename} (${r.kind}, ${r.pages ?? "?"} pág) → ${opts.out}`);
+          out(`${mark.ok()} ${r.filename} (${r.kind}, ${r.pages ?? "?"} pág) → ${opts.out}`);
         } else {
-          log(`# ${r.filename} (${r.kind}${r.pages ? `, ${r.pages} pág` : ""})\n`);
-          console.log(r.markdown);
+          log(c.dim(`# ${r.filename} (${r.kind}${r.pages ? `, ${r.pages} pág` : ""})\n`));
+          out(r.markdown);
         }
       },
       { login: { onStatus: log } },
@@ -252,34 +360,104 @@ program
 
 program
   .command("md <pdfPath>")
-  .description("Convierte un PDF local a Markdown (para analizar sin gastar tokens).")
+  .description("Convierte un PDF local a Markdown.")
   .option("--out <file>", "Guarda el Markdown en un archivo.")
   .option("--max <n>", "Máximo de caracteres (0 = sin límite).", "0")
   .action(async (pdfPath, opts) => {
     const r = await convertLocalPdfToMarkdown(pdfPath, opts.out, Number(opts.max));
-    if (r.savedTo) {
-      console.log(`✅ ${r.pages} pág, ${r.totalChars} chars → ${r.savedTo}`);
-    } else {
-      console.log(r.markdown);
-    }
+    if (r.savedTo) out(`${mark.ok()} ${r.pages} pág, ${r.totalChars} chars → ${r.savedTo}`);
+    else out(r.markdown);
   });
 
 program
-  .command("pull <courseId>")
-  .description("Descarga todos los recursos de un curso.")
-  .option("--dest <dir>", "Directorio destino.", "./descargas")
-  .action(async (courseId, opts) => {
+  .command("download <url> <dest>")
+  .description("Descarga un archivo por su URL a la ruta destino.")
+  .action(async (url, dest) => {
     await withSession(
       async (session) => {
-        const results = await pullCourseFiles(session, Number(courseId), opts.dest);
-        console.log(`✅ ${results.length} archivo(s) descargado(s) en ${opts.dest}`);
-        for (const r of results) console.log(`   - ${r.path}`);
+        const r = await downloadFile(session, url, dest);
+        out(`${mark.ok()} ${r.bytes} bytes → ${r.path}`);
       },
       { login: { onStatus: log } },
     );
   });
 
+program
+  .command("pull <courseId>")
+  .description("Descarga todos los materiales de un curso (expande carpetas).")
+  .option("--dest <dir>", "Directorio destino.", "./descargas")
+  .option("--section <texto>", "Sólo una unidad/sección (subcadena).")
+  .action(async (courseId, opts) => {
+    await withSession(
+      async (session) => {
+        out(banner("Descargar materiales", `curso ${courseId}`));
+        const bar = progressBar(1, "  descargando");
+        const results = await pullCourseFiles(session, Number(courseId), opts.dest, {
+          section: opts.section,
+          onProgress: (done, total, name) => bar.update(done, name.slice(0, 30)),
+        });
+        bar.done();
+        out(`${mark.ok()} ${c.bold(String(results.length))} archivo(s) → ${opts.dest}`);
+      },
+      { login: { onStatus: log } },
+    );
+  });
+
+// --- Renderers de notas ---
+
+function gradeColor(grade: string | null, range: string | null): (s: string) => string {
+  if (!grade) return c.gray;
+  const val = parseFloat(grade.replace(",", "."));
+  const max = range ? parseFloat((range.split(/[–-]/)[1] ?? "20").replace(",", ".")) : 20;
+  if (isNaN(val)) return c.reset;
+  const ratio = val / (max || 20);
+  return ratio >= 0.7 ? c.green : ratio >= 0.55 ? c.yellow : c.boldRed;
+}
+
+function renderCourseGrades(g: CourseGrades): void {
+  out(banner("Calificaciones", g.courseName || `curso ${g.courseId}`));
+  const rows = g.items
+    .filter((i) => !i.isTotal)
+    .map((i) => [
+      i.name,
+      gradeColor(i.grade, i.range)(i.grade ?? "—"),
+      c.dim(i.range ?? "—"),
+      c.dim(i.percentage ?? "—"),
+    ]);
+  out(
+    table(
+      [
+        { header: "ítem" },
+        { header: "nota", align: "right" },
+        { header: "rango", align: "right" },
+        { header: "%", align: "right" },
+      ],
+      rows,
+    ),
+  );
+  if (g.total) out(`\n  ${c.bold("Total del curso:")} ${gradeColor(g.total, "0-20")(g.total)} ${c.dim(g.totalPercentage ?? "")}`);
+}
+
+function renderGradesSummary(all: CourseGrades[]): void {
+  out(banner("Resumen de calificaciones", `${all.length} cursos`));
+  const rows = all.map((g) => {
+    const pend = g.items.filter((i) => !i.isTotal && !i.grade).length;
+    return [
+      g.courseName.slice(0, 42),
+      g.total ? gradeColor(g.total, "0-20")(g.total) : c.gray("—"),
+      pend ? c.yellow(`${pend} pend.`) : c.green("al día"),
+    ];
+  });
+  out(
+    table(
+      [{ header: "curso" }, { header: "total", align: "right" }, { header: "por calificar" }],
+      rows,
+    ),
+  );
+  log(c.dim(`\nDetalle de un curso: ${c.cyan("dutic grades <courseId>")}`));
+}
+
 program.parseAsync(process.argv).catch((err) => {
-  log(`❌ ${err?.message ?? err}`);
+  log(`${mark.err()} ${err?.message ?? err}`);
   process.exitCode = 1;
 });

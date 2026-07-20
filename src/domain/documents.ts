@@ -212,13 +212,21 @@ const sanitize = (name: string) => name.replace(/[<>:"/\\|?*]+/g, "_").slice(0, 
  * CONVIERTEN a Markdown (.md) para poder leerlos/analizarlos sin gastar tokens en el binario;
  * el resto se guarda tal cual. Organiza por carpeta y devuelve un manifiesto de lo guardado.
  */
+export interface StudyOptions {
+  concurrency?: number;
+  section?: string;
+  onProgress?: (done: number, total: number, name: string) => void;
+}
+
 export async function studyCourseMaterials(
   session: Session,
   courseId: number,
   destDir: string,
-  concurrency = 5,
+  opts: StudyOptions = {},
 ): Promise<StudyMaterial[]> {
-  const materials = await listCourseMaterials(session, courseId);
+  const { concurrency = 5, section, onProgress } = opts;
+  const materials = await listCourseMaterials(session, courseId, { section });
+  let done = 0;
   return mapLimit(materials, concurrency, async (m): Promise<StudyMaterial> => {
     const sub = m.folder ? join(destDir, sanitize(m.folder)) : destDir;
     try {
@@ -247,6 +255,8 @@ export async function studyCourseMaterials(
         kind: "error",
         error: (e as Error).message,
       };
+    } finally {
+      onProgress?.(++done, materials.length, m.filename);
     }
   });
 }

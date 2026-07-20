@@ -85,6 +85,9 @@ export async function getUpcomingTasks(session: Session, limitNum = 50): Promise
         submission: "unknown" as const,
         grade: null,
         timeRemaining: null,
+        attachments: [],
+        dateConflict: false,
+        datesInDescription: [],
         cmid: cmidFromUrl(url),
       } satisfies Task;
     });
@@ -110,6 +113,9 @@ function assignToTask(
     submission: "unknown",
     grade: null,
     timeRemaining: null,
+    attachments: [],
+    dateConflict: false,
+    datesInDescription: [],
     cmid: m.cmid,
   };
 }
@@ -123,8 +129,13 @@ async function enrichTask(session: Session, task: Task): Promise<Task> {
       ...task,
       submission: d.submission,
       grade: d.grade ?? task.grade,
-      dueDate: task.dueDate ?? d.dueDate,
+      // La fecha oficial de la propia tarea manda sobre la del calendario.
+      dueDate: d.dueDate ?? task.dueDate,
       timeRemaining: d.timeRemaining,
+      description: d.description ?? task.description,
+      attachments: d.attachments,
+      dateConflict: d.dateConflict,
+      datesInDescription: d.datesInDescription,
     };
   } catch {
     return task; // no romper el barrido por un fallo puntual

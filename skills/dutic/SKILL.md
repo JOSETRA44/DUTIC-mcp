@@ -58,11 +58,26 @@ Si el servidor MCP `dutic` está disponible, usa estas herramientas (son la fuen
   como texto/Markdown** (convierte PDFs automáticamente). Úsalo cuando el usuario quiera que
   analices, resumas o extraigas algo de un material (sílabo, informe, lectura, guía): así lees el
   texto directamente sin gastar tokens en el binario. Acepta URL de módulo o de pluginfile.php.
-- `dutic_list_course_materials` — args: `courseId`. Lista TODOS los archivos del curso **expandiendo
-  las carpetas** (diapositivas, lecturas, prácticas) a sus archivos reales con URL directa.
-- `dutic_study_course` — args: `courseId`, `destDir`. **Descarga todos los materiales y convierte los
-  PDFs a Markdown** organizados por carpeta, para estudiar/analizar offline. Úsalo cuando el usuario
-  quiera "preparar/bajar el material para estudiar" de un curso.
+- `dutic_get_assignment_detail` — args: `cmid`. **Todo sobre una tarea**: consigna completa,
+  adjuntos de la consigna (guías/rúbricas, legibles con `dutic_read_resource`), fechas oficiales de
+  apertura y cierre, estado de entrega, nota y quién calificó. Incluye `dateConflict` y
+  `datesInDescription` (ver abajo). Úsalo cuando pregunte qué pide una tarea o cuándo se entrega.
+- `dutic_get_grades` — args: `courseId?`. **Calificaciones**: sin `courseId`, resumen de todos los
+  cursos (nota total + cuántos ítems por calificar); con `courseId`, detalle por ítem (nota, rango, %).
+  Úsalo cuando el usuario pregunte por sus notas, promedio, o cómo va.
+- `dutic_list_participants` — args: `courseId`. Compañeros visibles (nombre, rol, grupo, último
+  acceso). Con grupos separados Moodle sólo muestra los del grupo del usuario: es normal.
+- `dutic_find_person` — args: `query`, `withEmail?`. Busca una persona en TODOS sus cursos por
+  nombre o **por correo** institucional.
+- `dutic_get_person_profile` — args: `userId`, `courseId?`. Correo, zona horaria y cursos compartidos.
+- `dutic_get_course_teachers` — args: `courseId`. Docentes del curso. En esta aula los profesores no
+  salen en participantes, así que se deducen de los contactos y de **quién calificó** las tareas.
+- `dutic_list_course_materials` — args: `courseId`, `section?`. Lista TODOS los archivos del curso
+  **expandiendo las carpetas** a sus archivos reales, con su **sección (unidad)**. Con `section`
+  filtras a una unidad concreta.
+- `dutic_study_course` — args: `courseId`, `destDir`, `section?`. **Descarga materiales y convierte los
+  PDFs a Markdown** organizados por carpeta, para estudiar offline. Con `section` bajas **sólo una
+  unidad** — no descargues todo de golpe si el usuario quiere estudiar una unidad concreta.
 - `dutic_pull_course_files` — args: `courseId`, `destDir`. Descarga en bloque (expande carpetas).
 - `dutic_pdf_to_markdown` — args: `filePath`, `outPath?`, `maxChars`. Convierte un PDF que ya está
   en disco a Markdown (sin sesión). Útil tras descargar, o para PDFs locales del usuario.
@@ -73,10 +88,24 @@ Si el servidor MCP `dutic` está disponible, usa estas herramientas (son la fuen
 Cuando el usuario pida "analiza/resume/qué dice este material/PDF del curso", **no descargues el
 binario y lo pases crudo** (desperdicia tokens y no es legible). Usa `dutic_read_resource` con la
 URL del recurso: te devuelve texto limpio en Markdown que puedes leer y razonar directamente. Para
-PDFs ya descargados o del sistema de archivos del usuario, usa `dutic_pdf_to_markdown`. Para preparar
-todo un curso de golpe (bajar y convertir sus PDFs para estudiar), usa `dutic_study_course`. Las
-**carpetas** (mod/folder) se expanden solas a sus archivos; muchas están vacías (el profe creó la
-estructura sin subir nada todavía) — eso es normal, no es un error.
+PDFs ya descargados o del sistema de archivos del usuario, usa `dutic_pdf_to_markdown`. Las **carpetas**
+(mod/folder) se expanden solas a sus archivos; muchas están vacías (el profe creó la estructura sin subir
+nada) — eso es normal, no es un error.
+
+### Estudiar por unidad (no bajar todo de golpe)
+
+Cuando el usuario quiera estudiar "la unidad 2" o "el tema de X", sé selectivo en vez de descargar el
+curso entero:
+
+1. Llama a `dutic_list_course_materials` (sin filtro) para ver las **secciones/unidades** del curso.
+2. Si no está claro cómo se divide el temario, busca un material cuyo nombre contenga "sílabo"/"silabus"
+   y léelo con `dutic_read_resource`: el sílabo trae el temario dividido en unidades (típicamente 3) con
+   los temas de cada una. Con eso mapeas qué secciones corresponden a qué unidad.
+3. Descarga **sólo** esa unidad con `dutic_study_course(..., section: "<nombre o nº de la sección>")`.
+   El filtro `section` compara por subcadena ignorando acentos, así que "tema 2", "Unidad II" o "semana 5"
+   funcionan según cómo el profe haya nombrado las secciones.
+
+Así preparas justo lo que el usuario va a estudiar, sin descargar (ni convertir) material de más.
 
 ## CLI `dutic` (alternativa / uso directo del usuario)
 
@@ -87,17 +116,39 @@ dutic tasks                 # tareas próximas del timeline (rápido)
 dutic tasks --all           # + barrido de cursos → incluye OCULTAS (usa esto para "pendientes")
 dutic tasks --hidden        # sólo las ocultas
 dutic tasks --all --fast    # sin scrapear estado de entrega (más rápido, menos detalle)
+dutic grades                # resumen de notas de todos los cursos
+dutic grades <id>           # detalle de notas de un curso
+dutic task <cmid>           # detalle de una tarea: consigna, fechas, adjuntos, conflictos
+dutic people <id> [--email] # compañeros del curso (con su correo)
+dutic person <texto>        # busca a alguien por nombre o correo en todos tus cursos
+dutic teachers <id>         # docentes del curso
 dutic courses               # cursos matriculados
 dutic course tasks <id>     # tareas de un curso
 dutic course files <id>     # recursos de un curso
-dutic materials <id>        # lista todos los archivos del curso (expande carpetas)
-dutic study <id> --dest ./x # baja los materiales y convierte PDFs a Markdown para estudiar
+dutic materials <id> [--section "Tema 2"]   # archivos del curso, agrupados por unidad
+dutic study <id> [--section "Tema 2"]        # baja + convierte a Markdown (por unidad)
 dutic read <url>            # lee un recurso (PDF→Markdown) para analizarlo sin gastar tokens
 dutic md <archivo.pdf>      # convierte un PDF local a Markdown
 dutic pull <id> --dest ./x  # descarga todos los recursos de un curso
 dutic status                # estado de sesión
 dutic login                 # reautenticación (abre navegador; sólo el usuario puede completarla)
 ```
+
+## Fechas contradictorias: la trampa que hay que vigilar
+
+La fecha real de una entrega no siempre es la que Moodle tiene configurada. A veces el docente
+escribe **otra fecha dentro del texto de la consigna** ("entregar hasta el 12 de julio"), y el
+estudiante se guía por una mientras el sistema cierra en la otra.
+
+`dutic_get_assignment_detail` devuelve `closeDate` (la oficial), `datesInDescription` (las que
+aparecen escritas en la consigna) y `dateConflict: true` cuando difieren en más de un día. **Si
+`dateConflict` es true, avísalo de forma destacada** y recomienda confirmar con el docente: es
+justo el escenario que cuesta notas. (Las fechas de subida de los archivos adjuntos ya se excluyen,
+así que no hay falsas alarmas.)
+
+Cuando el usuario pregunte "¿qué tengo que hacer en esta tarea?", da la consigna **y** revisa si
+hay adjuntos: suelen traer la guía o rúbrica con los criterios reales de calificación, y puedes
+leerlos con `dutic_read_resource`.
 
 ## Interpretar los datos de una tarea
 

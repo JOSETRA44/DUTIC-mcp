@@ -74,16 +74,33 @@ export interface CourseMaterial {
  * reales (los recursos `resource` quedan como URL de módulo, que se resuelve al descargar). Las
  * carpetas vacías se omiten. Las carpetas se expanden en paralelo (acotado).
  */
+export interface MaterialsOptions {
+  concurrency?: number;
+  /** Filtra por nombre de sección/unidad (subcadena, sin distinguir mayúsculas/acentos). */
+  section?: string;
+}
+
+/** Normaliza para comparar secciones ignorando acentos y mayúsculas. */
+function norm(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "");
+}
+
 export async function listCourseMaterials(
   session: Session,
   courseId: number,
-  concurrency = 8,
+  opts: MaterialsOptions = {},
 ): Promise<CourseMaterial[]> {
+  const { concurrency = 8, section: sectionFilter } = opts;
   const sections = await getCourseContents(session, courseId);
+  const filterNorm = sectionFilter ? norm(sectionFilter) : null;
   const out: CourseMaterial[] = [];
   const folderJobs: { section: string; name: string; url: string }[] = [];
 
   for (const section of sections) {
+    if (filterNorm && !norm(section.name).includes(filterNorm)) continue;
     for (const m of section.modules) {
       if (!m.url) continue;
       if (m.modname === "resource") {
@@ -273,13 +290,19 @@ const sanitize = (name: string) => name.replace(/[<>:"/\\|?*]+/g, "_").slice(0, 
  * organizando los archivos en subdirectorios por carpeta. Descarga en paralelo (acotado) y no
  * se detiene por un fallo puntual.
  */
+export interface PullOptions extends MaterialsOptions {
+  onProgress?: (done: number, total: number, name: string) => void;
+}
+
 export async function pullCourseFiles(
   session: Session,
   courseId: number,
   destDir: string,
-  concurrency = 6,
+  opts: PullOptions = {},
 ): Promise<DownloadResult[]> {
-  const materials = await listCourseMaterials(session, courseId);
+  const { concurrency = 6, onProgress } = opts;
+  const materials = await listCourseMaterials(session, courseId, opts);
+  let done = 0;
   const results = await mapLimit(materials, concurrency, async (f) => {
     const subDir = f.folder ? join(destDir, sanitize(f.folder)) : destDir;
     const dest = join(subDir, sanitize(f.filename));
@@ -287,6 +310,8 @@ export async function pullCourseFiles(
       return await downloadFile(session, f.url, dest);
     } catch {
       return null;
+    } finally {
+      onProgress?.(++done, materials.length, f.filename);
     }
   });
   return results.filter((r): r is DownloadResult => r !== null);

@@ -2,8 +2,14 @@ import * as cheerio from "cheerio";
 import { CHROME_USER_AGENT } from "../core/config.js";
 import { SessionExpiredError } from "../core/errors.js";
 import { fetchUnsa } from "../core/http.js";
+import { daysBetween, findSpanishDates, parseSpanishDate } from "../core/dates.js";
 import type { Session } from "../core/session.js";
 import type { SubmissionStatus } from "../core/models.js";
+
+export interface AssignAttachment {
+  filename: string;
+  url: string;
+}
 
 export interface AssignDetail {
   submission: SubmissionStatus;
@@ -11,28 +17,26 @@ export interface AssignDetail {
   /** epoch (segundos) de la fecha de entrega, si se puede extraer de la página. */
   dueDate: number | null;
   timeRemaining: string | null;
-}
-
-const MONTHS_ES: Record<string, number> = {
-  enero: 0, febrero: 1, marzo: 2, abril: 3, mayo: 4, junio: 5,
-  julio: 6, agosto: 7, septiembre: 8, setiembre: 8, octubre: 9,
-  noviembre: 10, diciembre: 11,
-};
-
-/** Parsea fechas largas en español tipo "jueves, 19 de julio de 2026, 17:00" → epoch s. */
-function parseSpanishDate(text: string): number | null {
-  const m = /(\d{1,2})\s+de\s+([a-záéíóú]+)\s+de\s+(\d{4})(?:[,\s]+(\d{1,2}):(\d{2}))?/i.exec(
-    text.toLowerCase(),
-  );
-  if (!m) return null;
-  const day = Number(m[1]);
-  const month = MONTHS_ES[m[2]];
-  const year = Number(m[3]);
-  if (month === undefined) return null;
-  const hour = m[4] ? Number(m[4]) : 0;
-  const min = m[5] ? Number(m[5]) : 0;
-  const d = new Date(year, month, day, hour, min);
-  return Math.floor(d.getTime() / 1000);
+  /** Consigna/instrucciones de la tarea (texto de .activity-description). */
+  description: string | null;
+  /** Archivos adjuntos a la consigna (guías, rúbricas…) — legibles con read_resource. */
+  attachments: AssignAttachment[];
+  /** Fecha oficial de apertura (epoch s) según Moodle. */
+  openDate: number | null;
+  /** Fecha oficial de cierre/entrega (epoch s) según Moodle. */
+  closeDate: number | null;
+  /**
+   * Fechas escritas DENTRO de la consigna. Los profesores a veces indican aquí una fecha
+   * distinta a la configurada en Moodle — la causa típica de entregas perdidas.
+   */
+  datesInDescription: { text: string; epoch: number | null }[];
+  /**
+   * true si alguna fecha de la consigna difiere en más de un día de la fecha oficial de
+   * cierre. Señal de alerta: hay que avisar al usuario de la discrepancia.
+   */
+  dateConflict: boolean;
+  /** Nombre de quien calificó (suele ser el docente del curso). */
+  gradedBy: string | null;
 }
 
 function classifySubmission(estadoEntrega: string, estadoCalif: string): SubmissionStatus {
@@ -85,10 +89,67 @@ export async function getAssignDetail(session: Session, url: string): Promise<As
   const grade = kv.get("calificación") ?? null;
   const timeRemaining = kv.get("tiempo restante") ?? null;
 
-  // Fecha de entrega: buscar una fila explícita; si no, dejar null (la app usará el calendario).
-  let dueDate: number | null = null;
-  const fechaRow = kv.get("fecha de entrega");
-  if (fechaRow) dueDate = parseSpanishDate(fechaRow);
+  const gradedBy = kv.get("calificado por") ?? null;
 
-  return { submission, grade, dueDate, timeRemaining };
+  // Consigna/instrucciones de la tarea. Se excluye el árbol de archivos adjuntos, porque Moodle
+  // renderiza ahí la FECHA DE SUBIDA del adjunto y se confundiría con una fecha de la consigna.
+  const descEl = $(".activity-description").first();
+  const descClone = descEl.clone();
+  descClone
+    .find('[id^="assign_files_tree"], .fileuploadsubmission, .fileuploadsubmissiontime')
+    .remove();
+  const description = descClone.length
+    ? descClone.text().replace(/\s+/g, " ").trim() || null
+    : null;
+
+  // Adjuntos de la consigna (guías, rúbricas): el agente puede leerlos con read_resource.
+  const attachments: AssignAttachment[] = [];
+  const seenUrls = new Set<string>();
+  descEl.find('a[href*="pluginfile.php"]').each((_, a) => {
+    const href = $(a).attr("href");
+    if (!href || seenUrls.has(href)) return;
+    seenUrls.add(href);
+    const filename =
+      $(a).text().trim() ||
+      decodeURIComponent(href.split("/").pop()?.split("?")[0] ?? "archivo");
+    attachments.push({ filename, url: href });
+  });
+
+  // Fechas oficiales que Moodle muestra en la cabecera de la actividad.
+  let openDate: number | null = null;
+  let closeDate: number | null = null;
+  $(".activity-dates div, [data-region='activity-dates'] div").each((_, e) => {
+    const t = $(e).text().replace(/\s+/g, " ").trim();
+    if (/^apertura/i.test(t)) openDate = parseSpanishDate(t);
+    else if (/^cierre|^vencimiento/i.test(t)) closeDate = parseSpanishDate(t);
+  });
+
+  // Fecha de entrega: prioriza el cierre oficial; si no, una fila explícita de la tabla.
+  let dueDate: number | null = closeDate;
+  if (dueDate == null) {
+    const fechaRow = kv.get("fecha de entrega");
+    if (fechaRow) dueDate = parseSpanishDate(fechaRow);
+  }
+
+  // Fechas escritas dentro de la consigna y detección de discrepancia con la oficial.
+  const datesInDescription = description ? findSpanishDates(description) : [];
+  const dateConflict =
+    closeDate != null &&
+    datesInDescription.some(
+      (d) => d.epoch != null && Math.abs(daysBetween(d.epoch, closeDate!)) > 1,
+    );
+
+  return {
+    submission,
+    grade,
+    dueDate,
+    timeRemaining,
+    description,
+    attachments,
+    openDate,
+    closeDate,
+    datesInDescription,
+    dateConflict,
+    gradedBy,
+  };
 }
