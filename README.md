@@ -28,7 +28,7 @@ No hace falta descargar Chromium: se usa el navegador que ya tienes.
 ### Un solo comando
 
 ```bash
-npm install -g @joswetra/dutic-mcp
+npm install -g @josetra/dutic-mcp
 ```
 
 Esto deja `dutic` y `dutic-mcp` en tu PATH.
