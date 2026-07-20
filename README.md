@@ -1,169 +1,223 @@
 # dutic-mcp
 
-Servidor **MCP** + herramienta de **consola** para el aula virtual **DUTIC** (Moodle) de la UNSA.
-Deja que tú —desde la terminal— y agentes como Claude vean **tareas (incluidas las ocultas)**, **cursos**
-y **recursos**, y descarguen archivos.
+**Servidor MCP + CLI para el aula virtual DUTIC (Moodle) de la UNSA.**
+Tus tareas —incluidas las **ocultas**—, notas, materiales de estudio y compañeros, en la terminal
+y disponibles para agentes de IA (Claude Code, Antigravity, OpenCode, mimocode…).
+
+```
+┌─────────────────────────────────────────────┐
+│ 24 tareas · 10 SIN ENTREGAR                 │
+│ 18 ocultas que el calendario no te muestra  │
+└─────────────────────────────────────────────┘
+```
 
 ## Por qué existe
 
-La app móvil previa sólo leía el **calendario/timeline** de Moodle, que sólo muestra tareas *accionables*
-(futuras y sin entregar). Las tareas sin fecha de calendario, ya vencidas o ya entregadas **quedaban
-invisibles** → entregas perdidas. Esta herramienta **barre cada curso** para descubrir todas las tareas,
-las marca con `hidden: true` cuando no salían en el timeline, y ordena por urgencia lo pendiente.
+El timeline de Moodle sólo muestra tareas **accionables** (futuras y sin entregar). Las tareas sin
+fecha de calendario, ya vencidas o ya entregadas **desaparecen de la vista** — y así se pierden
+entregas. `dutic` barre todos los cursos, encuentra esas tareas, las marca como `OCULTA` y ordena
+lo pendiente por urgencia.
 
-## Cómo funciona
-
-No usa la API pública de web services: **captura la cookie `MoodleSession` y el token `sesskey`** tras un
-login de **Google OAuth institucional** (Playwright manejando tu Chrome instalado, sin descargar Chromium),
-y con ellos llama al endpoint AJAX interno de Moodle (`lib/ajax/service.php`). El perfil del navegador es
-persistente, así que el SSO de Google se mantiene y la renovación de sesión suele ser automática.
-
-**Realidad de la API en la UNSA (importante):** los admins **bloquearon** varias funciones AJAX
-(`core_course_get_contents`, `mod_assign_get_assignments`) → devuelven "El servicio Web no está disponible".
-La ruta que sí funciona y usamos:
-
-| Necesidad | Fuente | Estado |
-|---|---|---|
-| Descubrir todas las tareas de un curso | `core_courseformat_get_state` (la que usa la propia página de curso; su `data` viene como *string* JSON) | ✅ |
-| Cursos matriculados | `core_course_get_enrolled_courses_by_timeline_classification` | ✅ |
-| Timeline (marca no-ocultas + fecha exacta) | `core_calendar_get_action_events_by_timesort` | ✅ (sólo accionables) |
-| Estado de entrega, nota, tiempo restante | *scraping* de `mod/assign/view.php` con Cheerio | ✅ |
-
-Los eventos de calendario de acción sólo aparecen cuando la tarea está pendiente y futura, por eso el
-estado de entrega real se obtiene scrapeando la página de cada tarea.
-
-## Requisitos
-
-- Node.js ≥ 20
-- Google Chrome (o Edge) instalado — Playwright lo usa vía `channel`. No hace falta descargar Chromium.
+---
 
 ## Instalación
 
+**Requisitos:** [Node.js](https://nodejs.org) ≥ 20 y Google Chrome (o Edge) instalado.
+No hace falta descargar Chromium: se usa el navegador que ya tienes.
+
+### Un solo comando
+
 ```bash
-npm install
-npm run build
+npm install -g @joswetra/dutic-mcp
 ```
 
-> Si prefieres el Chromium propio de Playwright: `npx playwright install chromium` y luego
-> `DUTIC_BROWSER_CHANNEL=chromium`. (Requiere ~184 MB de disco libre.)
+Esto deja `dutic` y `dutic-mcp` en tu PATH.
 
-## Configuración
+<details>
+<summary>Instalar desde el código fuente</summary>
 
-- `DUTIC_SEMESTER` — semestre, p.ej. `2026A` (por defecto `2026A`). Cambia cada período; aun así el sitio
-  real se auto-detecta tras el login.
-- `DUTIC_BROWSER_CHANNEL` — `chrome` (def.), `msedge` o `chromium`.
-- `DUTIC_DATA_DIR` — dónde guardar sesión y perfil (por defecto `~/.dutic`).
+```bash
+git clone https://github.com/JOSETRA44/dutic-mcp.git
+cd dutic-mcp
+npm install        # compila automáticamente (script prepare)
+npm install -g .   # deja los comandos en el PATH
+```
+</details>
+
+---
+
+## Primeros pasos
+
+### 1. Configura tus agentes (una vez)
+
+```bash
+dutic setup
+```
+
+Registra el servidor MCP en los agentes que tengas instalados y copia la skill `dutic` a sus
+directorios. Hace copia de seguridad (`*.dutic-bak`) y **no toca** el resto de tu configuración.
+
+```
+[OK] Claude Code (MCP)    C:\Users\tu-usuario\.claude.json
+[OK] Antigravity (MCP)    ...\.antigravity\config\mcp_config.json
+[OK] OpenCode (MCP)       ...\.config\opencode\opencode.jsonc
+[OK] mimocode (MCP)       ...\.config\mimocode\mimocode.jsonc
+[OK] Claude Code (skill)  ...\.claude\skills\dutic
+```
+
+> Reinicia cada agente para que cargue el servidor.
+
+### 2. Inicia sesión (una vez)
+
+```bash
+dutic login
+```
+
+Se abre tu Chrome en el aula virtual. Pulsa **«Ingresar con Correo UNSA»**, elige tu cuenta de
+Google y espera: la ventana se cierra sola al capturar la sesión. El perfil del navegador queda
+guardado, así que las renovaciones posteriores suelen ser automáticas.
+
+### 3. Compruébalo
+
+```bash
+dutic status          # ¿sesión válida?
+dutic tasks --all     # tus tareas, incluidas las ocultas
+```
+
+Si ves tus tareas, ya está todo listo. Pídeselo también a tu agente:
+*«¿tengo alguna tarea pendiente en el aula virtual?»*
+
+---
 
 ## Uso — CLI
 
-```bash
-# Primer login (abre Chrome, inicias sesión con Google una vez)
-dutic login
+| Comando | Qué hace |
+|---|---|
+| `dutic tasks` | Tareas próximas del timeline (rápido) |
+| `dutic tasks --all` | **+ barrido de cursos → incluye las ocultas** |
+| `dutic tasks --hidden` | Sólo las ocultas |
+| `dutic task <cmid>` | Detalle: consigna, fechas, adjuntos, conflicto de fechas |
+| `dutic grades [id]` | Notas: resumen de todos los cursos, o detalle de uno |
+| `dutic courses` | Cursos matriculados |
+| `dutic materials <id> [--section "Tema 2"]` | Archivos del curso, por unidad |
+| `dutic study <id> [--section "Tema 2"]` | Baja materiales y convierte PDFs a Markdown |
+| `dutic read <url>` | Lee un recurso (PDF→Markdown) para analizarlo |
+| `dutic md <archivo.pdf>` | Convierte un PDF local a Markdown |
+| `dutic people <id> [--email]` | Compañeros del curso (con correo) |
+| `dutic person <texto>` | Busca a alguien por nombre o correo |
+| `dutic teachers <id>` | Docentes del curso |
+| `dutic pull <id>` | Descarga todos los materiales |
+| `dutic setup` / `dutic login` / `dutic status` | Configuración y sesión |
 
-dutic status                 # estado de la sesión y semestre
-dutic tasks                  # tareas próximas (rápido, del calendario)
-dutic tasks --all            # + barrido de cursos (incluye ocultas)
-dutic tasks --hidden         # SÓLO las tareas ocultas
-dutic grades [id]            # notas: resumen de todos, o detalle de un curso
-dutic task <cmid>            # detalle de tarea: consigna, fechas, adjuntos, conflicto de fechas
-dutic people <id> [--email]  # compañeros del curso (con correo institucional)
-dutic person <texto>         # busca a alguien por nombre o correo en todos tus cursos
-dutic teachers <id>          # docentes del curso
-dutic courses                # cursos matriculados
-dutic course tasks <id>      # tareas de un curso (incluye ocultas)
-dutic materials <id> [--section "Tema 2"]  # archivos por unidad/sección
-dutic study <id> [--section "Tema 2"]      # baja + convierte a Markdown (por unidad)
-dutic read <url>             # lee un recurso (PDF→Markdown) para analizarlo sin gastar tokens
-dutic md <archivo.pdf>       # convierte un PDF local a Markdown
-dutic pull <id> --dest ./x   # descarga todos los recursos de un curso
+Añade `--json` a la mayoría de comandos para salida estructurada.
+
+### Ejemplos
+
+```bash
+# ¿Qué me falta entregar?
+dutic tasks --all
+
+# Preparar sólo la unidad que voy a estudiar
+dutic study 2279 --section "Tema 2" --dest ./materiales
+
+# ¿Qué pide exactamente esta tarea?
+dutic task 385686
+
+# El correo de mi compañero de grupo
+dutic person "Piero"
 ```
 
-En desarrollo, sin compilar: `npm run dev:cli -- tasks --all`.
+---
 
-## Uso — MCP (para Claude)
+## Uso — con agentes (MCP)
 
-Compila (`npm run build`) y registra el servidor. En `claude_desktop_config.json` (o el equivalente de tu
-cliente MCP):
+Tras `dutic setup` no hay nada más que hacer: pregúntale a tu agente por tus tareas, notas o
+materiales y usará las herramientas del servidor.
+
+<details>
+<summary>Configuración manual (otros clientes MCP)</summary>
 
 ```json
 {
   "mcpServers": {
     "dutic": {
-      "command": "node",
-      "args": ["C:\\Users\\USER\\source\\MCPs\\dutic-mcp\\dist\\mcp\\server.js"],
+      "command": "dutic-mcp",
       "env": { "DUTIC_SEMESTER": "2026A" }
     }
   }
 }
 ```
 
-En Claude Code: `claude mcp add dutic -- node C:\Users\USER\source\MCPs\dutic-mcp\dist\mcp\server.js`
+Si tu cliente no resuelve comandos del PATH, usa la ruta absoluta que imprime `dutic setup`:
+`{ "command": "node", "args": ["<ruta>/dist/mcp/server.js"] }`
+</details>
 
-Herramientas expuestas (19): **`dutic_get_assignment_detail`** (consigna, adjuntos, fechas y
-**conflicto de fechas**), **`dutic_list_participants`** / **`dutic_find_person`** /
-**`dutic_get_person_profile`** / **`dutic_get_course_teachers`** (personas y correos),
-**`dutic_get_grades`** (notas: resumen o detalle),
-`dutic_list_tasks` (scope `upcoming`/`all`, `onlyHidden`, `detailed`),
-`dutic_list_courses`, `dutic_get_course_contents`, `dutic_get_course_tasks`, `dutic_list_course_files`,
-`dutic_download_file`, **`dutic_read_resource`** (recurso → Markdown para analizar sin gastar tokens),
-**`dutic_list_course_materials`** (todos los archivos, expande carpetas), **`dutic_study_course`**
-(baja + convierte PDFs a Markdown para estudiar), `dutic_pull_course_files`,
-**`dutic_pdf_to_markdown`** (PDF local → Markdown), `dutic_session_status`, `dutic_refresh_session`.
+**19 herramientas**: tareas (`dutic_list_tasks`, `dutic_get_assignment_detail`, …), notas
+(`dutic_get_grades`), materiales (`dutic_list_course_materials`, `dutic_study_course`,
+`dutic_read_resource`, `dutic_pdf_to_markdown`), personas (`dutic_list_participants`,
+`dutic_find_person`, `dutic_get_course_teachers`) y sesión.
 
-### Analizar materiales sin gastar tokens
+---
 
-`dutic_read_resource` / `dutic read <url>` descarga un recurso y devuelve su **contenido como texto
-Markdown** (convierte PDFs con `unpdf`, sin dependencias nativas), para que el agente lo analice sin
-volcar el binario al contexto. `dutic_pdf_to_markdown` / `dutic md` hace lo mismo con un PDF local.
-Para preparar un curso entero, `dutic study <id>` / `dutic_study_course` baja todos los materiales y
-convierte los PDFs a `.md` organizados por carpeta.
+## Configuración
 
-Las **carpetas** (mod/folder) se listan por HTTP (sus archivos se renderizan server-side dentro de
-`#folder_tree0`), así que `materials`/`study`/`read` las expanden solas. Muchas carpetas del aula están
-vacías (estructura creada sin subir archivos): eso es normal, se omiten.
+| Variable | Para qué | Por defecto |
+|---|---|---|
+| `DUTIC_SEMESTER` | Semestre en la URL del aula (`2026A`, `2026B`…) | `2026A` |
+| `DUTIC_BROWSER_CHANNEL` | Navegador para el login: `chrome`, `msedge`, `chromium` | `chrome` |
+| `DUTIC_DATA_DIR` | Dónde guardar sesión y perfil | `~/.dutic` |
 
-> El MCP renueva la sesión de forma **headless** si el SSO de Google sigue vivo. Si caducó del todo,
-> devuelve un aviso para que corras `dutic login` en una terminal (ahí sí puede abrirse el navegador).
+El semestre sólo se usa para la URL de login: tras iniciar sesión **se auto-detecta** del propio
+aula, así que al cambiar de período normalmente no hay que tocar nada.
 
-## Configuración multi-agente (Antigravity, OpenCode, mimocode, Claude Code…)
+---
 
-El servidor MCP funciona con cualquier agente compatible con MCP. Para registrarlo en todos tus agentes
-instalados de una vez (preservando su config existente y con backup `*.dutic-bak`):
+## Cómo funciona
 
-```bash
-npm run setup        # build + instala la skill + configura los agentes
-# o por separado:
-npm run setup:agents # sólo registra el MCP en los agentes
-npm run setup:skill  # sólo copia la skill a los dirs de skills de los agentes
-```
+No usa la API pública de web services (la UNSA la tiene bloqueada). Captura la cookie
+`MoodleSession` y el token `sesskey` tras el login de Google (Playwright manejando tu Chrome) y con
+ellos llama al endpoint AJAX interno de Moodle, complementado con scraping donde hace falta.
 
-Esquemas usados automáticamente: `mcpServers` (Claude Code `~/.claude.json`, Antigravity
-`~/.antigravity/config/mcp_config.json`) y `mcp` con `type:"local"` (OpenCode `opencode.jsonc`,
-mimocode `mimocode.jsonc`). Reinicia cada agente tras configurarlo.
+| Necesidad | Fuente | Estado |
+|---|---|---|
+| Descubrir todas las tareas | `core_courseformat_get_state` | ✅ |
+| Cursos matriculados | `core_course_get_enrolled_courses_by_timeline_classification` | ✅ |
+| Timeline y fechas | `core_calendar_get_action_events_by_timesort` | ✅ (sólo accionables) |
+| Estado de entrega, consigna, adjuntos | scraping de `mod/assign/view.php` | ✅ |
+| Notas | scraping de `grade/report/user/index.php` | ✅ |
+| Personas y correos | scraping de `user/index.php` y `user/view.php` | ✅ |
+| `core_course_get_contents`, `mod_assign_*`, `gradereport_*` | — | ❌ bloqueadas por la UNSA |
 
-## Skill `dutic` (instalable con `npx skills`)
+**Fechas contradictorias:** algunas consignas mencionan una fecha distinta a la configurada en
+Moodle. `dutic task <cmid>` compara ambas y avisa (`dateConflict`) — es la causa típica de entregas
+perdidas.
 
-El repo incluye una skill en `skills/dutic/` que enseña a los agentes a usar este MCP (buscar tareas
-ocultas, priorizar lo pendiente, descargar recursos). Instálala en **todos** tus agentes con el gestor de
-skills del ecosistema:
+---
+
+## Publicar en npm
 
 ```bash
-# Desde una copia local del repo:
-npx skills add "C:\Users\USER\source\MCPs\dutic-mcp" -a '*' -s dutic -y
-
-# O, una vez publicado en GitHub:
-npx skills add <tu-usuario>/dutic-mcp -a '*' -s dutic -y
+npm login                 # cuenta de npm
+npm version patch         # o minor / major
+npm publish               # el paquete es scoped y público (publishConfig.access)
+git push --follow-tags
 ```
 
-`-a '*'` instala en todos los agentes detectados. `npx skills list` muestra las instaladas.
+`prepublishOnly` compila antes de publicar y `files` limita el tarball a `dist/` y `skills/`.
 
-## Ordenamiento por urgencia
+> Si tu scope de npm no es `@joswetra`, cambia el campo `name` en `package.json` por
+> `@tu-scope/dutic-mcp` (o un nombre sin scope que esté libre).
 
-`dutic tasks --all` ordena por urgencia: las **SIN ENTREGAR** van primero (por fecha de entrega, las
-vencidas/próximas arriba), y las entregadas/calificadas al fondo. La cabecera resume cuántas hay pendientes.
+---
 
-## Notas de seguridad
+## Privacidad y seguridad
 
-- La sesión (`~/.dutic/session.json`) y el perfil del navegador contienen credenciales de tu cuenta: no se
-  versionan (`.gitignore`) y el archivo de sesión se crea con permisos restrictivos.
-- El certificado de `aulavirtual.unsa.edu.pe` (CA privada UNSA) se acepta **sólo para ese host**.
+- La sesión (`~/.dutic/session.json`) y el perfil del navegador contienen credenciales de tu
+  cuenta: no se versionan y el archivo se crea con permisos restrictivos.
+- El certificado de `aulavirtual.unsa.edu.pe` (CA privada de la UNSA) se acepta **sólo** para ese host.
+- La herramienta accede únicamente a lo que tú ya ves en el aula. Donde Moodle oculta información
+  (docentes en el listado, compañeros de otros grupos) se respeta esa restricción.
+
+## Licencia
+
+MIT © JOSETRA44

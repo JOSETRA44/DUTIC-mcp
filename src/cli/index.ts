@@ -27,6 +27,20 @@ import {
 } from "../domain/people.js";
 import { formatTaskLine } from "./format.js";
 import { banner, c, mark, progressBar, rule, table } from "./ui.js";
+import { MCP_SERVER_PATH, runSetup } from "./setup.js";
+import { readFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+/** Versión leída del package.json del propio paquete (evita que se desincronice). */
+function pkgVersion(): string {
+  try {
+    const root = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
+    return JSON.parse(readFileSync(join(root, "package.json"), "utf8")).version ?? "0.0.0";
+  } catch {
+    return "0.0.0";
+  }
+}
 
 const fmtDate = (e: number | null | undefined) =>
   e == null ? "—" : new Date(e * 1000).toLocaleString("es-PE");
@@ -38,7 +52,24 @@ const program = new Command();
 program
   .name("dutic")
   .description("CLI del aula virtual DUTIC (Moodle UNSA): tareas, notas, cursos y materiales.")
-  .version("0.2.0");
+  .version(pkgVersion());
+
+program
+  .command("setup")
+  .description("Configura el MCP en tus agentes (Claude Code, Antigravity, OpenCode…) e instala la skill.")
+  .action(() => {
+    out(banner("Configuración de dutic", `semestre ${getSemester()}`));
+    const results = runSetup(getSemester());
+    for (const r of results) {
+      const icon = r.status === "ok" ? mark.ok() : r.status === "skip" ? c.gray("[-]") : mark.err();
+      out(`  ${icon} ${r.label.padEnd(20)} ${c.dim(r.detail)}`);
+    }
+    const ok = results.filter((r) => r.status === "ok").length;
+    out(`\n${mark.info()} ${ok} destino(s) configurado(s). Servidor MCP:`);
+    out(`  ${c.gray(MCP_SERVER_PATH)}`);
+    out(`\n${mark.arrow()} Siguiente paso: ${c.cyan("dutic login")} y luego ${c.cyan("dutic tasks --all")}`);
+    out(c.dim("  Reinicia tus agentes para que carguen el servidor MCP."));
+  });
 
 program
   .command("login")

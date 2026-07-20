@@ -1,23 +1,51 @@
 {
-  "name": "dutic-mcp",
+  "name": "@josetra/dutic-mcp",
   "version": "0.1.0",
-  "description": "MCP server + CLI para el aula virtual DUTIC (Moodle) de la UNSA: tareas (incluidas las ocultas), cursos y recursos.",
+  "description": "Servidor MCP + CLI para el aula virtual DUTIC (Moodle) de la UNSA: tareas ocultas, notas, materiales de estudio y personas.",
   "type": "module",
   "bin": {
     "dutic": "dist/cli/index.js",
     "dutic-mcp": "dist/mcp/server.js"
   },
   "main": "dist/mcp/server.js",
+  "files": [
+    "dist",
+    "skills",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JOSETRA44/DUTIC-mcp.git"
+  },
+  "homepage": "https://github.com/JOSETRA44/DUTIC-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/JOSETRA44/DUTIC-mcp/issues"
+  },
+  "author": "JOSETRA44",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "moodle",
+    "unsa",
+    "dutic",
+    "aula-virtual",
+    "cli",
+    "tareas",
+    "claude"
+  ],
   "scripts": {
     "build": "tsc",
-    "setup": "npm run build && node scripts/install-skill.mjs && node scripts/setup-agents.mjs",
-    "setup:agents": "node scripts/setup-agents.mjs",
-    "setup:skill": "node scripts/install-skill.mjs",
+    "setup": "node dist/cli/index.js setup",
     "dev:cli": "tsx src/cli/index.ts",
     "dev:mcp": "tsx src/mcp/server.ts",
     "start:mcp": "node dist/mcp/server.js",
     "prepare": "tsc",
-    "postinstall": "node -e \"try{require('child_process').execSync('npx playwright install chromium',{stdio:'inherit'})}catch(e){console.error('playwright install skipped')}\""
+    "prepublishOnly": "npm run build"
   },
   "engines": {
     "node": ">=20"
