@@ -25,8 +25,9 @@ import {
   getPersonProfile,
   listCourseParticipants,
 } from "../domain/people.js";
+import { parseCourseName } from "../core/coursename.js";
 import { formatTaskLine } from "./format.js";
-import { banner, c, mark, progressBar, rule, table } from "./ui.js";
+import { banner, c, mark, progressBar, rule, statusLine, table } from "./ui.js";
 import { MCP_SERVER_PATH, runSetup } from "./setup.js";
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -181,9 +182,13 @@ program
     await withSession(
       async (session) => {
         const withEmail = opts.email !== false; // commander: --no-email ⇒ opts.email === false
-        const bar = withEmail ? progressBar(1, "  correos") : null;
-        const ppl = await listCourseParticipants(session, Number(courseId), { withEmail });
-        bar?.done();
+        const status = statusLine();
+        const ppl = await listCourseParticipants(session, Number(courseId), {
+          withEmail,
+          onProgress: ({ phase, done, total, label }) =>
+            status.set(`${phase} ${done}/${total} ${c.dim((label ?? "").slice(0, 34))}`),
+        });
+        status.done();
         if (opts.json) return out(JSON.stringify(ppl, null, 2));
         out(banner("Participantes", `${ppl.length} · curso ${courseId}`));
         out(
@@ -216,7 +221,12 @@ program
   .action(async (query, opts) => {
     await withSession(
       async (session) => {
-        const found = await findPeople(session, query);
+        const status = statusLine();
+        const found = await findPeople(session, query, {
+          onProgress: ({ phase, done, total, label }) =>
+            status.set(`${phase} ${done}/${total} ${c.dim((label ?? "").slice(0, 38))}`),
+        });
+        status.done();
         if (opts.json) return out(JSON.stringify(found, null, 2));
         out(banner("Personas", `"${query}" · ${found.length} resultado(s)`));
         for (const p of found) {
@@ -225,16 +235,9 @@ program
           out(`  ${c.dim("último acceso:")} ${p.lastAccess ?? "—"}`);
           out(`  ${c.dim("cursos contigo:")} ${c.bold(String(p.courses.length))}`);
           for (const cr of p.courses) {
-            const grp = cr.group && cr.group !== "No hay grupos" ? c.dim(` · ${cr.group}`) : "";
-            out(`    ${mark.bullet()} ${cr.courseName}${grp}`);
-          }
-          // Cursos que Moodle lista en su perfil y que no salieron en el cruce.
-          const extra = p.profileCourses.filter(
-            (n) => !p.courses.some((cr) => cr.courseName.trim() === n.trim()),
-          );
-          if (extra.length) {
-            out(`  ${c.dim("otros en su perfil:")}`);
-            for (const n of extra) out(`    ${c.gray("·")} ${c.dim(n)}`);
+            const grp = cr.group ? c.dim(` · ${cr.group}`) : "";
+            const via = cr.via === "profile" ? c.gray(" (otro grupo)") : "";
+            out(`    ${mark.bullet()} ${parseCourseName(cr.courseName).subject}${grp}${via}`);
           }
         }
       },
@@ -293,9 +296,18 @@ program
             [
               { header: "id", align: "right", color: c.dim },
               { header: "curso" },
+              { header: "grupo", color: c.dim },
               { header: "docente(s)", color: c.dim },
             ],
-            courses.map((cr) => [String(cr.id), cr.fullname, cr.contacts.join(", ") || "—"]),
+            courses.map((cr) => {
+              const parsed = parseCourseName(cr.fullname);
+              return [
+                String(cr.id),
+                parsed.subject,
+                parsed.group ?? "—",
+                cr.contacts.join(", ") || "—",
+              ];
+            }),
           ),
         );
       },

@@ -104,7 +104,7 @@ Si ves tus tareas, ya está todo listo. Pídeselo también a tu agente:
 | `dutic read <url>` | Lee un recurso (PDF→Markdown) para analizarlo |
 | `dutic md <archivo.pdf>` | Convierte un PDF local a Markdown |
 | `dutic people <id>` | Todos los compañeros del curso, con correo (`--no-email` para omitir) |
-| `dutic person <texto>` | Busca por nombre/correo: da su correo y **todos** los cursos que comparte contigo |
+| `dutic person <texto>` | Busca por nombre/correo: su correo y los cursos que comparte contigo, con el grupo de cada uno |
 | `dutic teachers <id>` | Docentes del curso |
 | `dutic pull <id>` | Descarga todos los materiales |
 | `dutic setup` / `dutic login` / `dutic status` | Configuración y sesión |

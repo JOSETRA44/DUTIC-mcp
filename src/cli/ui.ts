@@ -110,6 +110,28 @@ export function table(columns: Column[], rows: string[][]): string {
 }
 
 /**
+ * Log de estado en una sola línea que se reescribe (spinner + texto) sobre stderr. Ideal para
+ * mostrar "cargando página/perfil…" sin ensuciar la salida. Llama a `done()` para limpiar.
+ */
+export function statusLine() {
+  const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+  const stream = process.stderr;
+  let i = 0;
+  return {
+    set(msg: string) {
+      if (!stream.isTTY) return;
+      const frame = c.cyan(frames[i++ % frames.length]);
+      stream.write(`\r${frame} ${msg}` + " ".repeat(Math.max(0, 60 - msg.length)));
+    },
+    done(finalMsg?: string) {
+      if (!stream.isTTY) return;
+      stream.write("\r" + " ".repeat(80) + "\r");
+      if (finalMsg) stream.write(finalMsg + "\n");
+    },
+  };
+}
+
+/**
  * Barra de progreso en una sola línea (se reescribe con \r sobre stderr). Llama a `done()` al
  * terminar para dejar la línea limpia.
  */

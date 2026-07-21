@@ -6,6 +6,7 @@ import type { Session } from "../core/session.js";
 import { getCourseState, getEnrolledCourses } from "./courses.js";
 import { getAssignDetail } from "./assign.js";
 import { mapLimit } from "./concurrency.js";
+import { parseCourseName } from "../core/coursename.js";
 
 export interface Participant {
   userId: number;
@@ -110,6 +111,8 @@ export interface ParticipantsOptions {
   /** Resuelve el correo de cada participante (abre su perfil; más lento). */
   withEmail?: boolean;
   concurrency?: number;
+  /** Reporte de progreso (páginas cargadas, correos resueltos) para una carga visual. */
+  onProgress?: (info: { phase: string; done: number; total: number; label?: string }) => void;
 }
 
 /**
@@ -122,7 +125,7 @@ export async function listCourseParticipants(
   courseId: number,
   opts: ParticipantsOptions = {},
 ): Promise<Participant[]> {
-  const { withEmail = false, concurrency = 8 } = opts;
+  const { withEmail = false, concurrency = 8, onProgress } = opts;
   const byUser = new Map<number, Participant>();
   let declaredTotal: number | null = null;
 
@@ -135,6 +138,12 @@ export async function listCourseParticipants(
     const rows = parseParticipantRows(html, courseId);
     const before = byUser.size;
     for (const p of rows) if (!byUser.has(p.userId)) byUser.set(p.userId, p);
+    onProgress?.({
+      phase: "páginas",
+      done: page + 1,
+      total: declaredTotal ? Math.ceil(declaredTotal / PER_PAGE) : page + 1,
+      label: `${byUser.size} participantes`,
+    });
     // Fin de la paginación: la página no trajo nadie nuevo, o ya tenemos el total declarado.
     if (byUser.size === before || rows.length < PER_PAGE) break;
     if (declaredTotal != null && byUser.size >= declaredTotal) break;
@@ -143,8 +152,10 @@ export async function listCourseParticipants(
   const people = [...byUser.values()];
   if (!withEmail) return people;
 
+  let done = 0;
   return mapLimit(people, concurrency, async (p) => {
     const prof = await getPersonProfile(session, p.userId, courseId, p.name).catch(() => null);
+    onProgress?.({ phase: "correos", done: ++done, total: people.length, label: p.name });
     return { ...p, email: prof?.email ?? null };
   });
 }
@@ -222,8 +233,15 @@ export async function getCourseTeachers(
 export interface SharedCourse {
   courseId: number;
   courseName: string;
+  /** Grupo/sección: del listado de participantes o del sufijo del nombre (GA → Grupo A). */
   group: string | null;
   role: string | null;
+  /**
+   * Cómo se confirmó que comparten el curso: "participants" (aparece en tu lista de participantes,
+   * mismo grupo) o "profile" (Moodle lo lista en su perfil y coincide con un curso tuyo — suele ser
+   * otro grupo). Ambas son fiables; se descartan los cursos del perfil que NO son tuyos.
+   */
+  via: "participants" | "profile";
 }
 
 export interface PersonMatch {
@@ -231,50 +249,64 @@ export interface PersonMatch {
   name: string;
   email: string | null;
   lastAccess: string | null;
-  /** TODOS los cursos donde esa persona coincide contigo. */
+  /** Cursos que esa persona comparte CONTIGO (verificados; sin cursos ajenos). */
   courses: SharedCourse[];
-  /** Cursos que Moodle lista en su perfil (puede incluir alguno más que el cruce anterior). */
-  profileCourses: string[];
 }
-
 
 /** Normaliza para comparar ignorando mayúsculas y acentos. */
 const fold = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 
+/** Grupo efectivo de un curso para una persona: el del listado, o el del sufijo del nombre. */
+function effectiveGroup(participantGroup: string | null, courseName: string): string | null {
+  if (participantGroup && !/no hay grupos/i.test(participantGroup)) return participantGroup;
+  return parseCourseName(courseName).group;
+}
+
+export interface FindPeopleOptions {
+  concurrency?: number;
+  /** Reporte de progreso: fase y avance, para mostrar una carga visual en el CLI. */
+  onProgress?: (info: { phase: string; done: number; total: number; label?: string }) => void;
+}
+
 /**
- * Busca personas entre los participantes de TODOS tus cursos, por nombre o por correo.
- * Agrega **todos los cursos** en los que cada persona coincide contigo (no sólo el primero) y
- * resuelve su correo institucional, para poder responder "quién es y dónde lo tengo".
+ * Busca personas entre los participantes de TODOS tus cursos, por nombre o por correo. Devuelve
+ * SÓLO los cursos que la persona comparte contigo (verificados por lista de participantes y por
+ * el perfil cruzado contra tus cursos) — nunca cursos ajenos. Añade el grupo de cada curso.
  */
 export async function findPeople(
   session: Session,
   query: string,
-  opts: { concurrency?: number } = {},
+  opts: FindPeopleOptions = {},
 ): Promise<PersonMatch[]> {
-  const { concurrency = 4 } = opts;
+  const { concurrency = 4, onProgress } = opts;
   const looksLikeEmail = /@/.test(query);
   const q = fold(query);
 
-  const courses = await getEnrolledCourses(session);
-  const perCourse = await mapLimit(courses, concurrency, async (c) => {
+  const myCourses = await getEnrolledCourses(session);
+  // Índice de MIS cursos por clave normalizada, para validar los cursos del perfil ajeno.
+  const myByKey = new Map<string, { id: number; fullname: string }>();
+  for (const c of myCourses) myByKey.set(parseCourseName(c.fullname).key, { id: c.id, fullname: c.fullname });
+
+  let scanned = 0;
+  const perCourse = await mapLimit(myCourses, concurrency, async (c) => {
     const list = await listCourseParticipants(session, c.id).catch(() => [] as Participant[]);
+    onProgress?.({ phase: "cursos", done: ++scanned, total: myCourses.length, label: c.fullname });
     return list.map((p) => ({ p, courseName: c.fullname }));
   });
 
-  // Agrupar por persona acumulando TODOS los cursos compartidos.
+  // Agrupar por persona con los cursos donde aparece en TU lista de participantes.
   const byUser = new Map<number, PersonMatch>();
   for (const { p, courseName } of perCourse.flat()) {
     const shared: SharedCourse = {
       courseId: p.courseId,
       courseName,
-      group: p.group,
+      group: effectiveGroup(p.group, courseName),
       role: p.role,
+      via: "participants",
     };
     const existing = byUser.get(p.userId);
     if (existing) {
-      if (!existing.courses.some((x) => x.courseId === shared.courseId)) {
-        existing.courses.push(shared);
-      }
+      if (!existing.courses.some((x) => x.courseId === shared.courseId)) existing.courses.push(shared);
     } else {
       byUser.set(p.userId, {
         userId: p.userId,
@@ -282,27 +314,40 @@ export async function findPeople(
         email: null,
         lastAccess: p.lastAccess,
         courses: [shared],
-        profileCourses: [],
       });
     }
   }
 
   const candidates = [...byUser.values()];
   const byName = candidates.filter((p) => fold(p.name).includes(q));
-  // Buscar por correo obliga a abrir todos los perfiles; por nombre basta con los que casan.
   const pool = looksLikeEmail ? candidates : byName;
 
+  // Enriquecer con perfil: correo + cursos del perfil que coincidan con los MÍOS (otro grupo).
+  let done = 0;
   const enriched = await mapLimit(pool, concurrency, async (p) => {
-    const prof = await getPersonProfile(
-      session,
-      p.userId,
-      p.courses[0]?.courseId,
-      p.name,
-    ).catch(() => null);
-    return { ...p, email: prof?.email ?? null, profileCourses: prof?.courses ?? [] };
+    const prof = await getPersonProfile(session, p.userId, p.courses[0]?.courseId, p.name).catch(
+      () => null,
+    );
+    onProgress?.({ phase: "perfiles", done: ++done, total: pool.length, label: p.name });
+    if (prof) {
+      const known = new Set(p.courses.map((x) => x.courseId));
+      for (const pcName of prof.courses) {
+        const mine = myByKey.get(parseCourseName(pcName).key);
+        // Sólo si coincide con un curso MÍO y no lo teníamos ya (recupera cursos de otro grupo).
+        if (mine && !known.has(mine.id)) {
+          known.add(mine.id);
+          p.courses.push({
+            courseId: mine.id,
+            courseName: mine.fullname,
+            group: parseCourseName(pcName).group ?? parseCourseName(mine.fullname).group,
+            role: null,
+            via: "profile",
+          });
+        }
+      }
+    }
+    return { ...p, email: prof?.email ?? null };
   });
 
-  return enriched.filter(
-    (p) => fold(p.name).includes(q) || (p.email ?? "").toLowerCase().includes(q),
-  );
+  return enriched.filter((p) => fold(p.name).includes(q) || (p.email ?? "").toLowerCase().includes(q));
 }

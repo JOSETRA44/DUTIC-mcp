@@ -230,9 +230,10 @@ server.registerTool(
     title: "Buscar una persona por nombre o correo",
     description:
       "Busca a una persona entre los participantes de TODOS los cursos del usuario, por nombre o " +
-      "por correo institucional. Devuelve su correo, su último acceso y **todos los cursos que " +
-      "comparte contigo** (con el grupo de cada uno), además de los cursos que Moodle lista en su " +
-      "perfil. Úsalo para '¿quién es X?', '¿en qué cursos llevo con X?' o para buscar por correo.",
+      "por correo institucional. Devuelve su correo, su último acceso y SÓLO los cursos que " +
+      "realmente comparte contigo (verificados; nunca cursos ajenos), cada uno con su grupo/sección " +
+      "(GA = Grupo A). El campo `via` indica si se confirmó por la lista de participantes o por su " +
+      "perfil (otro grupo). Úsalo para '¿quién es X?', '¿en qué cursos llevo con X?' o buscar por correo.",
     inputSchema: {
       query: z.string().min(2).describe("Nombre (o parte) o correo a buscar."),
     },

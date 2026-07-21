@@ -69,9 +69,10 @@ Si el servidor MCP `dutic` está disponible, usa estas herramientas (son la fuen
   (recorre la paginación completa): nombre, rol, grupo, último acceso y, con `withEmail`, su correo.
   Con grupos separados Moodle sólo muestra los del grupo del usuario: es normal.
 - `dutic_find_person` — args: `query`. Busca a alguien en TODOS sus cursos por nombre o **por
-  correo**. Devuelve su correo, último acceso y **todos los cursos que comparte contigo** (con el
-  grupo de cada uno) más los que Moodle lista en su perfil. Úsalo para "¿quién es X?", "¿en qué
-  cursos llevo con X?" o "dame el correo de X".
+  correo**. Devuelve su correo, último acceso y **sólo los cursos que realmente comparte contigo**
+  (verificados; nunca cursos ajenos), cada uno con su **grupo** (GA = Grupo A). El campo `via` dice
+  si se confirmó por la lista de participantes (mismo grupo) o por su perfil (otro grupo). Úsalo
+  para "¿quién es X?", "¿en qué cursos llevo con X y en qué grupo?" o "dame el correo de X".
 - `dutic_get_person_profile` — args: `userId`, `courseId?`. Correo, zona horaria y cursos compartidos.
 - `dutic_get_course_teachers` — args: `courseId`. Docentes del curso. En esta aula los profesores no
   salen en participantes, así que se deducen de los contactos y de **quién calificó** las tareas.
