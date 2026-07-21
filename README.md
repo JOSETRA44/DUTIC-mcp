@@ -103,8 +103,8 @@ Si ves tus tareas, ya está todo listo. Pídeselo también a tu agente:
 | `dutic study <id> [--section "Tema 2"]` | Baja materiales y convierte PDFs a Markdown |
 | `dutic read <url>` | Lee un recurso (PDF→Markdown) para analizarlo |
 | `dutic md <archivo.pdf>` | Convierte un PDF local a Markdown |
-| `dutic people <id> [--email]` | Compañeros del curso (con correo) |
-| `dutic person <texto>` | Busca a alguien por nombre o correo |
+| `dutic people <id>` | Todos los compañeros del curso, con correo (`--no-email` para omitir) |
+| `dutic person <texto>` | Busca por nombre/correo: da su correo y **todos** los cursos que comparte contigo |
 | `dutic teachers <id>` | Docentes del curso |
 | `dutic pull <id>` | Descarga todos los materiales |
 | `dutic setup` / `dutic login` / `dutic status` | Configuración y sesión |
@@ -123,7 +123,7 @@ dutic study 2279 --section "Tema 2" --dest ./materiales
 # ¿Qué pide exactamente esta tarea?
 dutic task 385686
 
-# El correo de mi compañero de grupo
+# ¿Quién es y en qué cursos coincido con él? (correo + todos los cursos compartidos)
 dutic person "Piero"
 ```
 

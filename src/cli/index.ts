@@ -174,23 +174,16 @@ program
 
 program
   .command("people <courseId>")
-  .description("Participantes visibles del curso (compañeros de tu grupo).")
-  .option("--email", "Resuelve el correo de cada uno (más lento).")
+  .description("Participantes del curso, con su correo (recorre todas las páginas).")
+  .option("--no-email", "No resolver los correos (más rápido).")
   .option("--json", "Salida en JSON.")
   .action(async (courseId, opts) => {
     await withSession(
       async (session) => {
-        const ppl = await listCourseParticipants(session, Number(courseId));
-        const rows = await Promise.all(
-          ppl.map(async (p) => {
-            let email = "";
-            if (opts.email) {
-              const prof = await getPersonProfile(session, p.userId, Number(courseId), p.name).catch(() => null);
-              email = prof?.email ?? "—";
-            }
-            return [p.name, p.role ?? "—", p.group ?? "—", p.lastAccess ?? "—", ...(opts.email ? [email] : [])];
-          }),
-        );
+        const withEmail = opts.email !== false; // commander: --no-email ⇒ opts.email === false
+        const bar = withEmail ? progressBar(1, "  correos") : null;
+        const ppl = await listCourseParticipants(session, Number(courseId), { withEmail });
+        bar?.done();
         if (opts.json) return out(JSON.stringify(ppl, null, 2));
         out(banner("Participantes", `${ppl.length} · curso ${courseId}`));
         out(
@@ -200,9 +193,15 @@ program
               { header: "rol", color: c.dim },
               { header: "grupo", color: c.dim },
               { header: "último acceso", color: c.dim },
-              ...(opts.email ? [{ header: "correo", color: c.cyan }] : []),
+              ...(withEmail ? [{ header: "correo", color: c.cyan }] : []),
             ],
-            rows,
+            ppl.map((p) => [
+              p.name,
+              p.role ?? "—",
+              p.group ?? "—",
+              p.lastAccess ?? "—",
+              ...(withEmail ? [p.email ?? "—"] : []),
+            ]),
           ),
         );
       },
@@ -221,10 +220,22 @@ program
         if (opts.json) return out(JSON.stringify(found, null, 2));
         out(banner("Personas", `"${query}" · ${found.length} resultado(s)`));
         for (const p of found) {
-          out(`${mark.arrow()} ${c.bold(p.name)}`);
-          out(`  ${c.dim("curso:")} ${p.courseName}  ${c.dim("grupo:")} ${p.group ?? "—"}`);
-          if (p.email) out(`  ${c.dim("correo:")} ${c.cyan(p.email)}`);
+          out(`\n${mark.arrow()} ${c.bold(p.name)}`);
+          out(`  ${c.dim("correo:")}        ${p.email ? c.cyan(p.email) : c.gray("no visible")}`);
           out(`  ${c.dim("último acceso:")} ${p.lastAccess ?? "—"}`);
+          out(`  ${c.dim("cursos contigo:")} ${c.bold(String(p.courses.length))}`);
+          for (const cr of p.courses) {
+            const grp = cr.group && cr.group !== "No hay grupos" ? c.dim(` · ${cr.group}`) : "";
+            out(`    ${mark.bullet()} ${cr.courseName}${grp}`);
+          }
+          // Cursos que Moodle lista en su perfil y que no salieron en el cruce.
+          const extra = p.profileCourses.filter(
+            (n) => !p.courses.some((cr) => cr.courseName.trim() === n.trim()),
+          );
+          if (extra.length) {
+            out(`  ${c.dim("otros en su perfil:")}`);
+            for (const n of extra) out(`    ${c.gray("·")} ${c.dim(n)}`);
+          }
         }
       },
       { login: { onStatus: log } },

@@ -65,10 +65,13 @@ Si el servidor MCP `dutic` está disponible, usa estas herramientas (son la fuen
 - `dutic_get_grades` — args: `courseId?`. **Calificaciones**: sin `courseId`, resumen de todos los
   cursos (nota total + cuántos ítems por calificar); con `courseId`, detalle por ítem (nota, rango, %).
   Úsalo cuando el usuario pregunte por sus notas, promedio, o cómo va.
-- `dutic_list_participants` — args: `courseId`. Compañeros visibles (nombre, rol, grupo, último
-  acceso). Con grupos separados Moodle sólo muestra los del grupo del usuario: es normal.
-- `dutic_find_person` — args: `query`, `withEmail?`. Busca una persona en TODOS sus cursos por
-  nombre o **por correo** institucional.
+- `dutic_list_participants` — args: `courseId`, `withEmail?`. **Todos** los compañeros del curso
+  (recorre la paginación completa): nombre, rol, grupo, último acceso y, con `withEmail`, su correo.
+  Con grupos separados Moodle sólo muestra los del grupo del usuario: es normal.
+- `dutic_find_person` — args: `query`. Busca a alguien en TODOS sus cursos por nombre o **por
+  correo**. Devuelve su correo, último acceso y **todos los cursos que comparte contigo** (con el
+  grupo de cada uno) más los que Moodle lista en su perfil. Úsalo para "¿quién es X?", "¿en qué
+  cursos llevo con X?" o "dame el correo de X".
 - `dutic_get_person_profile` — args: `userId`, `courseId?`. Correo, zona horaria y cursos compartidos.
 - `dutic_get_course_teachers` — args: `courseId`. Docentes del curso. En esta aula los profesores no
   salen en participantes, así que se deducen de los contactos y de **quién calificó** las tareas.
@@ -119,8 +122,8 @@ dutic tasks --all --fast    # sin scrapear estado de entrega (más rápido, meno
 dutic grades                # resumen de notas de todos los cursos
 dutic grades <id>           # detalle de notas de un curso
 dutic task <cmid>           # detalle de una tarea: consigna, fechas, adjuntos, conflictos
-dutic people <id> [--email] # compañeros del curso (con su correo)
-dutic person <texto>        # busca a alguien por nombre o correo en todos tus cursos
+dutic people <id>           # todos los compañeros del curso, con su correo (--no-email para omitir)
+dutic person <texto>        # busca por nombre/correo: da su correo y TODOS los cursos contigo
 dutic teachers <id>         # docentes del curso
 dutic courses               # cursos matriculados
 dutic course tasks <id>     # tareas de un curso

@@ -15,6 +15,8 @@ export interface Participant {
   group: string | null;
   lastAccess: string | null;
   courseId: number;
+  /** Correo institucional; sólo se rellena si se pide (requiere abrir el perfil). */
+  email?: string | null;
 }
 
 export interface PersonProfile {
@@ -70,19 +72,14 @@ function extractEmail($: cheerio.CheerioAPI): string | null {
  * Lista los participantes visibles de un curso. Ojo: si el curso usa "grupos separados", Moodle
  * sólo muestra a los del propio grupo del usuario (es lo mismo que ve en la web).
  */
-export async function listCourseParticipants(
-  session: Session,
-  courseId: number,
-): Promise<Participant[]> {
-  const html = await getHtml(
-    session,
-    `${session.siteUrl}/user/index.php?id=${courseId}&perpage=200`,
-  );
+/** Parsea las filas de participantes de una página del listado. */
+function parseParticipantRows(html: string, courseId: number): Participant[] {
   const $ = cheerio.load(html);
   const people: Participant[] = [];
   $("table#participants tbody tr").each((_, tr) => {
     const cells = $(tr).find("th,td");
     // La primera celda es el checkbox; el nombre (con enlace al perfil) va en la segunda.
+    // Moodle rellena la tabla con filas vacías hasta `perpage`, por eso se exige el enlace.
     const nameCell = cells.length > 1 ? $(cells[1]) : $(cells[0]);
     const link = nameCell.find('a[href*="user/view.php"]').first();
     const href = link.attr("href") ?? "";
@@ -99,6 +96,57 @@ export async function listCourseParticipants(
     });
   });
   return people;
+}
+
+/** Total de participantes que declara la página ("N participantes encontrados"). */
+function parseDeclaredTotal(html: string): number | null {
+  const m = /(\d+)\s+participantes?\s+encontrad/i.exec(cheerio.load(html)("body").text());
+  return m ? Number(m[1]) : null;
+}
+
+const PER_PAGE = 100;
+
+export interface ParticipantsOptions {
+  /** Resuelve el correo de cada participante (abre su perfil; más lento). */
+  withEmail?: boolean;
+  concurrency?: number;
+}
+
+/**
+ * Lista TODOS los participantes visibles de un curso, recorriendo la paginación de Moodle
+ * (`page=0,1,2…`) hasta agotarla — no sólo la primera página. Ojo: si el curso usa "grupos
+ * separados", Moodle sólo muestra a los del propio grupo del usuario (es lo mismo que ve en la web).
+ */
+export async function listCourseParticipants(
+  session: Session,
+  courseId: number,
+  opts: ParticipantsOptions = {},
+): Promise<Participant[]> {
+  const { withEmail = false, concurrency = 8 } = opts;
+  const byUser = new Map<number, Participant>();
+  let declaredTotal: number | null = null;
+
+  for (let page = 0; page < 50; page++) {
+    const html = await getHtml(
+      session,
+      `${session.siteUrl}/user/index.php?id=${courseId}&page=${page}&perpage=${PER_PAGE}`,
+    );
+    if (page === 0) declaredTotal = parseDeclaredTotal(html);
+    const rows = parseParticipantRows(html, courseId);
+    const before = byUser.size;
+    for (const p of rows) if (!byUser.has(p.userId)) byUser.set(p.userId, p);
+    // Fin de la paginación: la página no trajo nadie nuevo, o ya tenemos el total declarado.
+    if (byUser.size === before || rows.length < PER_PAGE) break;
+    if (declaredTotal != null && byUser.size >= declaredTotal) break;
+  }
+
+  const people = [...byUser.values()];
+  if (!withEmail) return people;
+
+  return mapLimit(people, concurrency, async (p) => {
+    const prof = await getPersonProfile(session, p.userId, courseId, p.name).catch(() => null);
+    return { ...p, email: prof?.email ?? null };
+  });
 }
 
 /**
@@ -126,10 +174,11 @@ export async function getPersonProfile(
   // Cortar en la siguiente mayúscula para no arrastrar el texto pegado ("America/LimaDetalles").
   const timezone = /(?:America|Europe|Asia)\/[A-Z][a-z_]+|UTC[+-]?\d*/.exec(profileText)?.[0] ?? null;
 
+  // Enlaces a cursos del perfil, descartando etiquetas genéricas ("Curso", "Cursos"…).
   const courses = $('.userprofile a[href*="course/view.php"], a[href*="course/view.php"]')
     .map((_, a) => clean($(a).text()))
     .get()
-    .filter((t) => t.length > 3);
+    .filter((t) => t.length > 8 && !/^cursos?$/i.test(t));
 
   return { userId, name, email, timezone, courses: [...new Set(courses)] };
 }
@@ -170,55 +219,90 @@ export async function getCourseTeachers(
   return [...new Set([...fromApi, ...fromList, ...fromGrading])];
 }
 
-export interface PersonMatch extends Participant {
-  email?: string | null;
+export interface SharedCourse {
+  courseId: number;
   courseName: string;
+  group: string | null;
+  role: string | null;
 }
 
+export interface PersonMatch {
+  userId: number;
+  name: string;
+  email: string | null;
+  lastAccess: string | null;
+  /** TODOS los cursos donde esa persona coincide contigo. */
+  courses: SharedCourse[];
+  /** Cursos que Moodle lista en su perfil (puede incluir alguno más que el cruce anterior). */
+  profileCourses: string[];
+}
+
+
+/** Normaliza para comparar ignorando mayúsculas y acentos. */
+const fold = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+
 /**
- * Busca personas entre los participantes de todos tus cursos, por nombre o por correo. Si la
- * consulta parece un correo (o `withEmail` es true) se abren los perfiles para poder comparar
- * el correo, lo cual es más lento pero permite "buscar por correo".
+ * Busca personas entre los participantes de TODOS tus cursos, por nombre o por correo.
+ * Agrega **todos los cursos** en los que cada persona coincide contigo (no sólo el primero) y
+ * resuelve su correo institucional, para poder responder "quién es y dónde lo tengo".
  */
 export async function findPeople(
   session: Session,
   query: string,
-  opts: { withEmail?: boolean; concurrency?: number } = {},
+  opts: { concurrency?: number } = {},
 ): Promise<PersonMatch[]> {
   const { concurrency = 4 } = opts;
   const looksLikeEmail = /@/.test(query);
-  const withEmail = opts.withEmail ?? looksLikeEmail;
-  const q = query.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  const q = fold(query);
 
   const courses = await getEnrolledCourses(session);
   const perCourse = await mapLimit(courses, concurrency, async (c) => {
     const list = await listCourseParticipants(session, c.id).catch(() => [] as Participant[]);
-    return list.map((p) => ({ ...p, courseName: c.fullname }) as PersonMatch);
+    return list.map((p) => ({ p, courseName: c.fullname }));
   });
 
-  // Dedup por userId conservando el primer curso donde aparece.
+  // Agrupar por persona acumulando TODOS los cursos compartidos.
   const byUser = new Map<number, PersonMatch>();
-  for (const p of perCourse.flat()) if (!byUser.has(p.userId)) byUser.set(p.userId, p);
-  let candidates = [...byUser.values()];
-
-  if (!withEmail) {
-    return candidates.filter((p) =>
-      p.name.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").includes(q),
-    );
+  for (const { p, courseName } of perCourse.flat()) {
+    const shared: SharedCourse = {
+      courseId: p.courseId,
+      courseName,
+      group: p.group,
+      role: p.role,
+    };
+    const existing = byUser.get(p.userId);
+    if (existing) {
+      if (!existing.courses.some((x) => x.courseId === shared.courseId)) {
+        existing.courses.push(shared);
+      }
+    } else {
+      byUser.set(p.userId, {
+        userId: p.userId,
+        name: p.name,
+        email: null,
+        lastAccess: p.lastAccess,
+        courses: [shared],
+        profileCourses: [],
+      });
+    }
   }
 
-  // Con correo: resolver perfiles (acotado) y filtrar por nombre o correo.
-  const byName = candidates.filter((p) =>
-    p.name.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").includes(q),
-  );
+  const candidates = [...byUser.values()];
+  const byName = candidates.filter((p) => fold(p.name).includes(q));
+  // Buscar por correo obliga a abrir todos los perfiles; por nombre basta con los que casan.
   const pool = looksLikeEmail ? candidates : byName;
+
   const enriched = await mapLimit(pool, concurrency, async (p) => {
-    const prof = await getPersonProfile(session, p.userId, p.courseId, p.name).catch(() => null);
-    return { ...p, email: prof?.email ?? null };
+    const prof = await getPersonProfile(
+      session,
+      p.userId,
+      p.courses[0]?.courseId,
+      p.name,
+    ).catch(() => null);
+    return { ...p, email: prof?.email ?? null, profileCourses: prof?.courses ?? [] };
   });
+
   return enriched.filter(
-    (p) =>
-      p.name.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").includes(q) ||
-      (p.email ?? "").toLowerCase().includes(q),
+    (p) => fold(p.name).includes(q) || (p.email ?? "").toLowerCase().includes(q),
   );
 }

@@ -206,13 +206,22 @@ server.registerTool(
   {
     title: "Participantes de un curso",
     description:
-      "Lista los participantes visibles de un curso (nombre, rol, grupo, último acceso). Si el " +
-      "curso usa grupos separados, Moodle sólo muestra a los del grupo del usuario — es lo mismo " +
-      "que ve en la web. Úsalo para saber quiénes son sus compañeros o de qué grupo es alguien.",
-    inputSchema: { courseId: z.number().int().positive() },
+      "Lista TODOS los participantes de un curso recorriendo la paginación (nombre, rol, grupo, " +
+      "último acceso y, con `withEmail`, su correo institucional). Si el curso usa grupos separados, " +
+      "Moodle sólo muestra a los del grupo del usuario — es lo mismo que ve en la web. Úsalo para " +
+      "saber quiénes son sus compañeros o de qué grupo es alguien.",
+    inputSchema: {
+      courseId: z.number().int().positive(),
+      withEmail: z
+        .boolean()
+        .default(false)
+        .describe("Resolver el correo de cada participante (abre su perfil; más lento)."),
+    },
   },
-  async ({ courseId }) =>
-    tool(() => withSession((s) => listCourseParticipants(s, courseId), { mode: MCP_MODE })),
+  async ({ courseId, withEmail }) =>
+    tool(() =>
+      withSession((s) => listCourseParticipants(s, courseId, { withEmail }), { mode: MCP_MODE }),
+    ),
 );
 
 server.registerTool(
@@ -220,19 +229,16 @@ server.registerTool(
   {
     title: "Buscar una persona por nombre o correo",
     description:
-      "Busca entre los participantes de TODOS los cursos del usuario por nombre o por correo " +
-      "institucional. Si la consulta contiene '@' resuelve los correos de los perfiles para poder " +
-      "buscar por correo. Devuelve nombre, curso, grupo, último acceso y correo cuando aplica.",
+      "Busca a una persona entre los participantes de TODOS los cursos del usuario, por nombre o " +
+      "por correo institucional. Devuelve su correo, su último acceso y **todos los cursos que " +
+      "comparte contigo** (con el grupo de cada uno), además de los cursos que Moodle lista en su " +
+      "perfil. Úsalo para '¿quién es X?', '¿en qué cursos llevo con X?' o para buscar por correo.",
     inputSchema: {
       query: z.string().min(2).describe("Nombre (o parte) o correo a buscar."),
-      withEmail: z
-        .boolean()
-        .optional()
-        .describe("Fuerza resolver el correo de cada coincidencia (más lento)."),
     },
   },
-  async ({ query, withEmail }) =>
-    tool(() => withSession((s) => findPeople(s, query, { withEmail }), { mode: MCP_MODE })),
+  async ({ query }) =>
+    tool(() => withSession((s) => findPeople(s, query), { mode: MCP_MODE })),
 );
 
 server.registerTool(
