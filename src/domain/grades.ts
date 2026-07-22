@@ -5,6 +5,7 @@ import { fetchUnsa } from "../core/http.js";
 import type { Session } from "../core/session.js";
 import { getEnrolledCourses } from "./courses.js";
 import { mapLimit } from "./concurrency.js";
+import { withCache } from "../core/cache.js";
 
 export interface GradeItem {
   name: string;
@@ -73,6 +74,16 @@ export async function getCourseGrades(
   session: Session,
   courseId: number,
   courseName = "",
+): Promise<CourseGrades> {
+  return withCache("grades", [session.siteUrl, courseId], () =>
+    fetchCourseGrades(session, courseId, courseName),
+  );
+}
+
+async function fetchCourseGrades(
+  session: Session,
+  courseId: number,
+  courseName: string,
 ): Promise<CourseGrades> {
   const url = `${session.siteUrl}/grade/report/user/index.php?id=${courseId}`;
   const res = await fetchUnsa(url, {

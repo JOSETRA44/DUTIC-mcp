@@ -26,6 +26,7 @@ import {
   listCourseParticipants,
 } from "../domain/people.js";
 import { fetchAulaPage } from "../domain/fetch.js";
+import { cacheInfo, clearCache, setCacheEnabled, setCacheRefresh } from "../core/cache.js";
 import { parseCourseName } from "../core/coursename.js";
 import { humanizeAgo } from "../core/dates.js";
 import { formatTaskLine } from "./format.js";
@@ -55,7 +56,31 @@ const program = new Command();
 program
   .name("dutic")
   .description("CLI del aula virtual DUTIC (Moodle UNSA): tareas, notas, cursos y materiales.")
-  .version(pkgVersion());
+  .version(pkgVersion())
+  .option("--refresh", "Ignora la caché y trae datos frescos (reescribe la caché).")
+  .option("--no-cache", "Desactiva la caché para este comando.")
+  .hook("preAction", (thisCommand) => {
+    const o = thisCommand.opts();
+    if (o.cache === false) setCacheEnabled(false);
+    if (o.refresh) setCacheRefresh(true);
+  });
+
+const cache = program.command("cache").description("Gestiona la caché local (perfiles, cursos…).");
+cache
+  .command("clear")
+  .description("Borra toda la caché.")
+  .action(async () => {
+    const n = await clearCache();
+    out(`${mark.ok()} Caché borrada (${n} entrada(s)).`);
+  });
+cache
+  .command("info")
+  .description("Muestra el tamaño de la caché.")
+  .action(async () => {
+    const i = await cacheInfo();
+    out(`${mark.info()} ${i.entries} entrada(s) · ${(i.bytes / 1024).toFixed(1)} KB`);
+    out(`  ${c.dim(i.dir)}`);
+  });
 
 program
   .command("setup")
@@ -271,7 +296,12 @@ program
         out(banner("Perfil", prof.name));
         out(`  ${c.dim("id:")}     ${prof.userId}`);
         out(`  ${c.dim("correo:")} ${prof.email ? c.cyan(prof.email) : c.gray("no visible")}`);
+        if (prof.role) {
+          const isTeacher = /profesor|docente|teacher/i.test(prof.role);
+          out(`  ${c.dim("rol:")}    ${isTeacher ? c.boldYellow(prof.role) : prof.role}`);
+        }
         out(`  ${c.dim("zona:")}   ${prof.timezone ?? "—"}`);
+        if (prof.lastAccessAt) out(`  ${c.dim("visto:")}  ${prof.lastAccessAt}`);
         out(`  ${c.dim("cursos:")} ${c.bold(String(prof.courses.length))}`);
         for (const cr of prof.courses) {
           out(`    ${mark.bullet()} ${cr.subject}${cr.group ? c.dim(` · ${cr.group}`) : ""} ${c.gray(`(id ${cr.courseId})`)}`);

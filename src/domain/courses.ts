@@ -1,4 +1,5 @@
 import { postAjax } from "../core/moodleClient.js";
+import { withCache } from "../core/cache.js";
 import type { Session } from "../core/session.js";
 import {
   type Course,
@@ -8,6 +9,10 @@ import {
 
 /** Lista los cursos en los que el usuario está matriculado. */
 export async function getEnrolledCourses(session: Session): Promise<Course[]> {
+  return withCache("courses", [session.siteUrl], () => fetchEnrolledCourses(session));
+}
+
+async function fetchEnrolledCourses(session: Session): Promise<Course[]> {
   const data = (await postAjax(
     session,
     "core_course_get_enrolled_courses_by_timeline_classification",
@@ -65,6 +70,12 @@ export async function getCourseState(
   session: Session,
   courseId: number,
 ): Promise<CourseState> {
+  return withCache("state", [session.siteUrl, courseId], () =>
+    fetchCourseState(session, courseId),
+  );
+}
+
+async function fetchCourseState(session: Session, courseId: number): Promise<CourseState> {
   const raw = await postAjax(session, "core_courseformat_get_state", {
     courseid: courseId,
   });
