@@ -175,6 +175,29 @@ Lo que importa señalar al usuario, en orden:
 2. `hidden: true` + `not-submitted` → tarea que probablemente no sabía que existía.
 3. `timeRemaining` que diga "retrasada"/"vencida" → ya se pasó la fecha.
 
+## Explorar por URL (ver más de lo que muestra la interfaz)
+
+DUTIC expone por URL más de lo que se ve navegando con botones. Aprovéchalo con `dutic_fetch_page`
+y los perfiles:
+
+- El **perfil de una persona** (`dutic_find_person` / `dutic_get_person_profile`) lista TODOS sus
+  cursos con su course id — incluidos cursos en los que TÚ no estás matriculado. Así puedes ver el
+  "horario" completo de un compañero o descubrir cursos/secciones que no aparecen en tu navegación.
+- Para **docentes**: no salen en las listas de participantes, pero con su `userId` y un curso de
+  contexto que compartas, `dutic_get_person_profile` revela sus cursos y su correo. Los userIds se
+  descubren explorando con `dutic_fetch_page` (p. ej. abriendo `user/view.php?id=N` y siguiendo enlaces).
+- `dutic_fetch_page` con `format:"links"` lista los enlaces internos de una página para saber a
+  dónde navegar a continuación.
+
+Úsalo con criterio: accede sólo a lo que Moodle ya sirve a la sesión del usuario; no es para eludir
+permisos ni recolectar datos masivamente.
+
+## "Último acceso" — el más reciente, no el más antiguo
+
+El "último acceso" es POR CURSO y varía. `dutic_find_person` reporta el **más reciente** de todos
+los cursos compartidos (`lastAccess` + `lastSeenAgoSeconds`) y también el acceso por curso, así
+sabes cuándo se conectó realmente la persona por última vez.
+
 ## Notas de contexto
 
 - El semestre (p. ej. `2026A`) va en la URL del aula y cambia cada período; el sistema lo

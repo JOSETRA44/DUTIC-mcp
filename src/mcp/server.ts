@@ -231,11 +231,12 @@ server.registerTool(
     title: "Buscar una persona por nombre o correo",
     description:
       "Busca a una persona entre los participantes de TODOS los cursos del usuario, por nombre o " +
-      "por correo. Abre su perfil y devuelve su correo, último acceso y TODOS sus cursos reales " +
-      "(con course id y grupo/sección, GA = Grupo A); cada curso trae `shared: true/false` según si " +
-      "TÚ llevas exactamente ese curso (mismo course id — nunca confunde tu sección con la suya). " +
-      "`sharedCount` = cuántos comparten. Úsalo para '¿quién es X?', '¿qué cursos lleva X?', '¿en " +
-      "qué cursos coincido con X?' o buscar por correo.",
+      "por correo. Abre su perfil y devuelve su correo, su acceso MÁS RECIENTE (`lastAccess` + " +
+      "`lastSeenAgoSeconds`; se toma el más reciente entre todos los cursos, no el más antiguo) y " +
+      "TODOS sus cursos reales (course id + grupo, GA = Grupo A). Cada curso trae `shared: true/false` " +
+      "según si TÚ llevas exactamente ese curso (mismo course id — nunca confunde tu sección con la " +
+      "suya) y, si lo compartes, su `lastAccess` a ese curso. `sharedCount` = cuántos comparten. " +
+      "Úsalo para '¿quién es X?', '¿qué cursos lleva X?', '¿cuándo se conectó X?' o buscar por correo.",
     inputSchema: {
       query: z.string().min(2).describe("Nombre (o parte) o correo a buscar."),
     },

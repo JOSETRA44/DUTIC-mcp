@@ -27,6 +27,7 @@ import {
 } from "../domain/people.js";
 import { fetchAulaPage } from "../domain/fetch.js";
 import { parseCourseName } from "../core/coursename.js";
+import { humanizeAgo } from "../core/dates.js";
 import { formatTaskLine } from "./format.js";
 import { banner, c, mark, progressBar, rule, statusLine, table } from "./ui.js";
 import { MCP_SERVER_PATH, runSetup } from "./setup.js";
@@ -233,7 +234,10 @@ program
         for (const p of found) {
           out(`\n${mark.arrow()} ${c.bold(p.name)}`);
           out(`  ${c.dim("correo:")}        ${p.email ? c.cyan(p.email) : c.gray("no visible")}`);
-          out(`  ${c.dim("último acceso:")} ${p.lastAccess ?? "—"}`);
+          out(
+            `  ${c.dim("visto:")}         ${p.lastAccess ?? c.gray("—")}` +
+              ` ${c.dim(`(${humanizeAgo(p.lastSeenAgoSeconds)}, lo más reciente)`)}`,
+          );
           out(
             `  ${c.dim("cursos:")}        ${c.bold(String(p.courses.length))} en total · ` +
               `${c.green(String(p.sharedCount))} contigo`,
@@ -241,7 +245,8 @@ program
           for (const cr of p.courses) {
             const grp = cr.group ? c.dim(` · ${cr.group}`) : "";
             const flag = cr.shared ? c.green("✓ contigo") : c.gray("· su curso");
-            out(`    ${cr.shared ? c.green("●") : c.gray("○")} ${cr.subject}${grp}  ${flag}`);
+            const acc = cr.shared && cr.lastAccess ? c.dim(`  visto ${cr.lastAccess}`) : "";
+            out(`    ${cr.shared ? c.green("●") : c.gray("○")} ${cr.subject}${grp}  ${flag}${acc}`);
           }
         }
       },
