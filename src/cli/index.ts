@@ -26,7 +26,11 @@ import {
   listCourseParticipants,
 } from "../domain/people.js";
 import { fetchAulaPage } from "../domain/fetch.js";
+import { getMyProfile } from "../domain/people.js";
+import { checkChanges } from "../domain/watch.js";
+import { captureSisacadGrades, loadSisacadGrades, type SisacadCapture } from "../domain/sisacad.js";
 import { cacheInfo, clearCache, setCacheEnabled, setCacheRefresh } from "../core/cache.js";
+import { formatDate, relativeDue } from "./format.js";
 import { parseCourseName } from "../core/coursename.js";
 import { humanizeAgo } from "../core/dates.js";
 import { formatTaskLine } from "./format.js";
@@ -125,6 +129,78 @@ program
     out(`${mark.info()} sitio:     ${s.siteUrl}`);
     out(`${mark.info()} capturada: ${new Date(s.capturedAt).toLocaleString("es-PE")}`);
     out(`${mark.info()} estado:    ${estado}`);
+  });
+
+program
+  .command("whoami")
+  .description("Muestra tu propio perfil (nombre, correo, id) y el estado de la sesión.")
+  .action(async () => {
+    await withSession(
+      async (session) => {
+        const me = await getMyProfile(session);
+        out(banner("Yo", me.name));
+        out(`  ${c.dim("correo:")}   ${me.email ? c.cyan(me.email) : c.gray("—")}`);
+        out(`  ${c.dim("id:")}       ${me.userId ?? "—"}`);
+        out(`  ${c.dim("sitio:")}    ${session.siteUrl}`);
+        out(`  ${c.dim("semestre:")} ${getSemester()}`);
+      },
+      { login: { onStatus: log } },
+    );
+  });
+
+program
+  .command("watch")
+  .description("Detecta qué cambió desde la última revisión: tareas nuevas/ocultas, notas, entregas.")
+  .option("--no-save", "No actualizar la línea base (sólo mostrar cambios).")
+  .option("--json", "Salida en JSON.")
+  .action(async (opts) => {
+    // Para detectar cambios reales hay que mirar datos frescos, no la caché.
+    setCacheRefresh(true);
+    await withSession(
+      async (session) => {
+        const status = statusLine();
+        status.set("revisando tareas y notas…");
+        const { changes, previousAt } = await checkChanges(session, { save: opts.save });
+        status.done();
+        if (opts.json) return out(JSON.stringify({ changes, previousAt }, null, 2));
+
+        out(banner("Novedades", previousAt ? `desde ${formatDate(Math.floor(previousAt / 1000))}` : "primera revisión"));
+        if (!previousAt) {
+          out(`${mark.info()} Línea base guardada. Vuelve a correr ${c.cyan("dutic watch")} más tarde para ver novedades.`);
+          return;
+        }
+        if (!changes || !changes.hasChanges) {
+          out(`${mark.ok()} Sin novedades desde la última revisión.`);
+          return;
+        }
+        if (changes.newTasks.length) {
+          out(`\n${rule("tareas nuevas")}`);
+          for (const t of changes.newTasks) {
+            const flag = t.hidden ? c.yellow("OCULTA") : c.dim("timeline");
+            const pend = t.submission === "not-submitted" ? c.boldRed(" · SIN ENTREGAR") : "";
+            out(`  ${c.boldGreen("+")} ${t.name} ${c.gray("[")}${flag}${c.gray("]")}${pend}`);
+            out(`    ${c.dim(t.courseName)}  ${t.dueDate ? c.dim(`entrega ${formatDate(t.dueDate)} (${relativeDue(t.dueDate)})`) : ""}`);
+          }
+        }
+        if (changes.newGrades.length) {
+          out(`\n${rule("notas publicadas")}`);
+          for (const g of changes.newGrades) out(`  ${c.cyan("★")} ${g.item}: ${c.bold(g.grade ?? "")}  ${c.dim(g.courseName)}`);
+        }
+        if (changes.gradeChanges.length) {
+          out(`\n${rule("notas modificadas")}`);
+          for (const g of changes.gradeChanges) out(`  ${c.cyan("~")} ${g.grade.item}: ${g.from} → ${c.bold(g.to ?? "")}  ${c.dim(g.grade.courseName)}`);
+        }
+        if (changes.submissionChanges.length) {
+          out(`\n${rule("cambios de entrega")}`);
+          for (const s of changes.submissionChanges) out(`  ${c.blue("»")} ${s.task.name}: ${s.from} → ${s.to}`);
+        }
+        if (changes.dueDateChanges.length) {
+          out(`\n${rule("fechas cambiadas")}`);
+          for (const d of changes.dueDateChanges) out(`  ${c.yellow("!")} ${d.task.name}: ${formatDate(d.from)} → ${c.bold(formatDate(d.to))}`);
+        }
+      },
+      { login: { onStatus: log } },
+    );
   });
 
 program
@@ -368,6 +444,45 @@ program
       },
       { login: { onStatus: log } },
     );
+  });
+
+function renderSisacad(cap: SisacadCapture): void {
+  out(banner("SISACAD · Notas parciales", cap.header ?? `capturado ${new Date(cap.capturedAt).toLocaleString("es-PE")}`));
+  const t = cap.gradesTable;
+  if (!t || t.length === 0) {
+    out(`${mark.warn()} No se detectó una tabla de notas clara. Tablas capturadas: ${cap.tables.length}.`);
+    out(c.dim("  Usa `dutic sisacad show --json` para ver el contenido crudo."));
+    return;
+  }
+  const [head, ...rows] = t;
+  const cols = head.map((h) => ({ header: h || "—" }));
+  out(table(cols, rows.map((r) => r.map((cell) => cell || "—"))));
+}
+
+const sisacad = program
+  .command("sisacad")
+  .description("Integra tus notas de SISACAD (consulta de notas parciales UNSA). Tú haces el login+CAPTCHA.");
+sisacad
+  .action(async () => {
+    log(c.dim("Se abrirá SISACAD. Ingresa con tu usuario/clave y resuelve el CAPTCHA; el resto es automático."));
+    const cap = await captureSisacadGrades({ onStatus: log });
+    renderSisacad(cap);
+  });
+sisacad
+  .command("show")
+  .description("Muestra las notas de SISACAD ya capturadas (sin abrir el navegador).")
+  .option("--json", "Salida en JSON.")
+  .action(async (opts) => {
+    const cap = await loadSisacadGrades();
+    if (!cap) {
+      out(`${mark.warn()} No hay notas de SISACAD guardadas. Ejecuta ${c.cyan("dutic sisacad")}.`);
+      return;
+    }
+    if (opts.json) {
+      out(JSON.stringify(cap, null, 2));
+      return;
+    }
+    renderSisacad(cap);
   });
 
 program

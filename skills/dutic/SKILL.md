@@ -62,6 +62,14 @@ Si el servidor MCP `dutic` está disponible, usa estas herramientas (son la fuen
   adjuntos de la consigna (guías/rúbricas, legibles con `dutic_read_resource`), fechas oficiales de
   apertura y cierre, estado de entrega, nota y quién calificó. Incluye `dateConflict` y
   `datesInDescription` (ver abajo). Úsalo cuando pregunte qué pide una tarea o cuándo se entrega.
+- `dutic_check_changes` — args: `save?`. **Novedades**: compara con la última revisión y devuelve lo
+  nuevo/cambiado — tareas nuevas (incl. ocultas), notas publicadas o modificadas, cambios de entrega y
+  de fecha. Úsalo para "¿hay algo nuevo?" o un chequeo periódico. Usa datos frescos (ignora la caché).
+- `dutic_whoami` — tu propio perfil (nombre, correo, id).
+- `dutic_get_sisacad_grades` — notas parciales oficiales de **SISACAD** (sistema aparte con CAPTCHA).
+  Sólo LEE lo que el usuario ya capturó con el comando `dutic sisacad` (él hace su propio login y
+  resuelve el CAPTCHA); no abre navegador ni accede a datos de terceros. Si no hay datos, dile que
+  ejecute `dutic sisacad` en una terminal.
 - `dutic_get_grades` — args: `courseId?`. **Calificaciones**: sin `courseId`, resumen de todos los
   cursos (nota total + cuántos ítems por calificar); con `courseId`, detalle por ítem (nota, rango, %).
   Úsalo cuando el usuario pregunte por sus notas, promedio, o cómo va.
@@ -128,6 +136,8 @@ dutic tasks                 # tareas próximas del timeline (rápido)
 dutic tasks --all           # + barrido de cursos → incluye OCULTAS (usa esto para "pendientes")
 dutic tasks --hidden        # sólo las ocultas
 dutic tasks --all --fast    # sin scrapear estado de entrega (más rápido, menos detalle)
+dutic watch                 # novedades desde la última revisión (tareas/notas nuevas)
+dutic whoami                # tu propio perfil
 dutic grades                # resumen de notas de todos los cursos
 dutic grades <id>           # detalle de notas de un curso
 dutic task <cmid>           # detalle de una tarea: consigna, fechas, adjuntos, conflictos

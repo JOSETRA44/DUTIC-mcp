@@ -287,6 +287,26 @@ function extractProfileCourses($: cheerio.CheerioAPI): ProfileCourse[] {
   return out;
 }
 
+export interface MyProfile {
+  userId: number | null;
+  name: string;
+  email: string | null;
+}
+
+/** Perfil del propio usuario (para `whoami`): nombre, correo e id, desde `user/profile.php`. */
+export async function getMyProfile(session: Session): Promise<MyProfile> {
+  const html = await getHtml(session, `${session.siteUrl}/user/profile.php`);
+  const $ = cheerio.load(html);
+  const name =
+    clean($(".page-header-headings h1").first().text()) ||
+    clean(/informaci[oó]n personal:\s*([^|]+)/i.exec($("title").text())?.[1] ?? "") ||
+    "(desconocido)";
+  const email = extractEmail($);
+  const editHref = $('a[href*="user/edit.php"], a[href*="user/editadvanced.php"]').attr("href") ?? "";
+  const userId = Number(/id=(\d+)/.exec(editHref)?.[1] ?? 0) || null;
+  return { userId, name, email };
+}
+
 /**
  * Docentes de un curso. En este Moodle los profesores no aparecen en la lista de participantes
  * del alumno, así que se combinan dos fuentes: los "contactos" que expone la API de cursos y el
