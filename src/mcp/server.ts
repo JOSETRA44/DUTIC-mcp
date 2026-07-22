@@ -34,7 +34,7 @@ import {
 import { fetchAulaPage } from "../domain/fetch.js";
 import { getMyProfile } from "../domain/people.js";
 import { checkChanges } from "../domain/watch.js";
-import { loadSisacadGrades } from "../domain/sisacad.js";
+import { compareSisacadWithMoodle, loadSisacadGrades } from "../domain/sisacad.js";
 import { setCacheRefresh } from "../core/cache.js";
 
 /**
@@ -210,10 +210,11 @@ server.registerTool(
   {
     title: "Notas de SISACAD (parciales oficiales)",
     description:
-      "Devuelve las notas parciales de SISACAD que el usuario capturó con el comando `dutic sisacad` " +
-      "(SISACAD es un sistema aparte con CAPTCHA; el usuario hace su propio login). Sólo lee lo ya " +
-      "guardado — no abre navegador ni accede a datos de terceros. Si no hay datos, indícale al " +
-      "usuario que ejecute `dutic sisacad` en una terminal.",
+      "Devuelve las notas parciales OFICIALES de SISACAD que el usuario capturó con `dutic sisacad` " +
+      "(sistema aparte del aula, protegido con CAPTCHA; el usuario hace su propio login). Cada curso " +
+      "trae sus ítems (parcial, nota 0-20, peso %, ausente) y el `weightedAverageSoFar` (promedio " +
+      "ponderado con lo ya calificado). Sólo lee lo ya guardado — no abre navegador ni accede a datos " +
+      "de terceros. Si no hay datos, indícale al usuario que ejecute `dutic sisacad` en una terminal.",
     inputSchema: {},
   },
   async () =>
@@ -229,8 +230,41 @@ server.registerTool(
         available: true,
         capturedAt: new Date(cap.capturedAt).toISOString(),
         header: cap.header,
-        gradesTable: cap.gradesTable,
+        courses: cap.courses,
       };
+    }),
+);
+
+server.registerTool(
+  "dutic_compare_grades",
+  {
+    title: "Comparar notas SISACAD vs. Moodle",
+    description:
+      "Compara el promedio ponderado de SISACAD (oficial) con el total que calcula Moodle, curso por " +
+      "curso (usando el nombre normalizado, sin confundir 'II' con 'III'). Útil para detectar si el " +
+      "aula virtual y el sistema oficial de notas están desincronizados. Requiere haber capturado " +
+      "antes con `dutic sisacad`; si no hay datos, avisa al usuario.",
+    inputSchema: {},
+  },
+  async () =>
+    tool(async () => {
+      const cap = await loadSisacadGrades();
+      if (!cap) {
+        return {
+          available: false,
+          message: "No hay notas de SISACAD guardadas. Ejecuta `dutic sisacad` en una terminal.",
+        };
+      }
+      return withSession(async (s) => {
+        const moodleGrades = await getAllGrades(s);
+        return {
+          available: true,
+          discrepancies: compareSisacadWithMoodle(
+            cap.courses,
+            moodleGrades.map((g) => ({ courseName: g.courseName, total: g.total })),
+          ),
+        };
+      }, { mode: MCP_MODE });
     }),
 );
 
