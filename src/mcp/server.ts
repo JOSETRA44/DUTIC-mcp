@@ -31,6 +31,7 @@ import {
   getPersonProfile,
   listCourseParticipants,
 } from "../domain/people.js";
+import { fetchAulaPage } from "../domain/fetch.js";
 
 /**
  * En contexto MCP la renovación de sesión es "headless-only": si el SSO de Google sigue
@@ -230,10 +231,11 @@ server.registerTool(
     title: "Buscar una persona por nombre o correo",
     description:
       "Busca a una persona entre los participantes de TODOS los cursos del usuario, por nombre o " +
-      "por correo institucional. Devuelve su correo, su último acceso y SÓLO los cursos que " +
-      "realmente comparte contigo (verificados; nunca cursos ajenos), cada uno con su grupo/sección " +
-      "(GA = Grupo A). El campo `via` indica si se confirmó por la lista de participantes o por su " +
-      "perfil (otro grupo). Úsalo para '¿quién es X?', '¿en qué cursos llevo con X?' o buscar por correo.",
+      "por correo. Abre su perfil y devuelve su correo, último acceso y TODOS sus cursos reales " +
+      "(con course id y grupo/sección, GA = Grupo A); cada curso trae `shared: true/false` según si " +
+      "TÚ llevas exactamente ese curso (mismo course id — nunca confunde tu sección con la suya). " +
+      "`sharedCount` = cuántos comparten. Úsalo para '¿quién es X?', '¿qué cursos lleva X?', '¿en " +
+      "qué cursos coincido con X?' o buscar por correo.",
     inputSchema: {
       query: z.string().min(2).describe("Nombre (o parte) o correo a buscar."),
     },
@@ -245,17 +247,45 @@ server.registerTool(
 server.registerTool(
   "dutic_get_person_profile",
   {
-    title: "Perfil de una persona",
+    title: "Perfil de una persona (por id)",
     description:
-      "Perfil de un participante: correo institucional, zona horaria y cursos que comparte contigo. " +
-      "Necesita el userId (lo da dutic_list_participants o dutic_find_person).",
+      "Perfil de CUALQUIER usuario por su userId (sirve también para DOCENTES): correo, zona horaria " +
+      "y TODOS sus cursos con course id y grupo. Para que Moodle revele sus cursos, pasa en `courseId` " +
+      "un curso que compartas con esa persona (contexto). Combínalo con dutic_fetch_page para " +
+      "descubrir userIds explorando URLs (user/view.php?id=N).",
     inputSchema: {
       userId: z.number().int().positive(),
-      courseId: z.number().int().positive().optional(),
+      courseId: z
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .describe("Curso de contexto (uno que compartas) para que se listen sus cursos."),
     },
   },
   async ({ userId, courseId }) =>
     tool(() => withSession((s) => getPersonProfile(s, userId, courseId), { mode: MCP_MODE })),
+);
+
+server.registerTool(
+  "dutic_fetch_page",
+  {
+    title: "Explorar cualquier página del aula por URL",
+    description:
+      "Descarga CUALQUIER página del aula virtual con la sesión activa y devuelve su contenido. " +
+      "Pensada para explorar Moodle 'jugando con las URLs' — cambiar ids, ver páginas a las que no " +
+      "llegas por un botón: perfiles (user/view.php?id=N), cursos, foros, calificadores, etc. " +
+      "`format`: 'text' (texto legible), 'html' (crudo, para inspeccionar), 'links' (sólo enlaces " +
+      "internos, para descubrir a dónde navegar). Restringida al host del aula. Úsala cuando el " +
+      "usuario quiera investigar algo que las otras herramientas no cubren, o para descubrir ids.",
+    inputSchema: {
+      url: z.string().describe("URL completa del aula o ruta (p. ej. 'user/view.php?id=3492&course=2271')."),
+      format: z.enum(["text", "html", "links"]).default("text"),
+      maxChars: z.number().int().positive().default(20_000),
+    },
+  },
+  async ({ url, format, maxChars }) =>
+    tool(() => withSession((s) => fetchAulaPage(s, url, format, maxChars), { mode: MCP_MODE })),
 );
 
 server.registerTool(

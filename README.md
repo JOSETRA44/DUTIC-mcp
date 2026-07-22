@@ -104,7 +104,9 @@ Si ves tus tareas, ya está todo listo. Pídeselo también a tu agente:
 | `dutic read <url>` | Lee un recurso (PDF→Markdown) para analizarlo |
 | `dutic md <archivo.pdf>` | Convierte un PDF local a Markdown |
 | `dutic people <id>` | Todos los compañeros del curso, con correo (`--no-email` para omitir) |
-| `dutic person <texto>` | Busca por nombre/correo: su correo y los cursos que comparte contigo, con el grupo de cada uno |
+| `dutic person <texto>` | Busca por nombre/correo: su correo y **sus cursos reales** (con grupo), marcando cuáles compartes |
+| `dutic profile <userId>` | Perfil de cualquier id (docentes incluidos): correo y sus cursos |
+| `dutic fetch <url>` | Explora cualquier página del aula por URL (cambiar ids, ver lo que no tiene botón) |
 | `dutic teachers <id>` | Docentes del curso |
 | `dutic pull <id>` | Descarga todos los materiales |
 | `dutic setup` / `dutic login` / `dutic status` | Configuración y sesión |
@@ -152,10 +154,11 @@ Si tu cliente no resuelve comandos del PATH, usa la ruta absoluta que imprime `d
 `{ "command": "node", "args": ["<ruta>/dist/mcp/server.js"] }`
 </details>
 
-**19 herramientas**: tareas (`dutic_list_tasks`, `dutic_get_assignment_detail`, …), notas
+**20 herramientas**: tareas (`dutic_list_tasks`, `dutic_get_assignment_detail`, …), notas
 (`dutic_get_grades`), materiales (`dutic_list_course_materials`, `dutic_study_course`,
 `dutic_read_resource`, `dutic_pdf_to_markdown`), personas (`dutic_list_participants`,
-`dutic_find_person`, `dutic_get_course_teachers`) y sesión.
+`dutic_find_person`, `dutic_get_person_profile`, `dutic_get_course_teachers`), exploración por URL
+(`dutic_fetch_page`) y sesión.
 
 ---
 

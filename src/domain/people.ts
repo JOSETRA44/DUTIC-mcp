@@ -20,13 +20,23 @@ export interface Participant {
   email?: string | null;
 }
 
+export interface ProfileCourse {
+  /** id real del curso de ESA persona (puede diferir del mío: otra sección). */
+  courseId: number;
+  /** Asignatura limpia (sin prefijo ni grupo). */
+  subject: string;
+  /** Grupo/sección (GA → Grupo A). */
+  group: string | null;
+  fullname: string;
+}
+
 export interface PersonProfile {
   userId: number;
   name: string;
   email: string | null;
   timezone: string | null;
-  /** Cursos en los que esa persona coincide contigo. */
-  courses: string[];
+  /** TODOS los cursos que esa persona lleva (según su perfil), con su course id y grupo reales. */
+  courses: ProfileCourse[];
 }
 
 function headers(session: Session): Record<string, string> {
@@ -174,10 +184,20 @@ export async function getPersonProfile(
   const html = await getHtml(session, url);
   const $ = cheerio.load(html);
 
-  // En contexto de curso el <h1> puede ser el nombre del curso, así que se prefiere el nombre
-  // ya conocido del listado de participantes.
+  // En contexto de curso el <h1> es el NOMBRE DEL CURSO, no de la persona. El nombre real está
+  // en el alt de la foto de perfil o en el <title> tras "Información personal:".
+  const looksLikeCourse = (t: string) => /^\d{2}[A-Z]\s+[A-ZÁÉÍÓÚÑ]/.test(t);
   const heading = clean($(".page-header-headings h1").first().text());
-  const name = fallbackName || heading || `usuario ${userId}`;
+  const picAlt = clean($(".page-context-header img[alt]").attr("alt") ?? "");
+  const titleName = clean(
+    /informaci[oó]n personal:\s*([^|]+)/i.exec($("title").text())?.[1] ?? "",
+  );
+  const name =
+    fallbackName ||
+    picAlt ||
+    titleName ||
+    (heading && !looksLikeCourse(heading) ? heading : "") ||
+    `usuario ${userId}`;
 
   const email = extractEmail($);
 
@@ -185,13 +205,32 @@ export async function getPersonProfile(
   // Cortar en la siguiente mayúscula para no arrastrar el texto pegado ("America/LimaDetalles").
   const timezone = /(?:America|Europe|Asia)\/[A-Z][a-z_]+|UTC[+-]?\d*/.exec(profileText)?.[0] ?? null;
 
-  // Enlaces a cursos del perfil, descartando etiquetas genéricas ("Curso", "Cursos"…).
-  const courses = $('.userprofile a[href*="course/view.php"], a[href*="course/view.php"]')
-    .map((_, a) => clean($(a).text()))
-    .get()
-    .filter((t) => t.length > 8 && !/^cursos?$/i.test(t));
+  return { userId, name, email, timezone, courses: extractProfileCourses($) };
+}
 
-  return { userId, name, email, timezone, courses: [...new Set(courses)] };
+/**
+ * Extrae los cursos REALES de la persona del nodo "Perfiles de curso". Cada curso es un enlace
+ * `user/view.php?id=<userId>&course=<COURSE_ID>` cuyo texto es el nombre completo con su grupo.
+ * El course id sale del propio enlace — así se identifica el curso exacto (y su sección), sin
+ * confundirlo con un curso mío de nombre parecido pero otro grupo.
+ */
+function extractProfileCourses($: cheerio.CheerioAPI): ProfileCourse[] {
+  const node = $(".node_category, .contentnode")
+    .filter((_, e) => /perfiles de curso|course profiles/i.test($(e).text()))
+    .first();
+  const scope = node.length ? node : $(".userprofile");
+  const out: ProfileCourse[] = [];
+  const seen = new Set<number>();
+  scope.find('a[href*="user/view.php"]').each((_, a) => {
+    const href = $(a).attr("href") ?? "";
+    const courseId = Number(/[?&]course=(\d+)/.exec(href)?.[1] ?? 0);
+    const fullname = clean($(a).text());
+    if (!courseId || seen.has(courseId) || fullname.length < 6) return;
+    seen.add(courseId);
+    const parsed = parseCourseName(fullname);
+    out.push({ courseId, subject: parsed.subject, group: parsed.group, fullname });
+  });
+  return out;
 }
 
 /**
@@ -230,18 +269,13 @@ export async function getCourseTeachers(
   return [...new Set([...fromApi, ...fromList, ...fromGrading])];
 }
 
-export interface SharedCourse {
+export interface PersonCourse {
+  /** Course id real de ESA persona (puede ser una sección distinta a la tuya). */
   courseId: number;
-  courseName: string;
-  /** Grupo/sección: del listado de participantes o del sufijo del nombre (GA → Grupo A). */
+  subject: string;
   group: string | null;
-  role: string | null;
-  /**
-   * Cómo se confirmó que comparten el curso: "participants" (aparece en tu lista de participantes,
-   * mismo grupo) o "profile" (Moodle lo lista en su perfil y coincide con un curso tuyo — suele ser
-   * otro grupo). Ambas son fiables; se descartan los cursos del perfil que NO son tuyos.
-   */
-  via: "participants" | "profile";
+  /** true si TÚ llevas exactamente ese curso (mismo course id). */
+  shared: boolean;
 }
 
 export interface PersonMatch {
@@ -249,18 +283,14 @@ export interface PersonMatch {
   name: string;
   email: string | null;
   lastAccess: string | null;
-  /** Cursos que esa persona comparte CONTIGO (verificados; sin cursos ajenos). */
-  courses: SharedCourse[];
+  /** TODOS los cursos que la persona lleva (de su perfil), con flag `shared` por cada uno. */
+  courses: PersonCourse[];
+  /** Cuántos de esos cursos compartes con ella. */
+  sharedCount: number;
 }
 
 /** Normaliza para comparar ignorando mayúsculas y acentos. */
 const fold = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-
-/** Grupo efectivo de un curso para una persona: el del listado, o el del sufijo del nombre. */
-function effectiveGroup(participantGroup: string | null, courseName: string): string | null {
-  if (participantGroup && !/no hay grupos/i.test(participantGroup)) return participantGroup;
-  return parseCourseName(courseName).group;
-}
 
 export interface FindPeopleOptions {
   concurrency?: number;
@@ -269,9 +299,10 @@ export interface FindPeopleOptions {
 }
 
 /**
- * Busca personas entre los participantes de TODOS tus cursos, por nombre o por correo. Devuelve
- * SÓLO los cursos que la persona comparte contigo (verificados por lista de participantes y por
- * el perfil cruzado contra tus cursos) — nunca cursos ajenos. Añade el grupo de cada curso.
+ * Busca personas entre los participantes de TODOS tus cursos, por nombre o por correo. Para cada
+ * coincidencia abre su PERFIL y extrae sus cursos reales (course id + grupo). Marca cuáles
+ * compartes contigo por **course id exacto** — así nunca confunde tu sección con la suya (p. ej.
+ * "Derecho GA" de la persona vs tu "Derecho GD"). Muestra qué cursos lleva y cuáles contigo.
  */
 export async function findPeople(
   session: Session,
@@ -283,70 +314,54 @@ export async function findPeople(
   const q = fold(query);
 
   const myCourses = await getEnrolledCourses(session);
-  // Índice de MIS cursos por clave normalizada, para validar los cursos del perfil ajeno.
-  const myByKey = new Map<string, { id: number; fullname: string }>();
-  for (const c of myCourses) myByKey.set(parseCourseName(c.fullname).key, { id: c.id, fullname: c.fullname });
+  const myCourseIds = new Set(myCourses.map((c) => c.id));
 
+  // 1) Localizar candidatos escaneando tus listas de participantes (con nombre + un curso de contexto).
   let scanned = 0;
   const perCourse = await mapLimit(myCourses, concurrency, async (c) => {
     const list = await listCourseParticipants(session, c.id).catch(() => [] as Participant[]);
     onProgress?.({ phase: "cursos", done: ++scanned, total: myCourses.length, label: c.fullname });
-    return list.map((p) => ({ p, courseName: c.fullname }));
+    return list.map((p) => ({ p, contextCourseId: c.id }));
   });
 
-  // Agrupar por persona con los cursos donde aparece en TU lista de participantes.
-  const byUser = new Map<number, PersonMatch>();
-  for (const { p, courseName } of perCourse.flat()) {
-    const shared: SharedCourse = {
-      courseId: p.courseId,
-      courseName,
-      group: effectiveGroup(p.group, courseName),
-      role: p.role,
-      via: "participants",
-    };
-    const existing = byUser.get(p.userId);
-    if (existing) {
-      if (!existing.courses.some((x) => x.courseId === shared.courseId)) existing.courses.push(shared);
-    } else {
-      byUser.set(p.userId, {
-        userId: p.userId,
-        name: p.name,
-        email: null,
-        lastAccess: p.lastAccess,
-        courses: [shared],
-      });
-    }
-  }
+  const byUser = new Map<number, { p: Participant; contextCourseId: number }>();
+  for (const item of perCourse.flat()) if (!byUser.has(item.p.userId)) byUser.set(item.p.userId, item);
 
   const candidates = [...byUser.values()];
-  const byName = candidates.filter((p) => fold(p.name).includes(q));
-  const pool = looksLikeEmail ? candidates : byName;
+  const pool = looksLikeEmail
+    ? candidates
+    : candidates.filter(({ p }) => fold(p.name).includes(q));
 
-  // Enriquecer con perfil: correo + cursos del perfil que coincidan con los MÍOS (otro grupo).
+  // 2) Para cada candidato, abrir su perfil y extraer sus cursos reales (id + grupo).
   let done = 0;
-  const enriched = await mapLimit(pool, concurrency, async (p) => {
-    const prof = await getPersonProfile(session, p.userId, p.courses[0]?.courseId, p.name).catch(
-      () => null,
-    );
+  const enriched = await mapLimit(pool, concurrency, async ({ p, contextCourseId }) => {
+    const prof = await getPersonProfile(session, p.userId, contextCourseId, p.name).catch(() => null);
     onProgress?.({ phase: "perfiles", done: ++done, total: pool.length, label: p.name });
-    if (prof) {
-      const known = new Set(p.courses.map((x) => x.courseId));
-      for (const pcName of prof.courses) {
-        const mine = myByKey.get(parseCourseName(pcName).key);
-        // Sólo si coincide con un curso MÍO y no lo teníamos ya (recupera cursos de otro grupo).
-        if (mine && !known.has(mine.id)) {
-          known.add(mine.id);
-          p.courses.push({
-            courseId: mine.id,
-            courseName: mine.fullname,
-            group: parseCourseName(pcName).group ?? parseCourseName(mine.fullname).group,
-            role: null,
-            via: "profile",
-          });
-        }
+
+    const courses: PersonCourse[] = (prof?.courses ?? []).map((pc) => ({
+      courseId: pc.courseId,
+      subject: pc.subject,
+      group: pc.group,
+      shared: myCourseIds.has(pc.courseId),
+    }));
+    // Si el perfil no expuso cursos, al menos deja constancia del curso donde lo encontraste.
+    if (courses.length === 0) {
+      const c = myCourses.find((x) => x.id === contextCourseId);
+      if (c) {
+        const parsed = parseCourseName(c.fullname);
+        courses.push({ courseId: c.id, subject: parsed.subject, group: parsed.group, shared: true });
       }
     }
-    return { ...p, email: prof?.email ?? null };
+    courses.sort((a, b) => Number(b.shared) - Number(a.shared));
+
+    return {
+      userId: p.userId,
+      name: prof?.name || p.name,
+      email: prof?.email ?? null,
+      lastAccess: p.lastAccess,
+      courses,
+      sharedCount: courses.filter((x) => x.shared).length,
+    } satisfies PersonMatch;
   });
 
   return enriched.filter((p) => fold(p.name).includes(q) || (p.email ?? "").toLowerCase().includes(q));

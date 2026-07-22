@@ -68,11 +68,18 @@ Si el servidor MCP `dutic` está disponible, usa estas herramientas (son la fuen
 - `dutic_list_participants` — args: `courseId`, `withEmail?`. **Todos** los compañeros del curso
   (recorre la paginación completa): nombre, rol, grupo, último acceso y, con `withEmail`, su correo.
   Con grupos separados Moodle sólo muestra los del grupo del usuario: es normal.
-- `dutic_find_person` — args: `query`. Busca a alguien en TODOS sus cursos por nombre o **por
-  correo**. Devuelve su correo, último acceso y **sólo los cursos que realmente comparte contigo**
-  (verificados; nunca cursos ajenos), cada uno con su **grupo** (GA = Grupo A). El campo `via` dice
-  si se confirmó por la lista de participantes (mismo grupo) o por su perfil (otro grupo). Úsalo
-  para "¿quién es X?", "¿en qué cursos llevo con X y en qué grupo?" o "dame el correo de X".
+- `dutic_find_person` — args: `query`. Busca a alguien por nombre o **correo** y abre su perfil.
+  Devuelve su correo, último acceso y **TODOS sus cursos reales** (course id + grupo, GA = Grupo A);
+  cada curso trae `shared` = si TÚ llevas exactamente ese curso (comparado por **course id exacto**,
+  nunca confunde tu sección con la suya). `sharedCount` = cuántos comparten. Úsalo para "¿quién es
+  X?", "¿qué cursos lleva X?", "¿en qué coincido con X y en qué grupo?" o "dame el correo de X".
+- `dutic_get_person_profile` — args: `userId`, `courseId?`. Perfil de CUALQUIER id (también
+  **docentes**): correo, zona horaria y sus cursos con id y grupo. Pasa en `courseId` un curso que
+  compartas para que Moodle liste sus cursos.
+- `dutic_fetch_page` — args: `url`, `format` (`text`|`html`|`links`), `maxChars`. **Explora
+  cualquier página del aula por URL** con la sesión activa — cambia ids, mira páginas sin botón
+  directo (perfiles, foros, calificadores…). Es la vía para descubrir userIds (p. ej. de docentes)
+  y datos que las demás herramientas no cubren. Restringida al host del aula.
 - `dutic_get_person_profile` — args: `userId`, `courseId?`. Correo, zona horaria y cursos compartidos.
 - `dutic_get_course_teachers` — args: `courseId`. Docentes del curso. En esta aula los profesores no
   salen en participantes, así que se deducen de los contactos y de **quién calificó** las tareas.
@@ -124,7 +131,9 @@ dutic grades                # resumen de notas de todos los cursos
 dutic grades <id>           # detalle de notas de un curso
 dutic task <cmid>           # detalle de una tarea: consigna, fechas, adjuntos, conflictos
 dutic people <id>           # todos los compañeros del curso, con su correo (--no-email para omitir)
-dutic person <texto>        # busca por nombre/correo: da su correo y TODOS los cursos contigo
+dutic person <texto>        # busca por nombre/correo: correo + sus cursos reales y cuáles contigo
+dutic profile <userId> [--course <id>]  # perfil de cualquier id (docentes incluidos)
+dutic fetch <url> [--format text|html|links]  # explora cualquier página del aula por URL
 dutic teachers <id>         # docentes del curso
 dutic courses               # cursos matriculados
 dutic course tasks <id>     # tareas de un curso

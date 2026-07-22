@@ -25,6 +25,7 @@ import {
   getPersonProfile,
   listCourseParticipants,
 } from "../domain/people.js";
+import { fetchAulaPage } from "../domain/fetch.js";
 import { parseCourseName } from "../core/coursename.js";
 import { formatTaskLine } from "./format.js";
 import { banner, c, mark, progressBar, rule, statusLine, table } from "./ui.js";
@@ -233,12 +234,65 @@ program
           out(`\n${mark.arrow()} ${c.bold(p.name)}`);
           out(`  ${c.dim("correo:")}        ${p.email ? c.cyan(p.email) : c.gray("no visible")}`);
           out(`  ${c.dim("último acceso:")} ${p.lastAccess ?? "—"}`);
-          out(`  ${c.dim("cursos contigo:")} ${c.bold(String(p.courses.length))}`);
+          out(
+            `  ${c.dim("cursos:")}        ${c.bold(String(p.courses.length))} en total · ` +
+              `${c.green(String(p.sharedCount))} contigo`,
+          );
           for (const cr of p.courses) {
             const grp = cr.group ? c.dim(` · ${cr.group}`) : "";
-            const via = cr.via === "profile" ? c.gray(" (otro grupo)") : "";
-            out(`    ${mark.bullet()} ${parseCourseName(cr.courseName).subject}${grp}${via}`);
+            const flag = cr.shared ? c.green("✓ contigo") : c.gray("· su curso");
+            out(`    ${cr.shared ? c.green("●") : c.gray("○")} ${cr.subject}${grp}  ${flag}`);
           }
+        }
+      },
+      { login: { onStatus: log } },
+    );
+  });
+
+program
+  .command("profile <userId>")
+  .description("Perfil de cualquier usuario por id: correo y sus cursos (sirve para docentes).")
+  .option("--course <id>", "Curso de contexto que revela sus cursos (usa uno que compartas).")
+  .option("--json", "Salida en JSON.")
+  .action(async (userId, opts) => {
+    await withSession(
+      async (session) => {
+        const prof = await getPersonProfile(
+          session,
+          Number(userId),
+          opts.course ? Number(opts.course) : undefined,
+        );
+        if (opts.json) return out(JSON.stringify(prof, null, 2));
+        out(banner("Perfil", prof.name));
+        out(`  ${c.dim("id:")}     ${prof.userId}`);
+        out(`  ${c.dim("correo:")} ${prof.email ? c.cyan(prof.email) : c.gray("no visible")}`);
+        out(`  ${c.dim("zona:")}   ${prof.timezone ?? "—"}`);
+        out(`  ${c.dim("cursos:")} ${c.bold(String(prof.courses.length))}`);
+        for (const cr of prof.courses) {
+          out(`    ${mark.bullet()} ${cr.subject}${cr.group ? c.dim(` · ${cr.group}`) : ""} ${c.gray(`(id ${cr.courseId})`)}`);
+        }
+        if (!prof.courses.length) {
+          log(c.dim("  (sin cursos visibles; prueba --course <id de un curso que compartas>)"));
+        }
+      },
+      { login: { onStatus: log } },
+    );
+  });
+
+program
+  .command("fetch <url>")
+  .description("Descarga cualquier página del aula con tu sesión (explorar por URL, cambiar ids…).")
+  .option("--format <f>", "text | html | links", "text")
+  .option("--max <n>", "Máximo de caracteres.", "20000")
+  .action(async (url, opts) => {
+    await withSession(
+      async (session) => {
+        const r = await fetchAulaPage(session, url, opts.format, Number(opts.max));
+        log(c.dim(`# ${r.finalUrl} (${r.status})`));
+        if (opts.format === "links" && r.links) {
+          for (const l of r.links) out(`${c.cyan(l.href)}  ${c.dim(l.text)}`);
+        } else {
+          out(r.content);
         }
       },
       { login: { onStatus: log } },
