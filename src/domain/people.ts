@@ -7,6 +7,7 @@ import { getCourseState, getEnrolledCourses } from "./courses.js";
 import { getAssignDetail } from "./assign.js";
 import { mapLimit } from "./concurrency.js";
 import { parseCourseName } from "../core/coursename.js";
+import { relativeAccessToSeconds } from "../core/dates.js";
 
 export interface Participant {
   userId: number;
@@ -276,13 +277,18 @@ export interface PersonCourse {
   group: string | null;
   /** true si TÚ llevas exactamente ese curso (mismo course id). */
   shared: boolean;
+  /** Último acceso a ESE curso (sólo disponible para los cursos que compartes). */
+  lastAccess?: string | null;
 }
 
 export interface PersonMatch {
   userId: number;
   name: string;
   email: string | null;
+  /** Acceso MÁS RECIENTE entre todos los cursos que comparten (no el más antiguo). */
   lastAccess: string | null;
+  /** Segundos transcurridos desde ese acceso más reciente (Infinity si nunca). */
+  lastSeenAgoSeconds: number;
   /** TODOS los cursos que la persona lleva (de su perfil), con flag `shared` por cada uno. */
   courses: PersonCourse[];
   /** Cuántos de esos cursos compartes con ella. */
@@ -324,8 +330,23 @@ export async function findPeople(
     return list.map((p) => ({ p, contextCourseId: c.id }));
   });
 
-  const byUser = new Map<number, { p: Participant; contextCourseId: number }>();
-  for (const item of perCourse.flat()) if (!byUser.has(item.p.userId)) byUser.set(item.p.userId, item);
+  // Agrupar por persona conservando el último acceso de CADA curso donde aparece.
+  const byUser = new Map<
+    number,
+    { p: Participant; contextCourseId: number; access: Map<number, string | null> }
+  >();
+  for (const { p, contextCourseId } of perCourse.flat()) {
+    const existing = byUser.get(p.userId);
+    if (existing) {
+      existing.access.set(contextCourseId, p.lastAccess);
+    } else {
+      byUser.set(p.userId, {
+        p,
+        contextCourseId,
+        access: new Map([[contextCourseId, p.lastAccess]]),
+      });
+    }
+  }
 
   const candidates = [...byUser.values()];
   const pool = looksLikeEmail
@@ -334,7 +355,7 @@ export async function findPeople(
 
   // 2) Para cada candidato, abrir su perfil y extraer sus cursos reales (id + grupo).
   let done = 0;
-  const enriched = await mapLimit(pool, concurrency, async ({ p, contextCourseId }) => {
+  const enriched = await mapLimit(pool, concurrency, async ({ p, contextCourseId, access }) => {
     const prof = await getPersonProfile(session, p.userId, contextCourseId, p.name).catch(() => null);
     onProgress?.({ phase: "perfiles", done: ++done, total: pool.length, label: p.name });
 
@@ -343,22 +364,41 @@ export async function findPeople(
       subject: pc.subject,
       group: pc.group,
       shared: myCourseIds.has(pc.courseId),
+      lastAccess: access.get(pc.courseId) ?? null,
     }));
     // Si el perfil no expuso cursos, al menos deja constancia del curso donde lo encontraste.
     if (courses.length === 0) {
       const c = myCourses.find((x) => x.id === contextCourseId);
       if (c) {
         const parsed = parseCourseName(c.fullname);
-        courses.push({ courseId: c.id, subject: parsed.subject, group: parsed.group, shared: true });
+        courses.push({
+          courseId: c.id,
+          subject: parsed.subject,
+          group: parsed.group,
+          shared: true,
+          lastAccess: access.get(c.id) ?? null,
+        });
       }
     }
     courses.sort((a, b) => Number(b.shared) - Number(a.shared));
+
+    // Último acceso MÁS RECIENTE entre todos los cursos compartidos (no el más antiguo).
+    let bestSeconds = Infinity;
+    let bestText: string | null = null;
+    for (const text of access.values()) {
+      const secs = relativeAccessToSeconds(text);
+      if (secs < bestSeconds) {
+        bestSeconds = secs;
+        bestText = text;
+      }
+    }
 
     return {
       userId: p.userId,
       name: prof?.name || p.name,
       email: prof?.email ?? null,
-      lastAccess: p.lastAccess,
+      lastAccess: bestText,
+      lastSeenAgoSeconds: bestSeconds,
       courses,
       sharedCount: courses.filter((x) => x.shared).length,
     } satisfies PersonMatch;

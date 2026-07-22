@@ -45,3 +45,42 @@ export function findSpanishDates(
 export function daysBetween(a: number, b: number): number {
   return Math.round((a - b) / 86_400);
 }
+
+const UNIT_SECONDS: Record<string, number> = {
+  segundo: 1, minuto: 60, hora: 3600, dia: 86_400, día: 86_400,
+  semana: 604_800, mes: 2_592_000, ano: 31_536_000, año: 31_536_000,
+};
+
+/**
+ * Convierte un "último acceso" relativo de Moodle a **segundos transcurridos** desde ahora, para
+ * poder comparar accesos entre cursos y elegir el más reciente. Ejemplos: "9 días 4 horas",
+ * "58 segundos", "ahora", "Nunca". Devuelve Infinity si nunca accedió o no se puede interpretar
+ * (así "nunca" queda como el menos reciente).
+ */
+export function relativeAccessToSeconds(text: string | null | undefined): number {
+  if (!text) return Infinity;
+  const t = text.toLowerCase().trim();
+  if (/nunca|never/.test(t)) return Infinity;
+  if (/ahora|justo ahora|now|segundos?$/.test(t) && !/\d/.test(t)) return 0;
+  let total = 0;
+  let matched = false;
+  for (const m of t.matchAll(/(\d+)\s*(segundo|minuto|hora|d[ií]a|semana|mes|a[nñ]o)s?/g)) {
+    total += Number(m[1]) * (UNIT_SECONDS[m[2]] ?? 0);
+    matched = true;
+  }
+  return matched ? total : Infinity;
+}
+
+/** Formatea segundos-transcurridos a un texto corto en español ("hace 3 h", "hace 9 d"). */
+export function humanizeAgo(seconds: number): string {
+  if (!Number.isFinite(seconds)) return "nunca";
+  if (seconds < 90) return "hace un momento";
+  const mins = Math.round(seconds / 60);
+  if (mins < 60) return `hace ${mins} min`;
+  const hours = Math.round(seconds / 3600);
+  if (hours < 48) return `hace ${hours} h`;
+  const days = Math.round(seconds / 86_400);
+  if (days < 60) return `hace ${days} d`;
+  const months = Math.round(days / 30);
+  return `hace ${months} mes(es)`;
+}
