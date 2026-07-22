@@ -96,6 +96,9 @@ Si ves tus tareas, ya está todo listo. Pídeselo también a tu agente:
 | `dutic tasks` | Tareas próximas del timeline (rápido) |
 | `dutic tasks --all` | **+ barrido de cursos → incluye las ocultas** |
 | `dutic tasks --hidden` | Sólo las ocultas |
+| `dutic watch` | **Novedades** desde la última revisión (tareas/notas nuevas, entregas, fechas) |
+| `dutic whoami` | Tu propio perfil (nombre, correo, id) |
+| `dutic sisacad` | Integra tus notas parciales de SISACAD — **tú** haces el login + CAPTCHA; sólo tus datos |
 | `dutic task <cmid>` | Detalle: consigna, fechas, adjuntos, conflicto de fechas |
 | `dutic grades [id]` | Notas: resumen de todos los cursos, o detalle de uno |
 | `dutic courses` | Cursos matriculados |
@@ -105,10 +108,12 @@ Si ves tus tareas, ya está todo listo. Pídeselo también a tu agente:
 | `dutic md <archivo.pdf>` | Convierte un PDF local a Markdown |
 | `dutic people <id>` | Todos los compañeros del curso, con correo (`--no-email` para omitir) |
 | `dutic person <texto>` | Busca por nombre/correo: su correo y **sus cursos reales** (con grupo), marcando cuáles compartes |
-| `dutic profile <userId>` | Perfil de cualquier id (docentes incluidos): correo y sus cursos |
-| `dutic profile <userId>` | Perfil por id: correo, **rol** (Estudiante/Profesor), último acceso y cursos |
+| `dutic profile <userId>` | Perfil por id (docentes incluidos): correo, **rol** (Estudiante/Profesor), último acceso y cursos |
+| `dutic teachers <id>` | Docentes del curso |
 | `dutic fetch <url>` | Explora cualquier página del aula por URL (cambiar ids, ver lo que no tiene botón) |
+| `dutic pull <id>` | Descarga todos los materiales |
 | `dutic cache info` / `clear` | Gestiona la caché local (perfiles, cursos…) |
+| `dutic setup` / `dutic login` / `dutic status` | Configuración y sesión |
 
 Opciones globales: `--refresh` (ignora la caché y trae datos frescos), `--no-cache`, `--json`.
 
@@ -118,11 +123,6 @@ Las consultas de personas/cursos se **cachean en disco** (`~/.dutic/cache/`): re
 `people`, `grades` o `tasks` es casi instantáneo (`people` de 54 alumnos: ~10 s la 1.ª vez, &lt;1 s
 después). Usa `--refresh` para forzar datos frescos. TTLs configurables con `DUTIC_CACHE_TTL_MIN`;
 desactivable con `DUTIC_NO_CACHE=1`.
-| `dutic teachers <id>` | Docentes del curso |
-| `dutic pull <id>` | Descarga todos los materiales |
-| `dutic setup` / `dutic login` / `dutic status` | Configuración y sesión |
-
-Añade `--json` a la mayoría de comandos para salida estructurada.
 
 ### Ejemplos
 
@@ -165,7 +165,9 @@ Si tu cliente no resuelve comandos del PATH, usa la ruta absoluta que imprime `d
 `{ "command": "node", "args": ["<ruta>/dist/mcp/server.js"] }`
 </details>
 
-**20 herramientas**: tareas (`dutic_list_tasks`, `dutic_get_assignment_detail`, …), notas
+**23 herramientas**: novedades (`dutic_check_changes`), notas SISACAD (`dutic_get_sisacad_grades`),
+perfil propio (`dutic_whoami`), tareas
+(`dutic_list_tasks`, `dutic_get_assignment_detail`, …), notas
 (`dutic_get_grades`), materiales (`dutic_list_course_materials`, `dutic_study_course`,
 `dutic_read_resource`, `dutic_pdf_to_markdown`), personas (`dutic_list_participants`,
 `dutic_find_person`, `dutic_get_person_profile`, `dutic_get_course_teachers`), exploración por URL

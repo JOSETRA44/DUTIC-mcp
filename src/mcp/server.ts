@@ -32,6 +32,10 @@ import {
   listCourseParticipants,
 } from "../domain/people.js";
 import { fetchAulaPage } from "../domain/fetch.js";
+import { getMyProfile } from "../domain/people.js";
+import { checkChanges } from "../domain/watch.js";
+import { loadSisacadGrades } from "../domain/sisacad.js";
+import { setCacheRefresh } from "../core/cache.js";
 
 /**
  * En contexto MCP la renovación de sesión es "headless-only": si el SSO de Google sigue
@@ -176,6 +180,68 @@ server.registerTool(
   },
   async ({ url, maxChars }) =>
     tool(() => withSession((s) => readResourceAsMarkdown(s, url, maxChars), { mode: MCP_MODE })),
+);
+
+server.registerTool(
+  "dutic_check_changes",
+  {
+    title: "Novedades desde la última revisión",
+    description:
+      "Compara el estado académico actual con la última vez que se revisó y devuelve QUÉ cambió: " +
+      "tareas nuevas (incl. ocultas), notas recién publicadas o modificadas, cambios de estado de " +
+      "entrega y de fecha. Actualiza la línea base salvo que `save` sea false. Ideal para responder " +
+      "'¿hay algo nuevo?' o para un chequeo periódico. Usa datos frescos (ignora la caché).",
+    inputSchema: {
+      save: z
+        .boolean()
+        .default(true)
+        .describe("Actualizar la línea base con el estado actual (false = sólo comparar)."),
+    },
+  },
+  async ({ save }) =>
+    tool(() => {
+      setCacheRefresh(true);
+      return withSession((s) => checkChanges(s, { save }), { mode: MCP_MODE });
+    }),
+);
+
+server.registerTool(
+  "dutic_get_sisacad_grades",
+  {
+    title: "Notas de SISACAD (parciales oficiales)",
+    description:
+      "Devuelve las notas parciales de SISACAD que el usuario capturó con el comando `dutic sisacad` " +
+      "(SISACAD es un sistema aparte con CAPTCHA; el usuario hace su propio login). Sólo lee lo ya " +
+      "guardado — no abre navegador ni accede a datos de terceros. Si no hay datos, indícale al " +
+      "usuario que ejecute `dutic sisacad` en una terminal.",
+    inputSchema: {},
+  },
+  async () =>
+    tool(async () => {
+      const cap = await loadSisacadGrades();
+      if (!cap) {
+        return {
+          available: false,
+          message: "No hay notas de SISACAD guardadas. Ejecuta `dutic sisacad` en una terminal.",
+        };
+      }
+      return {
+        available: true,
+        capturedAt: new Date(cap.capturedAt).toISOString(),
+        header: cap.header,
+        gradesTable: cap.gradesTable,
+      };
+    }),
+);
+
+server.registerTool(
+  "dutic_whoami",
+  {
+    title: "Mi propio perfil",
+    description: "Devuelve el perfil del propio usuario: nombre, correo institucional e id.",
+    inputSchema: {},
+  },
+  async () => tool(() => withSession((s) => getMyProfile(s), { mode: MCP_MODE })),
 );
 
 server.registerTool(
