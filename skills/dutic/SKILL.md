@@ -74,8 +74,9 @@ Si el servidor MCP `dutic` está disponible, usa estas herramientas (son la fuen
   nunca confunde tu sección con la suya). `sharedCount` = cuántos comparten. Úsalo para "¿quién es
   X?", "¿qué cursos lleva X?", "¿en qué coincido con X y en qué grupo?" o "dame el correo de X".
 - `dutic_get_person_profile` — args: `userId`, `courseId?`. Perfil de CUALQUIER id (también
-  **docentes**): correo, zona horaria y sus cursos con id y grupo. Pasa en `courseId` un curso que
-  compartas para que Moodle liste sus cursos.
+  **docentes**): correo, zona horaria, **rol** ("Estudiante"/"Profesor" — así confirmas si alguien es
+  docente), fecha absoluta de último acceso y sus cursos con id y grupo. Pasa en `courseId` un curso
+  que compartas para que Moodle liste sus cursos.
 - `dutic_fetch_page` — args: `url`, `format` (`text`|`html`|`links`), `maxChars`. **Explora
   cualquier página del aula por URL** con la sesión activa — cambia ids, mira páginas sin botón
   directo (perfiles, foros, calificadores…). Es la vía para descubrir userIds (p. ej. de docentes)
@@ -184,8 +185,9 @@ y los perfiles:
   cursos con su course id — incluidos cursos en los que TÚ no estás matriculado. Así puedes ver el
   "horario" completo de un compañero o descubrir cursos/secciones que no aparecen en tu navegación.
 - Para **docentes**: no salen en las listas de participantes, pero con su `userId` y un curso de
-  contexto que compartas, `dutic_get_person_profile` revela sus cursos y su correo. Los userIds se
-  descubren explorando con `dutic_fetch_page` (p. ej. abriendo `user/view.php?id=N` y siguiendo enlaces).
+  contexto que compartas, `dutic_get_person_profile` revela sus cursos, su correo y su **rol**
+  ("Profesor" confirma que es docente). Los userIds se descubren explorando con `dutic_fetch_page`
+  (p. ej. abriendo `user/view.php?id=N` y siguiendo enlaces).
 - `dutic_fetch_page` con `format:"links"` lista los enlaces internos de una página para saber a
   dónde navegar a continuación.
 
@@ -197,6 +199,15 @@ permisos ni recolectar datos masivamente.
 El "último acceso" es POR CURSO y varía. `dutic_find_person` reporta el **más reciente** de todos
 los cursos compartidos (`lastAccess` + `lastSeenAgoSeconds`) y también el acceso por curso, así
 sabes cuándo se conectó realmente la persona por última vez.
+
+## Rendimiento (caché)
+
+Las operaciones de personas/cursos se **cachean en disco** (`~/.dutic/cache/`), así que repetir
+`person`, `people`, `grades` o `tasks` es casi instantáneo (p. ej. `people` de 54 alumnos: ~10 s la
+primera vez, &lt;1 s después). Los datos cambian poco (roster, correos, cursos). Si necesitas datos
+100% frescos —una nota recién puesta, una tarea nueva—, añade `--refresh` al comando del CLI, o dile
+al usuario que ejecute `dutic cache clear`. TTLs: cursos/perfiles 12 h, participantes 6 h, estado de
+curso 1 h, notas 20 min.
 
 ## Notas de contexto
 

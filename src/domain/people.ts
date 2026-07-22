@@ -8,6 +8,7 @@ import { getAssignDetail } from "./assign.js";
 import { mapLimit } from "./concurrency.js";
 import { parseCourseName } from "../core/coursename.js";
 import { relativeAccessToSeconds } from "../core/dates.js";
+import { withCache } from "../core/cache.js";
 
 export interface Participant {
   userId: number;
@@ -36,6 +37,10 @@ export interface PersonProfile {
   name: string;
   email: string | null;
   timezone: string | null;
+  /** Rol en el curso de contexto: "Estudiante", "Profesor"… (útil para detectar docentes). */
+  role: string | null;
+  /** Fecha absoluta de último acceso al curso de contexto (texto tal cual: "13 de julio…"). */
+  lastAccessAt: string | null;
   /** TODOS los cursos que esa persona lleva (según su perfil), con su course id y grupo reales. */
   courses: ProfileCourse[];
 }
@@ -137,6 +142,27 @@ export async function listCourseParticipants(
   opts: ParticipantsOptions = {},
 ): Promise<Participant[]> {
   const { withEmail = false, concurrency = 8, onProgress } = opts;
+
+  // El listado base (roster) se cachea; los correos se resuelven aparte (usan la caché de perfiles).
+  const people = await withCache("participants", [session.siteUrl, courseId], () =>
+    fetchParticipantsRoster(session, courseId, onProgress),
+  );
+  if (!withEmail) return people;
+
+  let done = 0;
+  return mapLimit(people, concurrency, async (p) => {
+    const prof = await getPersonProfile(session, p.userId, courseId, p.name).catch(() => null);
+    onProgress?.({ phase: "correos", done: ++done, total: people.length, label: p.name });
+    return { ...p, email: prof?.email ?? null };
+  });
+}
+
+/** Recorre la paginación del listado de participantes y devuelve el roster (sin correos). */
+async function fetchParticipantsRoster(
+  session: Session,
+  courseId: number,
+  onProgress?: ParticipantsOptions["onProgress"],
+): Promise<Participant[]> {
   const byUser = new Map<number, Participant>();
   let declaredTotal: number | null = null;
 
@@ -155,20 +181,10 @@ export async function listCourseParticipants(
       total: declaredTotal ? Math.ceil(declaredTotal / PER_PAGE) : page + 1,
       label: `${byUser.size} participantes`,
     });
-    // Fin de la paginación: la página no trajo nadie nuevo, o ya tenemos el total declarado.
     if (byUser.size === before || rows.length < PER_PAGE) break;
     if (declaredTotal != null && byUser.size >= declaredTotal) break;
   }
-
-  const people = [...byUser.values()];
-  if (!withEmail) return people;
-
-  let done = 0;
-  return mapLimit(people, concurrency, async (p) => {
-    const prof = await getPersonProfile(session, p.userId, courseId, p.name).catch(() => null);
-    onProgress?.({ phase: "correos", done: ++done, total: people.length, label: p.name });
-    return { ...p, email: prof?.email ?? null };
-  });
+  return [...byUser.values()];
 }
 
 /**
@@ -176,6 +192,17 @@ export async function listCourseParticipants(
  * el correo en el listado pero lo muestra en el perfil cuando la política del sitio lo permite.
  */
 export async function getPersonProfile(
+  session: Session,
+  userId: number,
+  courseId?: number,
+  fallbackName?: string,
+): Promise<PersonProfile> {
+  return withCache("profile", [session.siteUrl, userId, courseId ?? 0], () =>
+    fetchPersonProfile(session, userId, courseId, fallbackName),
+  );
+}
+
+async function fetchPersonProfile(
   session: Session,
   userId: number,
   courseId?: number,
@@ -206,7 +233,33 @@ export async function getPersonProfile(
   // Cortar en la siguiente mayúscula para no arrastrar el texto pegado ("America/LimaDetalles").
   const timezone = /(?:America|Europe|Asia)\/[A-Z][a-z_]+|UTC[+-]?\d*/.exec(profileText)?.[0] ?? null;
 
-  return { userId, name, email, timezone, courses: extractProfileCourses($) };
+  // Rol en el curso de contexto. Se busca el nodo cuyo texto empieza por "Roles" (evita otros
+  // "Roles" sueltos del layout) y se quita ese prefijo: "RolesProfesor" → "Profesor".
+  let role: string | null = null;
+  $(".node_category, .contentnode").each((_, e) => {
+    if (role) return;
+    const t = clean($(e).text());
+    const m = /^Roles\s*([A-Za-zÁÉÍÓÚáéíóúÑñ][A-Za-zÁÉÍÓÚáéíóúÑñ ,]*?)(?:Miscel|Detalles|Actividad|$)/i.exec(t);
+    if (m && m[1].trim()) role = clean(m[1]);
+  });
+
+  // Último acceso al curso, fecha ABSOLUTA (más precisa que el relativo del listado).
+  const lastAccessAt =
+    clean(
+      /[uú]ltimo acceso al curso[^A-Za-z0-9]*([a-záéíóú]+,?\s*\d{1,2}\s+de\s+[a-záéíóú]+\s+de\s+\d{4}[^()]*)/i.exec(
+        profileText,
+      )?.[1] ?? "",
+    ) || null;
+
+  return {
+    userId,
+    name,
+    email,
+    timezone,
+    role,
+    lastAccessAt,
+    courses: extractProfileCourses($),
+  };
 }
 
 /**
@@ -285,6 +338,8 @@ export interface PersonMatch {
   userId: number;
   name: string;
   email: string | null;
+  /** Rol detectado en su perfil ("Estudiante"/"Profesor"). */
+  role: string | null;
   /** Acceso MÁS RECIENTE entre todos los cursos que comparten (no el más antiguo). */
   lastAccess: string | null;
   /** Segundos transcurridos desde ese acceso más reciente (Infinity si nunca). */
@@ -397,6 +452,7 @@ export async function findPeople(
       userId: p.userId,
       name: prof?.name || p.name,
       email: prof?.email ?? null,
+      role: prof?.role ?? null,
       lastAccess: bestText,
       lastSeenAgoSeconds: bestSeconds,
       courses,

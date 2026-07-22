@@ -106,7 +106,18 @@ Si ves tus tareas, ya está todo listo. Pídeselo también a tu agente:
 | `dutic people <id>` | Todos los compañeros del curso, con correo (`--no-email` para omitir) |
 | `dutic person <texto>` | Busca por nombre/correo: su correo y **sus cursos reales** (con grupo), marcando cuáles compartes |
 | `dutic profile <userId>` | Perfil de cualquier id (docentes incluidos): correo y sus cursos |
+| `dutic profile <userId>` | Perfil por id: correo, **rol** (Estudiante/Profesor), último acceso y cursos |
 | `dutic fetch <url>` | Explora cualquier página del aula por URL (cambiar ids, ver lo que no tiene botón) |
+| `dutic cache info` / `clear` | Gestiona la caché local (perfiles, cursos…) |
+
+Opciones globales: `--refresh` (ignora la caché y trae datos frescos), `--no-cache`, `--json`.
+
+### Rendimiento
+
+Las consultas de personas/cursos se **cachean en disco** (`~/.dutic/cache/`): repetir `person`,
+`people`, `grades` o `tasks` es casi instantáneo (`people` de 54 alumnos: ~10 s la 1.ª vez, &lt;1 s
+después). Usa `--refresh` para forzar datos frescos. TTLs configurables con `DUTIC_CACHE_TTL_MIN`;
+desactivable con `DUTIC_NO_CACHE=1`.
 | `dutic teachers <id>` | Docentes del curso |
 | `dutic pull <id>` | Descarga todos los materiales |
 | `dutic setup` / `dutic login` / `dutic status` | Configuración y sesión |
