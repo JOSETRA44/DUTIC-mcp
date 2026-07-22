@@ -66,10 +66,14 @@ Si el servidor MCP `dutic` está disponible, usa estas herramientas (son la fuen
   nuevo/cambiado — tareas nuevas (incl. ocultas), notas publicadas o modificadas, cambios de entrega y
   de fecha. Úsalo para "¿hay algo nuevo?" o un chequeo periódico. Usa datos frescos (ignora la caché).
 - `dutic_whoami` — tu propio perfil (nombre, correo, id).
-- `dutic_get_sisacad_grades` — notas parciales oficiales de **SISACAD** (sistema aparte con CAPTCHA).
-  Sólo LEE lo que el usuario ya capturó con el comando `dutic sisacad` (él hace su propio login y
-  resuelve el CAPTCHA); no abre navegador ni accede a datos de terceros. Si no hay datos, dile que
-  ejecute `dutic sisacad` en una terminal.
+- `dutic_get_sisacad_grades` — notas parciales OFICIALES de **SISACAD** (sistema aparte con CAPTCHA),
+  agrupadas por curso con cada ítem (parcial, nota, peso %, ausente) y `weightedAverageSoFar` (promedio
+  ponderado ya calculado con lo calificado hasta ahora). Sólo LEE lo que el usuario ya capturó con el
+  comando `dutic sisacad` (él hace su propio login y resuelve el CAPTCHA); no abre navegador ni accede
+  a datos de terceros. Si no hay datos, dile que ejecute `dutic sisacad` en una terminal.
+- `dutic_compare_grades` — compara el promedio de SISACAD (oficial) con el total que calcula Moodle,
+  curso por curso. Útil para detectar si el aula virtual está desincronizada del registro oficial, o
+  para avisar cuando Moodle aún no tiene calculado el total de un curso que SISACAD sí.
 - `dutic_get_grades` — args: `courseId?`. **Calificaciones**: sin `courseId`, resumen de todos los
   cursos (nota total + cuántos ítems por calificar); con `courseId`, detalle por ítem (nota, rango, %).
   Úsalo cuando el usuario pregunte por sus notas, promedio, o cómo va.

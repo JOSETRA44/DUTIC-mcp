@@ -98,7 +98,9 @@ Si ves tus tareas, ya está todo listo. Pídeselo también a tu agente:
 | `dutic tasks --hidden` | Sólo las ocultas |
 | `dutic watch` | **Novedades** desde la última revisión (tareas/notas nuevas, entregas, fechas) |
 | `dutic whoami` | Tu propio perfil (nombre, correo, id) |
-| `dutic sisacad` | Integra tus notas parciales de SISACAD — **tú** haces el login + CAPTCHA; sólo tus datos |
+| `dutic sisacad` | Captura tus notas parciales de SISACAD — **tú** haces el login + CAPTCHA; sólo tus datos |
+| `dutic sisacad show` | Muestra las notas ya capturadas, agrupadas por curso con promedio ponderado |
+| `dutic sisacad compare` | Compara el promedio de SISACAD (oficial) con el total que calcula Moodle |
 | `dutic task <cmid>` | Detalle: consigna, fechas, adjuntos, conflicto de fechas |
 | `dutic grades [id]` | Notas: resumen de todos los cursos, o detalle de uno |
 | `dutic courses` | Cursos matriculados |
@@ -165,8 +167,8 @@ Si tu cliente no resuelve comandos del PATH, usa la ruta absoluta que imprime `d
 `{ "command": "node", "args": ["<ruta>/dist/mcp/server.js"] }`
 </details>
 
-**23 herramientas**: novedades (`dutic_check_changes`), notas SISACAD (`dutic_get_sisacad_grades`),
-perfil propio (`dutic_whoami`), tareas
+**24 herramientas**: novedades (`dutic_check_changes`), notas SISACAD (`dutic_get_sisacad_grades`,
+`dutic_compare_grades`), perfil propio (`dutic_whoami`), tareas
 (`dutic_list_tasks`, `dutic_get_assignment_detail`, …), notas
 (`dutic_get_grades`), materiales (`dutic_list_course_materials`, `dutic_study_course`,
 `dutic_read_resource`, `dutic_pdf_to_markdown`), personas (`dutic_list_participants`,
@@ -207,6 +209,12 @@ ellos llama al endpoint AJAX interno de Moodle, complementado con scraping donde
 **Fechas contradictorias:** algunas consignas mencionan una fecha distinta a la configurada en
 Moodle. `dutic task <cmid>` compara ambas y avisa (`dateConflict`) — es la causa típica de entregas
 perdidas.
+
+**SISACAD es distinto a propósito.** Es un sistema aparte (`extranet.unsa.edu.pe`) protegido con
+CAPTCHA, y esa protección se respeta: `dutic sisacad` no automatiza el login ni resuelve el CAPTCHA
+por ti — abre el navegador, **tú** entras con tu usuario/clave y lo resuelves, y sólo cuando aparecen
+tus notas la herramienta las lee y las estructura (por curso, con el promedio ponderado). Nunca
+accede a datos de otros estudiantes.
 
 ---
 

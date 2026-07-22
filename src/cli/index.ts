@@ -28,7 +28,12 @@ import {
 import { fetchAulaPage } from "../domain/fetch.js";
 import { getMyProfile } from "../domain/people.js";
 import { checkChanges } from "../domain/watch.js";
-import { captureSisacadGrades, loadSisacadGrades, type SisacadCapture } from "../domain/sisacad.js";
+import {
+  captureSisacadGrades,
+  compareSisacadWithMoodle,
+  loadSisacadGrades,
+  type SisacadCapture,
+} from "../domain/sisacad.js";
 import { cacheInfo, clearCache, setCacheEnabled, setCacheRefresh } from "../core/cache.js";
 import { formatDate, relativeDue } from "./format.js";
 import { parseCourseName } from "../core/coursename.js";
@@ -448,15 +453,37 @@ program
 
 function renderSisacad(cap: SisacadCapture): void {
   out(banner("SISACAD · Notas parciales", cap.header ?? `capturado ${new Date(cap.capturedAt).toLocaleString("es-PE")}`));
-  const t = cap.gradesTable;
-  if (!t || t.length === 0) {
-    out(`${mark.warn()} No se detectó una tabla de notas clara. Tablas capturadas: ${cap.tables.length}.`);
+  if (!cap.courses.length) {
+    out(`${mark.warn()} No se pudo estructurar la tabla de notas. Tablas capturadas: ${cap.tables.length}.`);
     out(c.dim("  Usa `dutic sisacad show --json` para ver el contenido crudo."));
     return;
   }
-  const [head, ...rows] = t;
-  const cols = head.map((h) => ({ header: h || "—" }));
-  out(table(cols, rows.map((r) => r.map((cell) => cell || "—"))));
+  for (const course of cap.courses) {
+    out("\n" + rule(course.subject + (course.group ? ` (Grupo ${course.group})` : "")));
+    out(
+      table(
+        [
+          { header: "parcial" },
+          { header: "nota", align: "right" },
+          { header: "peso", align: "right", color: c.dim },
+          { header: "ausente", color: c.dim },
+        ],
+        course.items.map((it) => [
+          it.parcial,
+          it.grade != null ? gradeColor(String(it.grade), "0-20")(String(it.grade)) : c.gray("—"),
+          it.weight != null ? `${it.weight}%` : "—",
+          it.absent ? c.yellow("Sí") : "No",
+        ]),
+      ),
+    );
+    const avgStr = course.weightedAverageSoFar != null ? course.weightedAverageSoFar.toFixed(2) : "—";
+    const avgPainted =
+      course.weightedAverageSoFar != null ? gradeColor(avgStr, "0-20")(avgStr) : c.gray(avgStr);
+    out(
+      `  ${c.bold("Promedio ponderado hasta ahora:")} ${avgPainted}` +
+        `  ${c.dim(`(${course.weightSoFar}% del curso calificado${course.complete ? ", completo" : ""})`)}`,
+    );
+  }
 }
 
 const sisacad = program
@@ -483,6 +510,50 @@ sisacad
       return;
     }
     renderSisacad(cap);
+  });
+sisacad
+  .command("compare")
+  .description("Compara el promedio de SISACAD con el total que calcula Moodle, por curso.")
+  .option("--json", "Salida en JSON.")
+  .action(async (opts) => {
+    const cap = await loadSisacadGrades();
+    if (!cap) {
+      out(`${mark.warn()} No hay notas de SISACAD guardadas. Ejecuta ${c.cyan("dutic sisacad")}.`);
+      return;
+    }
+    await withSession(
+      async (session) => {
+        const moodleGrades = await getAllGrades(session);
+        const diffs = compareSisacadWithMoodle(
+          cap.courses,
+          moodleGrades.map((g) => ({ courseName: g.courseName, total: g.total })),
+        );
+        if (opts.json) return out(JSON.stringify(diffs, null, 2));
+        out(banner("SISACAD vs. Moodle", "comparación por curso"));
+        out(
+          table(
+            [
+              { header: "curso" },
+              { header: "sisacad", align: "right" },
+              { header: "moodle", align: "right" },
+              { header: "diferencia", align: "right" },
+            ],
+            diffs.map((d) => [
+              d.subject,
+              d.sisacadAverage != null ? d.sisacadAverage.toFixed(2) : "—",
+              d.moodleTotal ?? "—",
+              d.diff != null
+                ? d.diff > 0.5
+                  ? c.boldYellow(`± ${d.diff.toFixed(2)}`)
+                  : c.green("≈ igual")
+                : c.gray("no comparable"),
+            ]),
+          ),
+        );
+        log(c.dim("\nUna diferencia grande puede deberse a ítems que Moodle aún no registra, o a ponderaciones distintas."));
+      },
+      { login: { onStatus: log } },
+    );
   });
 
 program
