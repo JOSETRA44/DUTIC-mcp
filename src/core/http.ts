@@ -1,5 +1,6 @@
 import { Agent } from "undici";
 import { HOST } from "./config.js";
+import { SessionExpiredError } from "./errors.js";
 
 /**
  * Dispatcher de undici que acepta el certificado de la CA privada de la UNSA.
@@ -41,6 +42,14 @@ export async function fetchUnsa(
       dispatcher: unsaAgent,
       redirect: init.redirect ?? "follow",
     });
+  } catch (err) {
+    // Con una sesión muerta, Moodle a veces entra en loop de redirección hacia login/index.php
+    // en vez de servir una página de login limpia; undici agota su límite de redirects y lanza
+    // un TypeError críptico ("fetch failed" / "redirect count exceeded"). Se traduce a la señal
+    // de sesión expirada para que el llamador la renueve, en vez de un fallo de red genérico.
+    const msg = String((err as Error)?.cause ?? (err as Error)?.message ?? "");
+    if (/redirect/i.test(msg)) throw new SessionExpiredError();
+    throw err;
   } finally {
     clearTimeout(timer);
   }

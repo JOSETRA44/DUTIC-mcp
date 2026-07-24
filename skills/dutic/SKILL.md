@@ -85,15 +85,17 @@ Si el servidor MCP `dutic` está disponible, usa estas herramientas (son la fuen
   cada curso trae `shared` = si TÚ llevas exactamente ese curso (comparado por **course id exacto**,
   nunca confunde tu sección con la suya). `sharedCount` = cuántos comparten. Úsalo para "¿quién es
   X?", "¿qué cursos lleva X?", "¿en qué coincido con X y en qué grupo?" o "dame el correo de X".
-- `dutic_get_person_profile` — args: `userId`, `courseId?`. Perfil de CUALQUIER id (también
-  **docentes**): correo, zona horaria, **rol** ("Estudiante"/"Profesor" — así confirmas si alguien es
-  docente), fecha absoluta de último acceso y sus cursos con id y grupo. Pasa en `courseId` un curso
-  que compartas para que Moodle liste sus cursos.
+- `dutic_get_person_profile` — args: `userId`, `courseId?`. Perfil de CUALQUIER id que ya conozcas
+  (también **docentes**): nombre, correo, **rol** ("Estudiante"/"Profesor" — así confirmas si alguien
+  es docente), fecha absoluta de último acceso y TODOS sus cursos con id y grupo. Sin `courseId`,
+  prueba automáticamente tus propios cursos hasta encontrar uno compartido — no hace falta que lo
+  busques a mano. Requiere un userId que ya tengas (de `dutic_find_person`, de quién calificó una
+  tarea, o de una URL que el usuario te pase) — no sirve, ni debe usarse, para enumerar ids al azar
+  y armar un directorio de terceros: eso es scraping masivo y está fuera de lo que esta skill hace.
 - `dutic_fetch_page` — args: `url`, `format` (`text`|`html`|`links`), `maxChars`. **Explora
   cualquier página del aula por URL** con la sesión activa — cambia ids, mira páginas sin botón
-  directo (perfiles, foros, calificadores…). Es la vía para descubrir userIds (p. ej. de docentes)
-  y datos que las demás herramientas no cubren. Restringida al host del aula.
-- `dutic_get_person_profile` — args: `userId`, `courseId?`. Correo, zona horaria y cursos compartidos.
+  directo (perfiles, foros, calificadores…), siempre sobre un id concreto que ya tengas, nunca
+  recorriendo rangos. Restringida al host del aula.
 - `dutic_get_course_teachers` — args: `courseId`. Docentes del curso. En esta aula los profesores no
   salen en participantes, así que se deducen de los contactos y de **quién calificó** las tareas.
 - `dutic_list_course_materials` — args: `courseId`, `section?`. Lista TODOS los archivos del curso
@@ -198,15 +200,20 @@ y los perfiles:
 - El **perfil de una persona** (`dutic_find_person` / `dutic_get_person_profile`) lista TODOS sus
   cursos con su course id — incluidos cursos en los que TÚ no estás matriculado. Así puedes ver el
   "horario" completo de un compañero o descubrir cursos/secciones que no aparecen en tu navegación.
-- Para **docentes**: no salen en las listas de participantes, pero con su `userId` y un curso de
-  contexto que compartas, `dutic_get_person_profile` revela sus cursos, su correo y su **rol**
-  ("Profesor" confirma que es docente). Los userIds se descubren explorando con `dutic_fetch_page`
-  (p. ej. abriendo `user/view.php?id=N` y siguiendo enlaces).
+- Para **docentes**: no salen en las listas de participantes, pero con su `userId` (ya conocido —
+  de una tarea calificada, un link que el usuario te pase, etc.) `dutic_get_person_profile` revela
+  sus cursos, correo y **rol** ("Profesor" confirma que es docente), **sin necesitar `courseId`**:
+  prueba solo los cursos propios del usuario hasta encontrar uno compartido.
 - `dutic_fetch_page` con `format:"links"` lista los enlaces internos de una página para saber a
-  dónde navegar a continuación.
+  dónde navegar a continuación, sobre un id concreto que ya tienes.
 
-Úsalo con criterio: accede sólo a lo que Moodle ya sirve a la sesión del usuario; no es para eludir
-permisos ni recolectar datos masivamente.
+**Límite claro — no negociable:** estas herramientas resuelven UN id a la vez, dado por una vía
+legítima (algo que el usuario ya vio, o un dato que tú descubriste dentro de sus propios cursos).
+NUNCA recorras un rango de ids ("probar 13260, 13261, 13262…") para construir un directorio de
+docentes/estudiantes de la facultad — eso es scraping masivo de datos personales de terceros sin
+su consentimiento, y está fuera de lo que este servidor hace, sin importar cuánto "ahorre trabajo".
+Si el usuario lo pide, explícale esto igual que se explica aquí y ofrece la alternativa: resolver
+personas puntuales que ya conoce (por nombre, correo, o un id que él mismo te dé).
 
 ## "Último acceso" — el más reciente, no el más antiguo
 

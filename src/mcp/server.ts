@@ -29,6 +29,7 @@ import {
   findPeople,
   getCourseTeachers,
   getPersonProfile,
+  getPersonProfileAuto,
   listCourseParticipants,
 } from "../domain/people.js";
 import { fetchAulaPage } from "../domain/fetch.js";
@@ -350,10 +351,13 @@ server.registerTool(
   {
     title: "Perfil de una persona (por id)",
     description:
-      "Perfil de CUALQUIER usuario por su userId (sirve también para DOCENTES): correo, zona horaria " +
-      "y TODOS sus cursos con course id y grupo. Para que Moodle revele sus cursos, pasa en `courseId` " +
-      "un curso que compartas con esa persona (contexto). Combínalo con dutic_fetch_page para " +
-      "descubrir userIds explorando URLs (user/view.php?id=N).",
+      "Perfil de CUALQUIER usuario por su userId (sirve también para DOCENTES): nombre, correo, " +
+      "ROL ('Estudiante'/'Profesor' — así confirmas si es docente), zona horaria y TODOS sus cursos " +
+      "reales con course id y grupo. Sin `courseId`, prueba automáticamente tus propios cursos hasta " +
+      "encontrar uno que la persona también curse/dicte — no hace falta que el usuario lo busque a " +
+      "mano. Pásalo sólo si ya conoces un curso compartido (evita la búsqueda). Requiere conocer el " +
+      "userId de antemano (de un dutic_find_person, de quién calificó una tarea, o de una URL que el " +
+      "usuario te pase) — no está pensado para enumerar ids al azar.",
     inputSchema: {
       userId: z.number().int().positive(),
       courseId: z
@@ -361,11 +365,16 @@ server.registerTool(
         .int()
         .positive()
         .optional()
-        .describe("Curso de contexto (uno que compartas) para que se listen sus cursos."),
+        .describe("Curso de contexto ya conocido (si se omite, se busca automáticamente)."),
     },
   },
   async ({ userId, courseId }) =>
-    tool(() => withSession((s) => getPersonProfile(s, userId, courseId), { mode: MCP_MODE })),
+    tool(() =>
+      withSession(
+        (s) => (courseId ? getPersonProfile(s, userId, courseId) : getPersonProfileAuto(s, userId)),
+        { mode: MCP_MODE },
+      ),
+    ),
 );
 
 server.registerTool(

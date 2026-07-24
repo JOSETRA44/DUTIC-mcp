@@ -22,11 +22,12 @@ import { getAssignDetail } from "../domain/assign.js";
 import {
   findPeople,
   getCourseTeachers,
+  getMyProfile,
   getPersonProfile,
+  getPersonProfileAuto,
   listCourseParticipants,
 } from "../domain/people.js";
 import { fetchAulaPage } from "../domain/fetch.js";
-import { getMyProfile } from "../domain/people.js";
 import { checkChanges } from "../domain/watch.js";
 import {
   captureSisacadGrades,
@@ -362,17 +363,27 @@ program
 
 program
   .command("profile <userId>")
-  .description("Perfil de cualquier usuario por id: correo y sus cursos (sirve para docentes).")
-  .option("--course <id>", "Curso de contexto que revela sus cursos (usa uno que compartas).")
+  .description(
+    "Perfil de cualquier usuario por id: nombre, correo, rol y cursos (sirve para docentes). " +
+      "Sin --course, prueba automáticamente tus propios cursos hasta encontrar uno compartido.",
+  )
+  .option("--course <id>", "Curso de contexto conocido (salta la búsqueda automática).")
   .option("--json", "Salida en JSON.")
   .action(async (userId, opts) => {
     await withSession(
       async (session) => {
-        const prof = await getPersonProfile(
-          session,
-          Number(userId),
-          opts.course ? Number(opts.course) : undefined,
-        );
+        let prof;
+        if (opts.course) {
+          prof = await getPersonProfile(session, Number(userId), Number(opts.course));
+        } else {
+          const status = statusLine();
+          status.set("buscando un curso en común…");
+          try {
+            prof = await getPersonProfileAuto(session, Number(userId));
+          } finally {
+            status.done();
+          }
+        }
         if (opts.json) return out(JSON.stringify(prof, null, 2));
         out(banner("Perfil", prof.name));
         out(`  ${c.dim("id:")}     ${prof.userId}`);
