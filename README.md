@@ -110,7 +110,7 @@ Si ves tus tareas, ya está todo listo. Pídeselo también a tu agente:
 | `dutic md <archivo.pdf>` | Convierte un PDF local a Markdown |
 | `dutic people <id>` | Todos los compañeros del curso, con correo (`--no-email` para omitir) |
 | `dutic person <texto>` | Busca por nombre/correo: su correo y **sus cursos reales** (con grupo), marcando cuáles compartes |
-| `dutic profile <userId>` | Perfil por id (docentes incluidos): correo, **rol** (Estudiante/Profesor), último acceso y cursos |
+| `dutic profile <userId>` | Perfil por id (docentes incluidos): correo, **rol**, cursos — resuelve el curso en común solo, sin `--course` |
 | `dutic teachers <id>` | Docentes del curso |
 | `dutic fetch <url>` | Explora cualquier página del aula por URL (cambiar ids, ver lo que no tiene botón) |
 | `dutic pull <id>` | Descarga todos los materiales |
@@ -241,6 +241,10 @@ git push --follow-tags
 - El certificado de `aulavirtual.unsa.edu.pe` (CA privada de la UNSA) se acepta **sólo** para ese host.
 - La herramienta accede únicamente a lo que tú ya ves en el aula. Donde Moodle oculta información
   (docentes en el listado, compañeros de otros grupos) se respeta esa restricción.
+- `dutic profile <userId>` resuelve **un** id a la vez, dado por una vía legítima tuya (una tarea
+  calificada, un correo, un enlace que ya tenías). No está pensado ni se debe usar para recorrer
+  rangos de ids y construir un directorio de docentes/estudiantes de la facultad — eso sería
+  scraping masivo de datos personales de terceros sin su consentimiento.
 
 ## Licencia
 

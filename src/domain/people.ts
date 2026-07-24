@@ -210,6 +210,12 @@ async function fetchPersonProfile(
 ): Promise<PersonProfile> {
   const url = `${session.siteUrl}/user/view.php?id=${userId}${courseId ? `&course=${courseId}` : ""}`;
   const html = await getHtml(session, url);
+  // Moodle responde 404 con "Usuario no válido" cuando el id no existe o no comparte el curso de
+  // contexto — sin esto, el parser podía confundir la página de error con un perfil real (el h1
+  // caía en el nombre del sitio, "OTI - Plataforma Virtual de Aprendizaje").
+  if (/usuario no v[aá]lido|invalid user/i.test(html)) {
+    throw new Error(`userId=${userId} no es válido en el curso ${courseId ?? "(sin contexto)"}.`);
+  }
   const $ = cheerio.load(html);
 
   // En contexto de curso el <h1> es el NOMBRE DEL CURSO, no de la persona. El nombre real está
@@ -285,6 +291,37 @@ function extractProfileCourses($: cheerio.CheerioAPI): ProfileCourse[] {
     out.push({ courseId, subject: parsed.subject, group: parsed.group, fullname });
   });
   return out;
+}
+
+/**
+ * Perfil de cualquier persona (docente incluido) dado SÓLO su userId, sin que el llamador tenga
+ * que averiguar manualmente un curso de contexto. Prueba, en orden, los cursos en los que TÚ
+ * estás matriculado (información propia, no una enumeración de terceros) hasta encontrar uno
+ * que la persona también curse/dicte; con ese contexto Moodle revela su nombre, correo, rol y
+ * todos sus cursos reales. Se detiene en el primer curso que funciona (normalmente el 1.º o 2.º,
+ * ya que casi siempre lo buscas porque comparte un curso contigo).
+ */
+export async function getPersonProfileAuto(
+  session: Session,
+  userId: number,
+): Promise<PersonProfile> {
+  const myCourses = await getEnrolledCourses(session);
+  let lastAttempt: PersonProfile | null = null;
+
+  for (const c of myCourses) {
+    const prof = await getPersonProfile(session, userId, c.id).catch(() => null);
+    if (!prof) continue;
+    lastAttempt = prof;
+    // Éxito claro: la persona tiene rol o cursos listados en ese contexto.
+    if (prof.role || prof.courses.length > 0) return prof;
+  }
+
+  if (lastAttempt) return lastAttempt;
+  throw new Error(
+    `No se pudo resolver el perfil de userId=${userId}: no comparte ninguno de tus cursos, ` +
+      `o no tienes ningún curso en común desde el que Moodle lo muestre. Si conoces un curso que ` +
+      `compartan, indícalo con --course <id>.`,
+  );
 }
 
 export interface MyProfile {
