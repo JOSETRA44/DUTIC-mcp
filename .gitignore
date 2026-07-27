@@ -8,4 +8,5 @@ dist/
 .agents/
 .vscode/
 .mimocode/
+scripts/
 
