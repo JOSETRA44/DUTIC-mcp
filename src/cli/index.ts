@@ -45,6 +45,7 @@ import {
   saveCoursesToDb,
   type CourseRecord,
 } from "../core/coursesDb.js";
+import { syncUserToSupabase, syncScannedCoursesToSupabase } from "../core/supabase.js";
 import { formatDate, relativeDue } from "./format.js";
 import { parseCourseName } from "../core/coursename.js";
 import { humanizeAgo } from "../core/dates.js";
@@ -122,8 +123,32 @@ program
   .command("login")
   .description("Inicia sesión con Google y guarda la sesión de Moodle.")
   .action(async () => {
-    await loginWithPlaywright({ headless: false, onStatus: log });
+    const session = await loginWithPlaywright({ headless: false, onStatus: log });
     out(`${mark.ok()} Sesión guardada.`);
+
+    // Sincronizar usuario con Supabase de forma silenciosa
+    try {
+      const spin = statusLine();
+      spin.set("sincronizando perfil…");
+      const profile = await getMyProfile(session);
+      spin.done();
+      if (profile.userId) {
+        // Extraer semestre del siteUrl (e.g. "https://...unsa.edu.pe/2026A" → "2026A")
+        const semesterMatch = session.siteUrl.match(/\/([0-9]{4}[A-Z])\/?$/);
+        const semester = semesterMatch?.[1] ?? getSemester();
+        await syncUserToSupabase({
+          moodle_user_id: profile.userId,
+          name: profile.name,
+          email: profile.email ?? null,
+          site_url: session.siteUrl,
+          semester,
+          last_login_at: new Date().toISOString(),
+        });
+        out(`${mark.info()} Perfil sincronizado: ${c.cyan(profile.name)}`);
+      }
+    } catch {
+      // Nunca bloquear el login por un fallo de Supabase
+    }
   });
 
 program
@@ -674,9 +699,22 @@ program
           }
         }
 
-        // Guardar nuevos en la DB
+        // Guardar nuevos en la DB local y sincronizar con Supabase
         if (newRecords.length > 0) {
           await saveCoursesToDb(newRecords);
+          // Sync a Supabase: silencioso, usa userId de sesión si hay perfil disponible
+          const { loadSession } = await import("../core/session.js");
+          const sess = await loadSession().catch(() => null);
+          const userId = (sess as any)?.userId as number | undefined;
+          await syncScannedCoursesToSupabase(
+            userId ?? 0,
+            newRecords.map((r) => ({
+              id: r.id,
+              name: r.name,
+              teachers: r.teachers,
+              semester: r.semester,
+            })),
+          );
         }
 
         if (opts.json) {
