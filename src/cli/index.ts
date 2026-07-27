@@ -21,6 +21,7 @@ import { getAllGrades, getCourseGrades, type CourseGrades } from "../domain/grad
 import { getAssignDetail } from "../domain/assign.js";
 import {
   findPeople,
+  getBatchPersonProfiles,
   getCourseTeachers,
   getMyProfile,
   getPersonProfile,
@@ -36,6 +37,14 @@ import {
   type SisacadCapture,
 } from "../domain/sisacad.js";
 import { cacheInfo, clearCache, setCacheEnabled, setCacheRefresh } from "../core/cache.js";
+import {
+  clearCoursesDb,
+  coursesDbInfo,
+  getCachedCourse,
+  loadCoursesDb,
+  saveCoursesToDb,
+  type CourseRecord,
+} from "../core/coursesDb.js";
 import { formatDate, relativeDue } from "./format.js";
 import { parseCourseName } from "../core/coursename.js";
 import { humanizeAgo } from "../core/dates.js";
@@ -362,14 +371,72 @@ program
   });
 
 program
-  .command("profile <userId>")
+  .command("profile [userId]")
   .description(
     "Perfil de cualquier usuario por id: nombre, correo, rol y cursos (sirve para docentes). " +
-      "Sin --course, prueba automáticamente tus propios cursos hasta encontrar uno compartido.",
+      "Con --from/--to escanea un rango de ids para descubrir docentes.",
   )
   .option("--course <id>", "Curso de contexto conocido (salta la búsqueda automática).")
+  .option("--from <id>", "Inicio del rango de ids a escanear.")
+  .option("--to <id>", "Fin del rango de ids a escanear (inclusive).")
+  .option("--teachers", "Filtra: mostrar sólo los que tienen rol de docente.")
   .option("--json", "Salida en JSON.")
   .action(async (userId, opts) => {
+    // --- Rango: --from/--to ---
+    if (opts.from || opts.to) {
+      const start = Number(opts.from ?? userId);
+      const end = Number(opts.to);
+      if (!start || !end || start > end) {
+        log(`${mark.err()} Especifica --from <inicio> --to <fin> con números válidos (inicio ≤ fin).`);
+        return;
+      }
+      const ids = Array.from({ length: end - start + 1 }, (_, i) => start + i);
+      await withSession(
+        async (session) => {
+          const status = statusLine();
+          const profiles = await getBatchPersonProfiles(session, ids, {
+            courseId: opts.course ? Number(opts.course) : undefined,
+            concurrency: 4,
+            onProgress: ({ done, total, label }) =>
+              status.set(`perfil ${done}/${total} · id ${label}`),
+          });
+          status.done();
+
+          const filtered = opts.teachers
+            ? profiles.filter((p) => /profesor|docente|teacher/i.test(p.role ?? ""))
+            : profiles;
+
+          if (opts.json) return out(JSON.stringify(filtered, null, 2));
+
+          out(banner("Perfiles", `${filtered.length} de ${ids.length} ids escaneados (${start}–${end})`));
+          if (opts.teachers) out(c.dim(`  filtrado: sólo docentes`));
+          out();
+          for (const prof of filtered) {
+            const isTeacher = /profesor|docente|teacher/i.test(prof.role ?? "");
+            const roleTag = isTeacher ? c.boldYellow(` [${prof.role}]`) : prof.role ? c.dim(` [${prof.role}]`) : "";
+            out(`${mark.arrow()} ${c.bold(prof.name)}${roleTag}  ${c.dim(`id ${prof.userId}`)}`);
+            out(`  ${c.dim("correo:")} ${prof.email ? c.cyan(prof.email) : c.gray("no visible")}`);
+            if (prof.lastAccessAt) out(`  ${c.dim("visto:")}  ${prof.lastAccessAt}`);
+            out(`  ${c.dim("cursos:")} ${c.bold(String(prof.courses.length))}`);
+            for (const cr of prof.courses) {
+              out(`    ${mark.bullet()} ${cr.subject}${cr.group ? c.dim(` · ${cr.group}`) : ""} ${c.gray(`(id ${cr.courseId})`)}`);
+            }
+            out();
+          }
+          if (!filtered.length) {
+            log(c.dim("  No se encontraron perfiles válidos en el rango."));
+          }
+        },
+        { login: { onStatus: log } },
+      );
+      return;
+    }
+
+    // --- Single userId (existente) ---
+    if (!userId) {
+      log(`${mark.err()} Especifica un userId o usa --from/--to para escanear un rango.`);
+      return;
+    }
     await withSession(
       async (session) => {
         let prof;
@@ -424,6 +491,263 @@ program
       },
       { login: { onStatus: log } },
     );
+  });
+
+// Comando especial para scrapear cursos por rango de ID
+program
+  .command("scan-courses")
+  .description(
+    "Escanea cursos por rango de ID en /SEMESTRE/enrol/index.php?id=N. Guarda resultados en DB local (~/.dutic/courses-db.json).",
+  )
+  .requiredOption("--from <id>", "ID inicial del curso")
+  .requiredOption("--to <id>", "ID final del curso (inclusive)")
+  .option("--concurrency <n>", "Peticiones paralelas (cuidado: > 4 puede ser bloqueado).", "3")
+  .option("--delay <ms>", "Pausa en ms entre lotes de peticiones.", "300")
+  .option("--refresh", "Re-escanea aunque el ID ya esté en la DB local.")
+  .option("--json", "Salida en JSON")
+  .action(async (opts) => {
+    const from = Number(opts.from);
+    const to = Number(opts.to);
+    const concurrency = Math.max(1, Number(opts.concurrency) || 3);
+    const delay = Math.max(0, Number(opts.delay) || 300);
+    if (!from || !to || from > to) {
+      log(`${mark.err()} Especifica --from y --to válidos (from <= to)`);
+      return;
+    }
+
+    await withSession(
+      async (session) => {
+        const semester = getSemester();
+        const allResults: CourseRecord[] = [];
+        const spin = statusLine();
+
+        // ── Separar IDs que ya están en DB de los que hay que escanear ──
+        const idsToScan: number[] = [];
+        const cachedResults: CourseRecord[] = [];
+        const allIds = Array.from({ length: to - from + 1 }, (_, i) => from + i);
+
+        if (!opts.refresh) {
+          for (const id of allIds) {
+            const cached = await getCachedCourse(id);
+            if (cached) cachedResults.push(cached);
+            else idsToScan.push(id);
+          }
+        } else {
+          idsToScan.push(...allIds);
+        }
+
+        const total = allIds.length;
+        const cached = cachedResults.length;
+        const toFetch = idsToScan.length;
+
+        if (!opts.json) {
+          out(
+            banner(
+              "Scan de cursos",
+              `IDs ${from}–${to} · ${total} total · semestre ${semester}`,
+            ),
+          );
+          if (cached > 0) {
+            out(
+              `  ${c.dim(`DB local: ${cached} ya conocidos · ${toFetch} a escanear · concurrencia: ${concurrency} · delay: ${delay}ms`)}\n`,
+            );
+          } else {
+            out(`  ${c.dim(`${toFetch} a escanear · concurrencia: ${concurrency} · delay: ${delay}ms`)}\n`);
+          }
+        }
+
+        // Mostrar los ya cacheados directamente
+        for (const rec of cachedResults.sort((a, b) => a.id - b.id)) {
+          allResults.push(rec);
+          if (!opts.json) {
+            const teacherStr = rec.teachers.length ? c.dim(" · " + rec.teachers.join(", ")) : "";
+            const enrollMark = rec.enrolled ? c.green(" [matrícula abierta]") : "";
+            const cacheTag = c.dim(" [DB]");
+            out(
+              `  ${c.dim(String(rec.id).padStart(5))} ${rec.name ? c.bold(rec.name) : c.gray("(sin nombre)")}${teacherStr}${enrollMark}${cacheTag}`,
+            );
+          }
+        }
+
+        // ── Escanear los que faltan ──
+        // scanOne NO imprime: devuelve el registro y la línea a mostrar.
+        // Así el status spinner nunca se mezcla con output.
+        async function scanOne(id: number): Promise<{ record: CourseRecord; line: string }> {
+          const path = `/${semester}/enrol/index.php?id=${id}`;
+          try {
+            const page = await fetchAulaPage(session, path, "html", 50000);
+            const html = page.content;
+
+            // ── Nombre del curso ──
+            // Estructura real de Moodle:
+            //   <div class="page-header-headings">
+            //     <h1 class="h2 mb-0">NOMBRE DEL CURSO</h1>
+            //   </div>
+            let name: string | null = null;
+            const headerM = html.match(/class="page-header-headings"[^>]*>[\s\S]*?<h1[^>]*>([^<]+)<\/h1>/i);
+            if (headerM) {
+              name = headerM[1].trim() || null;
+            }
+            // Fallback: <h3 class="coursename"><a ...>NOMBRE</a>
+            if (!name) {
+              const h3M = html.match(/class="coursename"[^>]*>[\s\S]*?<a[^>]*>([^<]+)<\/a>/i);
+              if (h3M) name = h3M[1].trim() || null;
+            }
+
+            // ── Docentes ──
+            // Estructura real:
+            //   <ul class="teachers">
+            //     <li><span>Profesor: </span><a href="...">NOMBRE APELLIDO</a></li>
+            //   </ul>
+            const teachers: string[] = [];
+            const teachersBlockM = html.match(/<ul\s+class="teachers">([\s\S]*?)<\/ul>/i);
+            if (teachersBlockM) {
+              const anchors = teachersBlockM[1].matchAll(/<a\s+href="[^"]*\/user\/profile[^"]*">([^<]+)<\/a>/gi);
+              for (const a of anchors) {
+                const t = a[1].trim();
+                if (t) teachers.push(t);
+              }
+            }
+
+            // ── Matrícula abierta ──
+            // La página muestra "No se puede auto matricular" si está cerrado,
+            // o un formulario de inscripción si está abierto.
+            const canEnrol = !/No se puede auto matricular/i.test(html) &&
+              /class="enrolmentplugins"|enrol_self|enrol_manual|Acceso de huésped/i.test(html);
+
+            const record: CourseRecord = {
+              id,
+              name,
+              teachers,
+              enrolled: canEnrol,
+              semester,
+              status: page.status,
+              scannedAt: Date.now(),
+            };
+
+            const teacherStr = teachers.length ? c.dim(" · " + teachers.join(", ")) : "";
+            const enrollMark = canEnrol ? c.green(" [matrícula abierta]") : "";
+            const line = `  ${c.dim(String(id).padStart(5))} ${
+              name ? c.bold(name) : c.gray("(sin nombre)")
+            }${teacherStr}${enrollMark}`;
+
+            return { record, line };
+          } catch (e: any) {
+            const record: CourseRecord = {
+              id,
+              name: null,
+              teachers: [],
+              enrolled: false,
+              semester,
+              status: 0,
+              error: e.message as string,
+              scannedAt: Date.now(),
+            };
+            const line = `  ${c.dim(String(id).padStart(5))} ${c.boldRed("ERROR")} ${c.dim(e.message)}`;
+            return { record, line };
+          }
+        }
+
+        let done = 0;
+        const newRecords: CourseRecord[] = [];
+
+        for (let i = 0; i < idsToScan.length; i += concurrency) {
+          const batch = idsToScan.slice(i, i + concurrency);
+          // Actualiza el spinner ANTES de lanzar las peticiones
+          spin.set(`escaneando ${done + 1}–${Math.min(done + batch.length, toFetch)} de ${toFetch} nuevos…`);
+
+          // Esperar todo el lote
+          const batchResults = await Promise.all(batch.map(scanOne));
+
+          // Limpiar el spinner y luego imprimir — sin interleaving
+          spin.done();
+          for (const { record, line } of batchResults.sort((a, b) => a.record.id - b.record.id)) {
+            allResults.push(record);
+            newRecords.push(record);
+            if (!opts.json) out(line);
+          }
+
+          done += batch.length;
+
+          if (i + concurrency < idsToScan.length && delay > 0) {
+            await new Promise((r) => setTimeout(r, delay));
+          }
+        }
+
+        // Guardar nuevos en la DB
+        if (newRecords.length > 0) {
+          await saveCoursesToDb(newRecords);
+        }
+
+        if (opts.json) {
+          out(JSON.stringify(allResults.sort((a, b) => a.id - b.id), null, 2));
+        } else {
+          const found = allResults.filter((r) => r.name).length;
+          const savedNew = newRecords.filter((r) => r.name).length;
+          out(`\n${mark.ok()} ${c.bold(String(found))} cursos con nombre de ${total} IDs.`);
+          if (savedNew > 0)
+            out(
+              `  ${c.dim(`${savedNew} nuevos guardados en DB · próximo scan de estos IDs usará la DB local`)}`,
+            );
+        }
+      },
+      { login: { onStatus: log } },
+    );
+  });
+
+const coursesDb = program
+  .command("courses-db")
+  .description("Gestiona la base de datos local de cursos escaneados (~/.dutic/courses-db.json).");
+
+coursesDb
+  .command("info")
+  .description("Muestra estadísticas de la DB local.")
+  .action(async () => {
+    const info = await coursesDbInfo();
+    out(banner("Courses DB", "base de datos local"));
+    out(`  ${c.dim("total:")}     ${info.total} registros`);
+    out(`  ${c.dim("con nombre:")} ${info.withName}`);
+    out(`  ${c.dim("archivo:")}   ${c.gray(info.file)}`);
+  });
+
+coursesDb
+  .command("list")
+  .description("Lista todos los cursos guardados en la DB.")
+  .option("--json", "Salida en JSON")
+  .option("--with-name", "Sólo los que tienen nombre.")
+  .action(async (opts) => {
+    const db = await loadCoursesDb();
+    let entries = Object.values(db).sort((a, b) => a.id - b.id);
+    if (opts.withName) entries = entries.filter((e) => e.name);
+    if (opts.json) { out(JSON.stringify(entries, null, 2)); return; }
+    out(banner("Courses DB", `${entries.length} registros`));
+    out();
+    out(
+      table(
+        [
+          { header: "id", align: "right", color: c.dim },
+          { header: "nombre" },
+          { header: "docente(s)", color: c.dim },
+          { header: "semestre", color: c.dim },
+          { header: "escaneado", color: c.dim },
+        ],
+        entries.map((e) => [
+          String(e.id),
+          e.name?.slice(0, 42) ?? c.gray("(sin nombre)"),
+          e.teachers.join(", ") || "—",
+          e.semester,
+          new Date(e.scannedAt).toLocaleDateString("es-PE"),
+        ]),
+      ),
+    );
+  });
+
+coursesDb
+  .command("clear")
+  .description("Borra toda la DB de cursos.")
+  .action(async () => {
+    const n = await clearCoursesDb();
+    out(`${mark.ok()} DB borrada (${n} registros eliminados).`);
   });
 
 program

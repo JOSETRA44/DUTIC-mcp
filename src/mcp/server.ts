@@ -27,6 +27,7 @@ import {
 import { getAssignDetail } from "../domain/assign.js";
 import {
   findPeople,
+  getBatchPersonProfiles,
   getCourseTeachers,
   getPersonProfile,
   getPersonProfileAuto,
@@ -355,11 +356,16 @@ server.registerTool(
       "ROL ('Estudiante'/'Profesor' — así confirmas si es docente), zona horaria y TODOS sus cursos " +
       "reales con course id y grupo. Sin `courseId`, prueba automáticamente tus propios cursos hasta " +
       "encontrar uno que la persona también curse/dicte — no hace falta que el usuario lo busque a " +
-      "mano. Pásalo sólo si ya conoces un curso compartido (evita la búsqueda). Requiere conocer el " +
-      "userId de antemano (de un dutic_find_person, de quién calificó una tarea, o de una URL que el " +
-      "usuario te pase) — no está pensado para enumerar ids al azar.",
+      "mano. Puede recibir un array de userIds (máx. 50) para resolver múltiples perfiles en lote.",
     inputSchema: {
-      userId: z.number().int().positive(),
+      userId: z.union([
+        z.number().int().positive(),
+        z
+          .array(z.number().int().positive())
+          .min(1)
+          .max(50)
+          .describe("Array de userIds para resolver múltiples perfiles en lote."),
+      ]),
       courseId: z
         .number()
         .int()
@@ -370,10 +376,14 @@ server.registerTool(
   },
   async ({ userId, courseId }) =>
     tool(() =>
-      withSession(
-        (s) => (courseId ? getPersonProfile(s, userId, courseId) : getPersonProfileAuto(s, userId)),
-        { mode: MCP_MODE },
-      ),
+      withSession(async (s) => {
+        if (Array.isArray(userId)) {
+          return getBatchPersonProfiles(s, userId, { courseId });
+        }
+        return courseId
+          ? getPersonProfile(s, userId, courseId)
+          : getPersonProfileAuto(s, userId);
+      }, { mode: MCP_MODE }),
     ),
 );
 
