@@ -6,3 +6,6 @@ dist/
 .dutic/
 # Skills materializadas por `npx skills` (se regeneran desde skills-lock.json)
 .agents/
+.vscode/
+.mimocode/
+
