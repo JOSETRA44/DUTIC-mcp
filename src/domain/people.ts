@@ -324,6 +324,38 @@ export async function getPersonProfileAuto(
   );
 }
 
+export interface BatchProfileOptions {
+  concurrency?: number;
+  courseId?: number;
+  onProgress?: (info: { phase: string; done: number; total: number; label?: string }) => void;
+}
+
+/**
+ * Resuelve múltiples perfiles en lote con concurrencia acotada. Omite silenciosamente los IDs
+ * inválidos (Moodle responde "usuario no válido"). Cada perfil se cachea individualmente.
+ */
+export async function getBatchPersonProfiles(
+  session: Session,
+  userIds: number[],
+  opts: BatchProfileOptions = {},
+): Promise<PersonProfile[]> {
+  const { concurrency = 4, courseId, onProgress } = opts;
+  let done = 0;
+  const results = await mapLimit(userIds, concurrency, async (id) => {
+    try {
+      const prof = courseId
+        ? await getPersonProfile(session, id, courseId)
+        : await getPersonProfileAuto(session, id);
+      onProgress?.({ phase: "perfiles", done: ++done, total: userIds.length, label: String(id) });
+      return prof;
+    } catch {
+      onProgress?.({ phase: "perfiles", done: ++done, total: userIds.length, label: `${id} (omitido)` });
+      return null;
+    }
+  });
+  return results.filter((p): p is PersonProfile => p !== null);
+}
+
 export interface MyProfile {
   userId: number | null;
   name: string;
