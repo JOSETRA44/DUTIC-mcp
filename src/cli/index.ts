@@ -789,6 +789,50 @@ coursesDb
   });
 
 program
+  .command("search <query>")
+  .description("Busca cursos o docentes en la base de datos local.")
+  .option("--json", "Salida en JSON")
+  .action(async (query, opts) => {
+    const db = await loadCoursesDb();
+    const q = query.toLowerCase();
+    const results = Object.values(db).filter((e) => {
+      const matchName = e.name && e.name.toLowerCase().includes(q);
+      const matchTeacher = e.teachers.some((t) => t.toLowerCase().includes(q));
+      return matchName || matchTeacher;
+    }).sort((a, b) => a.id - b.id);
+
+    if (opts.json) {
+      out(JSON.stringify(results, null, 2));
+      return;
+    }
+
+    out(banner("Búsqueda", `"${query}" · ${results.length} resultados`));
+    out();
+    if (results.length === 0) {
+      out(`  No se encontraron coincidencias.`);
+      out(`  (Tip: usa 'dutic scan-courses' para alimentar tu base de datos local)`);
+      return;
+    }
+
+    out(
+      table(
+        [
+          { header: "id", align: "right", color: c.dim },
+          { header: "nombre" },
+          { header: "docente(s)", color: c.yellow },
+          { header: "semestre", color: c.dim },
+        ],
+        results.map((e) => [
+          String(e.id),
+          e.name ? e.name.slice(0, 45) : c.gray("(sin nombre)"),
+          e.teachers.join(", ") || "—",
+          e.semester,
+        ])
+      )
+    );
+  });
+
+program
   .command("teachers <courseId>")
   .description("Docentes del curso (deducidos de contactos y de quién califica).")
   .action(async (courseId) => {
