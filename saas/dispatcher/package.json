@@ -1,0 +1,16 @@
+{
+  "name": "dutic-saas-dispatcher",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Worker standalone (no depende del resto de dutic-mcp): conecta el número dedicado del bot vía Baileys, envía las notificaciones pendientes de Supabase y persiste el estado de sesión de vuelta. Pensado para correr desde GitHub Actions (cron) o localmente para el pairing inicial.",
+  "scripts": {
+    "start": "node index.mjs"
+  },
+  "dependencies": {
+    "@hapi/boom": "^10.0.1",
+    "@supabase/supabase-js": "^2.45.0",
+    "@whiskeysockets/baileys": "^6.7.9",
+    "pino": "^9.4.0"
+  }
+}
