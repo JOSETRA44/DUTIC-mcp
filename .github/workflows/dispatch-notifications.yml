@@ -4,11 +4,30 @@ name: Dispatch DUTIC notifications
 # envía por WhatsApp (Baileys). No hace scraping de Moodle — eso corre en la PC de
 # cada estudiante vía `dutic watch` + `dutic saas push`. El repo debe ser PRIVADO:
 # los secrets dan acceso de service_role a la base de datos del piloto.
+#
+# `workflow_dispatch` también lo dispara la Edge Function `enroll` (con cooldown de 2
+# min en `dispatch_wakeups`) para que el bot conecte casi de inmediato cuando alguien
+# se enrola, en vez de esperar al próximo cron — arregla el "check gris" del código de
+# vinculación. `listen_seconds` le da más tiempo de escucha a esas corridas a demanda
+# que a las de cron (nadie está tecleando un código justo en el cron programado).
 on:
   schedule:
     - cron: "0 17 * * *" # ~12:00 hora Perú (UTC-5)
     - cron: "23 * * * *" # ~18:00 hora Perú aprox.; ajustar tras medir el jitter real de Actions
-  workflow_dispatch: {} # permite correrlo a mano para probar
+  workflow_dispatch:
+    inputs:
+      listen_seconds:
+        description: "Segundos escuchando vinculaciones tras despachar (más largo en corridas a demanda)"
+        required: false
+        default: "20"
+
+concurrency:
+  # Nunca dos dispatchers a la vez: comparten el mismo estado de sesión de Baileys en
+  # Supabase (creds/keys) — correr dos en paralelo puede pisarse las claves de Signal
+  # entre sí. Los disparos que se solapen (cron + despertador, o dos despertadores)
+  # quedan en cola en vez de correr en simultáneo.
+  group: dispatcher
+  cancel-in-progress: false
 
 jobs:
   dispatch:
@@ -20,10 +39,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: "npm"
+          cache-dependency-path: saas/dispatcher/package-lock.json
 
       - name: Instalar dependencias del dispatcher
         working-directory: saas/dispatcher
-        run: npm install
+        run: npm ci
 
       - name: Enviar notificaciones pendientes
         working-directory: saas/dispatcher
@@ -31,4 +52,7 @@ jobs:
           SUPABASE_URL: ${{ secrets.SAAS_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SAAS_SUPABASE_SERVICE_ROLE_KEY }}
           BOT_NUMBER: ${{ secrets.SAAS_BOT_NUMBER }}
+          # Nota: las expresiones de Actions no soportan aritmética (no hay '*'), así que
+          # se pasan segundos crudos y el script los convierte a ms.
+          POST_DISPATCH_LISTEN_SECONDS: ${{ inputs.listen_seconds || '20' }}
         run: node index.mjs
