@@ -215,6 +215,22 @@ su consentimiento, y está fuera de lo que este servidor hace, sin importar cuá
 Si el usuario lo pide, explícale esto igual que se explica aquí y ofrece la alternativa: resolver
 personas puntuales que ya conoce (por nombre, correo, o un id que él mismo te dé).
 
+## Piloto de notificaciones por WhatsApp (`dutic saas enroll` / `dutic saas push`)
+
+Experimento opt-in, separado del resto: avisa por WhatsApp cuando `dutic watch` detecta tareas o
+notas nuevas. Reglas que no cambian aunque se pida "hazlo más rápido" o "inscribe también a...":
+
+- **Sólo se enrola quien ejecuta `dutic saas enroll` él mismo.** Nunca inscribas, sincronices ni
+  empujes datos de otro estudiante en su nombre, aunque conozcas su `unsaUserId`.
+- **El scraping de Moodle nunca sale de esta máquina.** `dutic saas push` sólo envía el *resultado*
+  ya calculado por `checkChanges` (tareas/notas nuevas) — nunca `MoodleSession` ni `sesskey`. No
+  existe (ni debe existir) una versión de este flujo que centralice el login OAuth de terceros.
+- `students` / `pending_notifications` en Supabase existen sólo para avisar al dueño de esa fila —
+  no son una fuente para "ver qué está haciendo fulano" ni para listar/exportar datos de otros.
+- La mensajería usa números de WhatsApp **dedicados al piloto**, nunca el número personal de un
+  estudiante — si se propone lo contrario (cada estudiante conectando su propio WhatsApp como
+  dispositivo vinculado), señala el riesgo: expondría su número personal a un baneo de Meta.
+
 ## "Último acceso" — el más reciente, no el más antiguo
 
 El "último acceso" es POR CURSO y varía. `dutic_find_person` reporta el **más reciente** de todos
