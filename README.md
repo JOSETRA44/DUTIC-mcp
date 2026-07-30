@@ -87,6 +87,27 @@ dutic tasks --all     # tus tareas, incluidas las ocultas
 Si ves tus tareas, ya está todo listo. Pídeselo también a tu agente:
 *«¿tengo alguna tarea pendiente en el aula virtual?»*
 
+### 3. Comandos Rapidos (Cheat Sheet)
+
+Una vez iniciada la sesion, usa estos comandos frecuentemente para interactuar con tu entorno:
+
+```bash
+# Ver estado de sesion
+dutic status
+
+# Revisar que tareas faltan (incluyendo ocultas)
+dutic tasks --all
+
+# Descargar materiales del curso a tu computadora
+dutic study <courseId> --dest ./materiales
+
+# Forzar busqueda de nuevos cursos matriculados
+dutic courses --refresh
+
+# Buscar un curso o docente en la base de datos local
+dutic search "estadistica"
+```
+
 ---
 
 ## Uso — CLI
@@ -112,6 +133,8 @@ Si ves tus tareas, ya está todo listo. Pídeselo también a tu agente:
 | `dutic person <texto>` | Busca por nombre/correo: su correo y **sus cursos reales** (con grupo), marcando cuáles compartes |
 | `dutic profile <userId>` | Perfil por id (docentes incluidos): correo, **rol**, cursos — resuelve el curso en común solo, sin `--course` |
 | `dutic teachers <id>` | Docentes del curso |
+| `dutic search <query>` | Busca cursos o docentes en la base de datos local |
+| `dutic scan-courses` | Escanea cursos por rango de IDs para armar tu base de datos y respaldar en la nube |
 | `dutic fetch <url>` | Explora cualquier página del aula por URL (cambiar ids, ver lo que no tiene botón) |
 | `dutic pull <id>` | Descarga todos los materiales |
 | `dutic cache info` / `clear` | Gestiona la caché local (perfiles, cursos…) |
@@ -119,27 +142,37 @@ Si ves tus tareas, ya está todo listo. Pídeselo también a tu agente:
 
 Opciones globales: `--refresh` (ignora la caché y trae datos frescos), `--no-cache`, `--json`.
 
-### Rendimiento
+### Rendimiento y Refresco
 
 Las consultas de personas/cursos se **cachean en disco** (`~/.dutic/cache/`): repetir `person`,
-`people`, `grades` o `tasks` es casi instantáneo (`people` de 54 alumnos: ~10 s la 1.ª vez, &lt;1 s
-después). Usa `--refresh` para forzar datos frescos. TTLs configurables con `DUTIC_CACHE_TTL_MIN`;
-desactivable con `DUTIC_NO_CACHE=1`.
+`people`, `grades` o `tasks` es casi instantaneo. Usa `--refresh` para ignorar el cache temporalmente y forzar datos frescos. Esto es muy util para reescanear tras algun cambio (matriculas nuevas, fechas extendidas, etc.).
 
-### Ejemplos
+### Ejemplos Utiles
 
 ```bash
-# ¿Qué me falta entregar?
+# Que me falta entregar exactamente?
 dutic tasks --all
 
-# Preparar sólo la unidad que voy a estudiar
+# Forzar que busque nuevas tareas saltandose el cache
+dutic tasks --all --refresh
+
+# Preparar solo la unidad que voy a estudiar
 dutic study 2279 --section "Tema 2" --dest ./materiales
 
-# ¿Qué pide exactamente esta tarea?
+# Que pide exactamente esta tarea?
 dutic task 385686
 
-# ¿Quién es y en qué cursos coincido con él? (correo + todos los cursos compartidos)
+# Forzar el rescanneo de materiales de un curso
+dutic materials 2279 --refresh
+
+# Quien es y en que cursos coincido con el? (correo + todos los cursos compartidos)
 dutic person "Piero"
+
+# Escanear perfiles de cursos (1 al 5000) para crear tu propia base de datos offline
+dutic scan-courses --from 1 --to 5000
+
+# Quien ensena Estadistica? (requiere haber ejecutado scan-courses primero)
+dutic search "Estadistica"
 ```
 
 ---
@@ -198,13 +231,13 @@ ellos llama al endpoint AJAX interno de Moodle, complementado con scraping donde
 
 | Necesidad | Fuente | Estado |
 |---|---|---|
-| Descubrir todas las tareas | `core_courseformat_get_state` | ✅ |
-| Cursos matriculados | `core_course_get_enrolled_courses_by_timeline_classification` | ✅ |
-| Timeline y fechas | `core_calendar_get_action_events_by_timesort` | ✅ (sólo accionables) |
-| Estado de entrega, consigna, adjuntos | scraping de `mod/assign/view.php` | ✅ |
-| Notas | scraping de `grade/report/user/index.php` | ✅ |
-| Personas y correos | scraping de `user/index.php` y `user/view.php` | ✅ |
-| `core_course_get_contents`, `mod_assign_*`, `gradereport_*` | — | ❌ bloqueadas por la UNSA |
+| Descubrir todas las tareas | `core_courseformat_get_state` | SI |
+| Cursos matriculados | `core_course_get_enrolled_courses_by_timeline_classification` | SI |
+| Timeline y fechas | `core_calendar_get_action_events_by_timesort` | SI (sólo accionables) |
+| Estado de entrega, consigna, adjuntos | scraping de `mod/assign/view.php` | SI |
+| Notas | scraping de `grade/report/user/index.php` | SI |
+| Personas y correos | scraping de `user/index.php` y `user/view.php` | SI |
+| `core_course_get_contents`, `mod_assign_*`, `gradereport_*` | — | NO bloqueadas por la UNSA |
 
 **Fechas contradictorias:** algunas consignas mencionan una fecha distinta a la configurada en
 Moodle. `dutic task <cmid>` compara ambas y avisa (`dateConflict`) — es la causa típica de entregas
