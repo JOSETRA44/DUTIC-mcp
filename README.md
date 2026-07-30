@@ -234,6 +234,13 @@ Cómo está construido, y por qué:
   del piloto — nunca el número personal de un estudiante. Sólo esos números del bot están expuestos a
   un eventual baneo de Meta; son reemplazables sin afectar a nadie más. El envío tiene demoras
   aleatorias entre mensajes y variación de texto para reducir el riesgo de detección como spam.
+- **"Despertador" del bot**: el dispatcher normalmente sólo corre por cron (2x/día), así que un código
+  de vinculación enviado justo después de `dutic saas enroll` podía quedar con el check gris horas. La
+  Edge Function `enroll` dispara un `workflow_dispatch` de GitHub Actions apenas se crea un estudiante
+  nuevo, con una ventana de escucha más larga (150s) que la de las corridas por cron (20s). Como
+  `enroll` es un endpoint público, el disparo está limitado a **uno cada 2 minutos** (tabla
+  `dispatch_wakeups`, claim atómico) sin importar cuántas veces se llame — así no se puede agotar el
+  presupuesto gratis de Actions ni el rate-limit del token de GitHub llamando `enroll` en bucle.
 - Piloto con consentimiento explícito de cada participante — no un lanzamiento masivo a la facultad.
 
 ## Configuración
