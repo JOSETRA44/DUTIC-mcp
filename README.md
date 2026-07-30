@@ -210,6 +210,32 @@ Si tu cliente no resuelve comandos del PATH, usa la ruta absoluta que imprime `d
 
 ---
 
+## Piloto de notificaciones por WhatsApp (opt-in)
+
+Experimento **separado** del uso personal de arriba: un bot que avisa por WhatsApp cuando aparece una
+tarea o nota nueva. Sólo para quien decida enrolarse explícitamente — nadie queda inscrito sin haberlo
+pedido.
+
+```bash
+dutic saas enroll   # te registra (una vez) y te da un código corto de 6 caracteres
+# le escribes ese código, tal cual, al número de WhatsApp del bot (te lo da el operador del piloto)
+dutic watch          # detecta novedades (igual que siempre)
+dutic saas push       # envía esas novedades a la cola de notificaciones
+```
+
+Cómo está construido, y por qué:
+
+- **El scraping nunca sale de tu PC.** `dutic saas push` reutiliza el mismo `dutic watch` de siempre;
+  sólo empuja el *resultado* (tarea nueva, nota nueva) a Supabase — jamás tu `MoodleSession` ni tu
+  `sesskey`. Centralizar el login de Google OAuth de otros estudiantes en la nube no es viable (los
+  sistemas anti-bot de Google bloquean ese patrón) ni seguro (expondría la sesión de todos en un solo
+  lugar), así que el login sigue pasando, como siempre, en la máquina de cada quien.
+- **La mensajería usa Baileys** (librería no oficial de WhatsApp) con **1-3 números dedicados/externos**
+  del piloto — nunca el número personal de un estudiante. Sólo esos números del bot están expuestos a
+  un eventual baneo de Meta; son reemplazables sin afectar a nadie más. El envío tiene demoras
+  aleatorias entre mensajes y variación de texto para reducir el riesgo de detección como spam.
+- Piloto con consentimiento explícito de cada participante — no un lanzamiento masivo a la facultad.
+
 ## Configuración
 
 | Variable | Para qué | Por defecto |
@@ -278,6 +304,9 @@ git push --follow-tags
   calificada, un correo, un enlace que ya tenías). No está pensado ni se debe usar para recorrer
   rangos de ids y construir un directorio de docentes/estudiantes de la facultad — eso sería
   scraping masivo de datos personales de terceros sin su consentimiento.
+- El piloto de notificaciones (`dutic saas enroll`/`push`) es **opt-in**: sólo guarda datos de quien
+  ejecuta `enroll` explícitamente. `pending_notifications` y `students` en Supabase existen sólo para
+  avisar al propio dueño de esa fila — nunca para leer, listar o reenviar datos de otro estudiante.
 
 ## Licencia
 
