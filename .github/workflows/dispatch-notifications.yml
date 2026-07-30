@@ -1,0 +1,34 @@
+name: Dispatch DUTIC notifications
+
+# Corre el worker de saas/dispatcher: lee pending_notifications de Supabase y las
+# envía por WhatsApp (Baileys). No hace scraping de Moodle — eso corre en la PC de
+# cada estudiante vía `dutic watch` + `dutic saas push`. El repo debe ser PRIVADO:
+# los secrets dan acceso de service_role a la base de datos del piloto.
+on:
+  schedule:
+    - cron: "0 17 * * *" # ~12:00 hora Perú (UTC-5)
+    - cron: "23 * * * *" # ~18:00 hora Perú aprox.; ajustar tras medir el jitter real de Actions
+  workflow_dispatch: {} # permite correrlo a mano para probar
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Instalar dependencias del dispatcher
+        working-directory: saas/dispatcher
+        run: npm install
+
+      - name: Enviar notificaciones pendientes
+        working-directory: saas/dispatcher
+        env:
+          SUPABASE_URL: ${{ secrets.SAAS_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SAAS_SUPABASE_SERVICE_ROLE_KEY }}
+          BOT_NUMBER: ${{ secrets.SAAS_BOT_NUMBER }}
+        run: node index.mjs
