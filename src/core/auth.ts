@@ -29,7 +29,9 @@ export async function ensureSession(
 
   // Intento headless silencioso (funciona si el SSO de Google sigue vivo).
   try {
-    return await loginWithPlaywright({ headless: true, timeoutMs: 45_000, ...login });
+    // 60s: el intento headless ahora sigue el enlace OAuth y hace el viaje completo por
+    // Google, que puede encadenar varias redirecciones.
+    return await loginWithPlaywright({ headless: true, timeoutMs: 60_000, ...login });
   } catch (err) {
     if (mode === "headless-only") throw new SessionExpiredError();
     // "interactive": abrir navegador visible para que el usuario complete el login.

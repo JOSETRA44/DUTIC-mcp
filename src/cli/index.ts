@@ -53,6 +53,7 @@ import { formatTaskLine } from "./format.js";
 import { banner, c, mark, progressBar, rule, statusLine, table } from "./ui.js";
 import { MCP_SERVER_PATH, runSetup } from "./setup.js";
 import { registerSaasCommands } from "./saas.js";
+import { registerAutoCommands } from "./auto.js";
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -1205,6 +1206,7 @@ function renderGradesSummary(all: CourseGrades[]): void {
 }
 
 registerSaasCommands(program);
+registerAutoCommands(program);
 
 program.parseAsync(process.argv).catch((err) => {
   log(`${mark.err()} ${err?.message ?? err}`);

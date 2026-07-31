@@ -80,6 +80,33 @@ async function waitForDashboardPage(
 }
 
 /**
+ * Arranca el flujo OAuth siguiendo el enlace «Ingresar con Correo UNSA».
+ *
+ * Es lo que hace posible la renovación headless: en una ventana visible el usuario
+ * pulsa ese botón, pero sin interfaz no hay quien lo pulse, así que la página se queda
+ * en el formulario de login para siempre y la espera del dashboard agota el tiempo.
+ * Siguiendo el enlace a mano, si la sesión SSO de Google sigue viva en el perfil
+ * persistente, Google redirige solo y aterrizamos en /my sin intervención humana.
+ *
+ * Se navega al href en vez de hacer click: el enlace ya trae el sesskey correcto de esa
+ * carga, y así ningún banner ni overlay puede interceptar el click.
+ */
+async function startOauthFlow(page: Page): Promise<boolean> {
+  try {
+    const href = await page
+      .locator('a[href*="auth/oauth2/login.php"]')
+      .first()
+      .getAttribute("href", { timeout: 10_000 });
+    if (!href) return false;
+    await page.goto(href, { waitUntil: "domcontentloaded", timeout: 60_000 });
+    return true;
+  } catch {
+    // No pasa nada: en modo visible el usuario todavía puede pulsar el botón a mano.
+    return false;
+  }
+}
+
+/**
  * Extrae el sesskey desde la página cargada. Moodle 4.x inyecta window.M.cfg.sesskey de
  * forma asíncrona vía RequireJS, así que se consultan varias fuentes en orden.
  */
@@ -177,9 +204,16 @@ export async function loginWithPlaywright(opts: LoginOptions = {}): Promise<Sess
     onStatus(
       headless
         ? "Renovando sesión en segundo plano…"
-        : "En la ventana: pulsa «Ingresar con Correo UNSA» y elige tu cuenta de Google. " +
+        : "En la ventana: elige tu cuenta de Google si te la pide. " +
             "No cierres la ventana; se cerrará sola al terminar.",
     );
+
+    // Si ya estamos autenticados, /my aparece sin pasar por aquí. Si no, hay que
+    // arrancar el OAuth: imprescindible en headless (nadie puede pulsar el botón) y en
+    // modo visible le ahorra un click al usuario.
+    if (!isDashboardUrl(page.url())) {
+      await startOauthFlow(page);
+    }
 
     // Esperar (tolerante) a que CUALQUIER página aterrice de verdad en el dashboard /my.
     // No cerramos ni extraemos nada hasta confirmar la autenticación real.

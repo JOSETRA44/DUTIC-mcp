@@ -28,7 +28,16 @@ interface IngestBody {
     submissionChanges?: unknown[];
     dueDateChanges?: unknown[];
   } | null;
+  /**
+   * Aviso del propio sistema, no una novedad de Moodle (p.ej. "tu sesión expiró").
+   * Llega SIN snapshot a propósito: se envía justo cuando el agente local no pudo
+   * hablar con Moodle, así que no hay foto que mandar.
+   */
+  notice?: { kind?: string; payload?: Record<string, unknown> };
 }
+
+/** Avisos del sistema permitidos — lista blanca para que este campo no sea un canal libre. */
+const ALLOWED_NOTICES = new Set(["session_expired"]);
 
 Deno.serve(async (req: Request) => {
   if (req.method !== "POST") {
@@ -42,11 +51,15 @@ Deno.serve(async (req: Request) => {
     return new Response(JSON.stringify({ error: "invalid_json" }), { status: 400 });
   }
 
-  const { enrollToken, snapshot, changes } = body;
-  if (!enrollToken || !snapshot) {
-    return new Response(JSON.stringify({ error: "missing_fields", required: ["enrollToken", "snapshot"] }), {
-      status: 400,
-    });
+  const { enrollToken, snapshot, changes, notice } = body;
+  if (!enrollToken || (!snapshot && !notice)) {
+    return new Response(
+      JSON.stringify({ error: "missing_fields", required: ["enrollToken", "snapshot | notice"] }),
+      { status: 400 },
+    );
+  }
+  if (notice && !ALLOWED_NOTICES.has(notice.kind ?? "")) {
+    return new Response(JSON.stringify({ error: "unknown_notice_kind" }), { status: 400 });
   }
 
   const { data: student, error: lookupError } = await supabase
@@ -62,17 +75,37 @@ Deno.serve(async (req: Request) => {
     return new Response(JSON.stringify({ error: "student_paused" }), { status: 403 });
   }
 
-  await supabase.from("course_snapshot").upsert(
-    {
-      student_id: student.id,
-      course_id: GLOBAL_COURSE_ID,
-      snapshot,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "student_id,course_id" },
-  );
+  // Un aviso del sistema llega sin foto; no hay nada que guardar en course_snapshot.
+  if (snapshot) {
+    await supabase.from("course_snapshot").upsert(
+      {
+        student_id: student.id,
+        course_id: GLOBAL_COURSE_ID,
+        snapshot,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "student_id,course_id" },
+    );
+  }
 
   const rows: { student_id: string; kind: string; payload: unknown }[] = [];
+
+  if (notice) {
+    // Anti-repetición: si ya hay un aviso igual sin enviar, no encolar otro. El agente
+    // local corre cada pocas horas y seguiría fallando hasta que el estudiante haga
+    // login — sin esto le llegarían decenas de mensajes idénticos.
+    const { data: dup } = await supabase
+      .from("pending_notifications")
+      .select("id")
+      .eq("student_id", student.id)
+      .eq("kind", notice.kind!)
+      .is("sent_at", null)
+      .limit(1);
+    if (!dup?.length) {
+      rows.push({ student_id: student.id, kind: notice.kind!, payload: notice.payload ?? {} });
+    }
+  }
+
   if (changes) {
     for (const t of changes.newTasks ?? []) rows.push({ student_id: student.id, kind: "new_task", payload: t });
     for (const g of changes.newGrades ?? []) rows.push({ student_id: student.id, kind: "new_grade", payload: g });

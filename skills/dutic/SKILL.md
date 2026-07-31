@@ -231,6 +231,22 @@ notas nuevas. Reglas que no cambian aunque se pida "hazlo más rápido" o "inscr
   estudiante — si se propone lo contrario (cada estudiante conectando su propio WhatsApp como
   dispositivo vinculado), señala el riesgo: expondría su número personal a un baneo de Meta.
 
+### Revisión automática (`dutic auto`)
+
+`dutic saas enroll` deja registrada una tarea programada que corre `dutic auto run` cada 3 h. Reglas
+si te toca tocar esto:
+
+- **No propongas un daemon residente.** Se descartó a propósito: un proceso Node vivo 24/7 gasta
+  ~60-100 MB de RAM en la laptop del estudiante y es el patrón que marcan los antivirus. El
+  Programador de tareas ya hace de scheduler con consumo cero en reposo.
+- **El camino de fondo es `mode: "headless-only"`, sin excepción.** Con el modo por defecto
+  (`"interactive"`) una sesión caducada abriría una ventana de Chrome sola en la pantalla del
+  estudiante, lanzada por una tarea invisible. Si la renovación silenciosa falla, se avisa por
+  WhatsApp (`pushNotice(..., "session_expired")`); nunca se abre un navegador.
+- **No subas la frecuencia sin pensarlo.** Cada pasada es un barrido completo de cursos y notas
+  contra los servidores de la UNSA. El intervalo conservador y el retraso aleatorio están para no
+  provocar una estampida si el piloto crece.
+
 ## "Último acceso" — el más reciente, no el más antiguo
 
 El "último acceso" es POR CURSO y varía. `dutic_find_person` reporta el **más reciente** de todos
