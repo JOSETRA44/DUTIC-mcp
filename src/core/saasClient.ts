@@ -82,3 +82,19 @@ export async function pushChanges(
   const data = await callFunction("ingest", { enrollToken, snapshot, changes });
   return { ok: Boolean(data.ok), notificationsQueued: Number(data.notificationsQueued ?? 0) };
 }
+
+/**
+ * Encola un aviso del propio sistema (no una novedad de Moodle). Sirve para el caso en
+ * que la automatización queda ciega: si el SSO de Google muere, la renovación headless
+ * no puede hacer nada y el estudiante dejaría de recibir avisos SIN ENTERARSE. Como el
+ * enrollToken vive en disco y no requiere sesión de Moodle, podemos avisarle por el
+ * mismo WhatsApp que ya usa, pidiéndole que corra `dutic login`.
+ */
+export async function pushNotice(
+  enrollToken: string,
+  kind: string,
+  payload: Record<string, unknown> = {},
+): Promise<{ ok: boolean; notificationsQueued: number }> {
+  const data = await callFunction("ingest", { enrollToken, notice: { kind, payload } });
+  return { ok: Boolean(data.ok), notificationsQueued: Number(data.notificationsQueued ?? 0) };
+}

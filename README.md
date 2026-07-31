@@ -137,6 +137,7 @@ dutic search "estadistica"
 | `dutic scan-courses` | Escanea cursos por rango de IDs para armar tu base de datos y respaldar en la nube |
 | `dutic fetch <url>` | Explora cualquier página del aula por URL (cambiar ids, ver lo que no tiene botón) |
 | `dutic pull <id>` | Descarga todos los materiales |
+| `dutic auto install` / `status` / `uninstall` | Revisión automática en segundo plano (tarea programada, sin daemon) |
 | `dutic cache info` / `clear` | Gestiona la caché local (perfiles, cursos…) |
 | `dutic setup` / `dutic login` / `dutic status` | Configuración y sesión |
 
@@ -219,9 +220,11 @@ pedido.
 ```bash
 dutic saas enroll   # te registra (una vez) y te da un código corto de 6 caracteres
 # le escribes ese código, tal cual, al número de WhatsApp del bot (te lo da el operador del piloto)
-dutic watch          # detecta novedades (igual que siempre)
-dutic saas push       # envía esas novedades a la cola de notificaciones
 ```
+
+**Y ya está — no hay nada más que recordar.** `dutic saas enroll` deja activada la revisión
+automática: tu PC revisa el aula virtual sola cada 3 horas y te avisa por WhatsApp si aparece una
+tarea o una nota. Puedes verlo con `dutic auto status` y desactivarlo con `dutic auto uninstall`.
 
 Cómo está construido, y por qué:
 
@@ -241,6 +244,18 @@ Cómo está construido, y por qué:
   `enroll` es un endpoint público, el disparo está limitado a **uno cada 2 minutos** (tabla
   `dispatch_wakeups`, claim atómico) sin importar cuántas veces se llame — así no se puede agotar el
   presupuesto gratis de Actions ni el rate-limit del token de GitHub llamando `enroll` en bucle.
+- **Sin daemon residente.** La revisión automática no deja ningún proceso vivo consumiendo RAM: se
+  registra una tarea en el Programador de tareas de Windows que ejecuta `dutic auto run` cada 3 h;
+  cada pasada dura segundos y termina. En reposo el consumo es cero. Se usa el Programador de tareas
+  y no una clave `Run` del registro precisamente porque esa clave es el patrón de persistencia que
+  marcan los antivirus.
+- **Respetuoso con tu laptop y con la UNSA.** Corre en prioridad baja, sólo si hay red, nunca
+  despierta un equipo dormido, y se salta la pasada si no hay conexión o si estás usando `dutic` a
+  mano. El disparo lleva retraso aleatorio (hasta 45 min) para que, si muchos estudiantes lo tienen
+  instalado, no barran el aula virtual todos en el mismo instante.
+- **Nunca aparece una ventana de la nada.** La renovación de sesión en segundo plano es estrictamente
+  headless. Si el SSO de Google caduca de verdad y no se puede renovar en silencio, en vez de abrirte
+  un navegador sin avisar, el bot te escribe por WhatsApp pidiéndote que corras `dutic login`.
 - Piloto con consentimiento explícito de cada participante — no un lanzamiento masivo a la facultad.
 
 ## Configuración

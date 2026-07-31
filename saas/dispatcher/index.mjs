@@ -116,6 +116,11 @@ const TEMPLATES = {
   due_date_change: [
     (p) => `⚠ Cambió la fecha de "${p.task.name}": ahora ${p.to ? new Date(p.to * 1000).toLocaleString("es-PE") : "sin fecha"}.`,
   ],
+  // Aviso del propio sistema: el agente local perdió la sesión y no pudo renovarla en
+  // silencio. Sin esto el estudiante dejaría de recibir avisos sin enterarse nunca.
+  session_expired: [
+    (p) => p.message ?? "Tu sesión del aula virtual expiró. Corre `dutic login` en tu PC para reactivar los avisos.",
+  ],
 };
 
 function renderNotification(kind, payload) {
