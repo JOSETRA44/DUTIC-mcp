@@ -28,8 +28,11 @@ const supabase = createClient(
 // el rate-limit del token de GitHub (DDoS de costo, no de tráfico). El cooldown de
 // `dispatch_wakeups` acota a **uno** el número de disparos por ventana de 2 minutos,
 // sin importar cuántas veces se llame `enroll` — es la mitigación, no una opción.
+// El worker vive en un repo PRIVADO aparte: sus secrets incluyen la service_role key,
+// que se salta la RLS y protege datos personales de terceros. DUTIC-mcp es público
+// (paquete npm), así que esa credencial no puede vivir ahí.
 const GITHUB_OWNER = "JOSETRA44";
-const GITHUB_REPO = "DUTIC-mcp";
+const GITHUB_REPO = "dutic-dispatcher";
 const GITHUB_WORKFLOW_FILE = "dispatch-notifications.yml";
 const WAKE_COOLDOWN_MS = 120_000;
 const ON_DEMAND_LISTEN_SECONDS = 150;
