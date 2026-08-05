@@ -29,6 +29,7 @@ import {
   findPeople,
   getBatchPersonProfiles,
   getCourseTeachers,
+  getTeachersByCourse,
   getPersonProfile,
   getPersonProfileAuto,
   listCourseParticipants,
@@ -108,7 +109,23 @@ server.registerTool(
     description: "Lista los cursos en los que estás matriculado (id, nombre, docentes).",
     inputSchema: {},
   },
-  async () => tool(() => withSession((s) => getEnrolledCourses(s), { mode: MCP_MODE })),
+  async () =>
+    tool(() =>
+      withSession(async (s) => {
+        // `contacts` del web service llega vacío en esta instalación; los docentes
+        // reales salen del listado de participantes (rol "Profesor"). Sin esto, este
+        // tool prometía "docentes" en su descripción y devolvía siempre una lista vacía.
+        const courses = await getEnrolledCourses(s);
+        const teachers = await getTeachersByCourse(
+          s,
+          courses.map((c) => c.id),
+        ).catch(() => new Map<number, string[]>());
+        return courses.map((c) => ({
+          ...c,
+          teachers: c.contacts.length ? c.contacts : (teachers.get(c.id) ?? []),
+        }));
+      }, { mode: MCP_MODE }),
+    ),
 );
 
 server.registerTool(

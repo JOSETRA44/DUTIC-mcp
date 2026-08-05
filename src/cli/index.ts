@@ -23,6 +23,7 @@ import {
   findPeople,
   getBatchPersonProfiles,
   getCourseTeachers,
+  getTeachersByCourse,
   getMyProfile,
   getPersonProfile,
   getPersonProfileAuto,
@@ -983,7 +984,25 @@ program
     await withSession(
       async (session) => {
         const courses = await getEnrolledCourses(session);
-        if (opts.json) return out(JSON.stringify(courses, null, 2));
+
+        // `contacts` (del web service de Moodle) llega vacío en esta instalación, así
+        // que la columna "docente(s)" salía siempre "—". Los docentes SÍ están en el
+        // listado de participantes, con rol "Profesor": esa es la fuente real.
+        const status = statusLine();
+        status.set("resolviendo docentes…");
+        const teachers = await getTeachersByCourse(
+          session,
+          courses.map((cr) => cr.id),
+          { deep: true },
+        ).catch(() => new Map<number, string[]>());
+        status.done();
+
+        const withTeachers = courses.map((cr) => ({
+          ...cr,
+          teachers: cr.contacts.length ? cr.contacts : (teachers.get(cr.id) ?? []),
+        }));
+
+        if (opts.json) return out(JSON.stringify(withTeachers, null, 2));
         out(banner("Cursos", `${courses.length} matriculados`));
         out(
           table(
@@ -993,17 +1012,28 @@ program
               { header: "grupo", color: c.dim },
               { header: "docente(s)", color: c.dim },
             ],
-            courses.map((cr) => {
+            withTeachers.map((cr) => {
               const parsed = parseCourseName(cr.fullname);
               return [
                 String(cr.id),
                 parsed.subject,
                 parsed.group ?? "—",
-                cr.contacts.join(", ") || "—",
+                cr.teachers.join(", ") || "—",
               ];
             }),
           ),
         );
+        // "Grupos separados": Moodle sólo muestra participantes de tu propio grupo, así
+        // que en esos cursos el docente no aparece por más que se parsee bien.
+        if (withTeachers.some((cr) => cr.teachers.length === 0)) {
+          out(
+            c.dim(
+              `\n  Algún curso sin docente: suele ser por "grupos separados" (Moodle te oculta` +
+                ` a quien no está en tu grupo). Prueba \`dutic teachers <id>\`, que además mira` +
+                ` quién calificó las tareas.`,
+            ),
+          );
+        }
       },
       { login: { onStatus: log } },
     );
