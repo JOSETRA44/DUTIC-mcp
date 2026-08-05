@@ -9,6 +9,7 @@ import { mapLimit } from "./concurrency.js";
 import { parseCourseName } from "../core/coursename.js";
 import { relativeAccessToSeconds } from "../core/dates.js";
 import { withCache } from "../core/cache.js";
+import { postAjax } from "../core/moodleClient.js";
 
 export interface Participant {
   userId: number;
@@ -93,7 +94,12 @@ function extractEmail($: cheerio.CheerioAPI): string | null {
 function parseParticipantRows(html: string, courseId: number): Participant[] {
   const $ = cheerio.load(html);
   const people: Participant[] = [];
-  $("table#participants tbody tr").each((_, tr) => {
+  // El web service de la tabla dinámica devuelve un fragmento cuyo <table> puede no
+  // llevar id="participants"; si el selector estricto no encuentra nada, se cae a
+  // cualquier <tr> (las filas sin enlace de perfil se descartan igual más abajo).
+  const strict = $("table#participants tbody tr");
+  const rows = strict.length ? strict : $("tr");
+  rows.each((_, tr) => {
     const cells = $(tr).find("th,td");
     // La primera celda es el checkbox; el nombre (con enlace al perfil) va en la segunda.
     // Moodle rellena la tabla con filas vacías hasta `perpage`, por eso se exige el enlace.
@@ -158,11 +164,60 @@ export async function listCourseParticipants(
 }
 
 /** Recorre la paginación del listado de participantes y devuelve el roster (sin correos). */
+/**
+ * Trae el listado COMPLETO vía el web service de la tabla dinámica de Moodle 4.x.
+ *
+ * Existe porque `/user/index.php` puede venir con un filtro de grupo YA APLICADO (lo
+ * deja configurado el docente del curso): la página se renderiza mostrando sólo tu
+ * grupo, y en la web hay que pulsar "Limpiar filtros" para ver a todo el mundo. Medido
+ * en un curso real: la página devolvía 4 participantes y sin el filtro son 50 — el
+ * docente estaba entre los 46 ocultos.
+ *
+ * Aquí se replica exactamente la petición que hace ese botón, enviando sólo el filtro
+ * `courseid`. Ojo con la forma de los argumentos, que no es la obvia: `filters` es un
+ * objeto indexado por nombre (no un array) y `pagenumber`/`pagesize` van en minúscula y
+ * como strings; cualquier otra variante devuelve "invalidparameter".
+ */
+async function fetchParticipantsViaDynamicTable(
+  session: Session,
+  courseId: number,
+): Promise<Participant[]> {
+  const data = (await postAjax(session, "core_table_get_dynamic_table_content", {
+    component: "core_user",
+    handler: "participants",
+    uniqueid: `user-index-participants-${courseId}`,
+    sortdata: [{ sortby: "lastname", sortorder: 4 }],
+    jointype: 2,
+    filters: { courseid: { name: "courseid", jointype: 1, values: [courseId] } },
+    firstinitial: "",
+    lastinitial: "",
+    pagenumber: "1",
+    pagesize: "1000",
+    hiddencolumns: [],
+    resetpreferences: false,
+  })) as { html?: string } | null;
+
+  return parseParticipantRows(data?.html ?? "", courseId);
+}
+
 async function fetchParticipantsRoster(
   session: Session,
   courseId: number,
   onProgress?: ParticipantsOptions["onProgress"],
 ): Promise<Participant[]> {
+  // Primero el web service: es una sola petición y, sobre todo, no arrastra el filtro
+  // de grupo que recorta la página HTML. Si falla (versión de Moodle distinta, servicio
+  // deshabilitado), se sigue con el recorrido clásico de páginas.
+  try {
+    const viaWs = await fetchParticipantsViaDynamicTable(session, courseId);
+    if (viaWs.length) {
+      onProgress?.({ phase: "páginas", done: 1, total: 1, label: `${viaWs.length} participantes` });
+      return viaWs;
+    }
+  } catch {
+    /* sin web service: seguimos con el HTML paginado */
+  }
+
   const byUser = new Map<number, Participant>();
   let declaredTotal: number | null = null;
 
@@ -381,6 +436,83 @@ export async function getMyProfile(session: Session): Promise<MyProfile> {
  * del alumno, así que se combinan dos fuentes: los "contactos" que expone la API de cursos y el
  * rol detectado en el listado (por si algún curso sí los muestra).
  */
+/**
+ * ¿Este rol de Moodle corresponde a un docente?
+ *
+ * Medido contra los cursos reales de esta instalación, los únicos roles que aparecen
+ * son "Estudiante", "Profesor" y "Sin roles" — pero se aceptan variantes ("Profesor sin
+ * permiso de edición", "Docente", "Teacher") porque el rol es texto libre que cada
+ * sede/semestre puede escribir distinto.
+ */
+export function isTeacherRole(role: string | null | undefined): boolean {
+  return /docente|profesor|teacher/i.test(role ?? "");
+}
+
+/**
+ * Resuelve los docentes de VARIOS cursos a la vez, usando sólo el listado de
+ * participantes.
+ *
+ * Es la versión barata de `getCourseTeachers`: omite a propósito la fuente de "quién
+ * calificó las tareas", que abre hasta 12 tareas por curso y es demasiado cara para un
+ * listado. Con la caché de participantes (TTL 6 h) esto cuesta ~2 s la primera vez y
+ * prácticamente nada después.
+ *
+ * Devuelve un Map para que el llamador no tenga que volver a cruzar por id.
+ */
+export async function getTeachersByCourse(
+  session: Session,
+  courseIds: number[],
+  opts: { concurrency?: number; deep?: boolean } = {},
+): Promise<Map<number, string[]>> {
+  const { concurrency = 6, deep = false } = opts;
+  const entries = await mapLimit(courseIds, concurrency, async (courseId) => {
+    const participants = await listCourseParticipants(session, courseId).catch(
+      () => [] as Participant[],
+    );
+    const names = participants.filter((p) => isTeacherRole(p.role)).map((p) => p.name);
+    return [courseId, [...new Set(names)]] as [number, string[]];
+  });
+  const result = new Map(entries);
+
+  // Rescate de los cursos con "grupos separados": ahí Moodle oculta al docente del
+  // listado de participantes, pero `getCourseTeachers` lo encuentra mirando quién
+  // calificó las tareas. Cuesta ~3 s por curso, por eso es opcional.
+  const missing = [...result].filter(([, names]) => names.length === 0).map(([id]) => id);
+  if (deep && missing.length && shouldPayForDeepLookup(missing.length, courseIds.length)) {
+    await mapLimit(missing, 3, async (courseId) => {
+      const names = await getCourseTeachers(session, courseId).catch(() => [] as string[]);
+      if (names.length) result.set(courseId, names);
+    });
+  }
+  return result;
+}
+
+/**
+ * ¿Vale la pena pagar la búsqueda cara para los cursos que quedaron sin docente?
+ *
+ * Contexto para decidir: la vía barata (participantes) es instantánea con caché tibia y
+ * ~2 s en frío para todos los cursos juntos. La vía cara abre hasta 12 tareas por curso
+ * para ver quién las calificó: ~3 s POR CURSO, en serie con concurrencia 3.
+ *
+ * En los cursos medidos aquí, 1 de 8 necesitaba el rescate (~3 s extra, aceptable). Pero
+ * si un semestre usa "grupos separados" en casi todo, serían 8 cursos × 3 s ≈ 24 s de
+ * espera en un comando que la gente espera instantáneo.
+ *
+ * TODO(tú): define la política. Algunas ideas, pero la decisión es tuya:
+ *   - Siempre que falte alguno (cobertura máxima, riesgo de comandos lentos).
+ *   - Sólo si faltan pocos en términos absolutos (p. ej. ≤ 2).
+ *   - Sólo si es una minoría del total (p. ej. menos de la mitad), asumiendo que si
+ *     faltan casi todos es que algo más está mal y no vale la pena insistir.
+ *
+ * @param missingCount cuántos cursos quedaron sin docente por la vía barata
+ * @param totalCourses total de cursos consultados
+ * @returns true si se debe intentar la búsqueda cara
+ */
+export function shouldPayForDeepLookup(missingCount: number, totalCourses: number): boolean {
+  // TODO(tú): implementar. Por ahora, conservador: nunca paga de más.
+  return false;
+}
+
 export async function getCourseTeachers(
   session: Session,
   courseId: number,
@@ -390,9 +522,7 @@ export async function getCourseTeachers(
     listCourseParticipants(session, courseId).catch(() => [] as Participant[]),
   ]);
   const fromApi = courses.find((c) => c.id === courseId)?.contacts ?? [];
-  const fromList = participants
-    .filter((p) => /docente|profesor|teacher/i.test(p.role ?? ""))
-    .map((p) => p.name);
+  const fromList = participants.filter((p) => isTeacherRole(p.role)).map((p) => p.name);
 
   // Tercera fuente (la que suele funcionar aquí): quién calificó las tareas del curso.
   let fromGrading: string[] = [];
