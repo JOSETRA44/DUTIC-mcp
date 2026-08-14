@@ -44,3 +44,24 @@ export const BROWSER_PROFILE_DIR = join(DATA_DIR, "profile");
 
 /** Sesión de Moodle serializada (cookie MoodleSession + sesskey + siteUrl). */
 export const SESSION_FILE = join(DATA_DIR, "session.json");
+
+// --- Encuesta de desempeño docente (extranet) ---
+
+/**
+ * La encuesta de evaluación docente vive en el extranet, un sistema SEPARADO del aula virtual y
+ * también de SISACAD: PHP 5.3 sobre HTTP plano, sesión por cookie PHPSESSID y —a diferencia de
+ * SISACAD— SIN CAPTCHA, así que todo el flujo se puede hacer por HTTP sin navegador.
+ * Sus respuestas llegan en latin1 aunque la cabecera declare utf-8; ver core/encuestaClient.ts.
+ */
+export const EXTRANET_HOST = "extranet.unsa.edu.pe";
+export const ENCUESTA_BASE = `http://${EXTRANET_HOST}/encuesta2`;
+
+/** Credenciales + política de respuestas de la encuesta (chmod 600, como session.json). */
+export const ENCUESTA_FILE = join(DATA_DIR, "encuesta.json");
+
+/**
+ * Registro append-only de envíos. Va en un archivo aparte de la configuración a propósito: el
+ * sistema no devuelve ningún comprobante de lo enviado, así que este log es la única prueba, y
+ * no debe poder perderse porque falle una escritura de la política.
+ */
+export const ENCUESTA_LEDGER_FILE = join(DATA_DIR, "encuesta-log.json");
