@@ -38,6 +38,13 @@ import { fetchAulaPage } from "../domain/fetch.js";
 import { getMyProfile } from "../domain/people.js";
 import { checkChanges } from "../domain/watch.js";
 import { compareSisacadWithMoodle, loadSisacadGrades } from "../domain/sisacad.js";
+import {
+  CONFIRM_PHRASE,
+  encuestaStatus,
+  fillSurveys,
+  listSurveys,
+  previewSurveys,
+} from "../domain/encuesta.js";
 import { setCacheRefresh } from "../core/cache.js";
 
 /**
@@ -586,6 +593,182 @@ server.registerTool(
       const s = await ensureSession({ mode: "headless-only" });
       return { ok: true, siteUrl: s.siteUrl, capturedAt: new Date(s.capturedAt).toISOString() };
     }),
+);
+
+// --- Encuesta de desempeño docente (sistema extranet, aparte del aula virtual) ---
+
+server.registerTool(
+  "dutic_encuesta_status",
+  {
+    title: "Estado de la encuesta docente",
+    description:
+      "Estado de la ENCUESTA DE DESEMPEÑO DOCENTE de la UNSA (sistema del extranet, distinto del " +
+      "aula virtual y de SISACAD): si hay credenciales guardadas, cuántas encuestas quedan por " +
+      "llenar, cuáles ya se enviaron desde aquí y qué política de respuestas hay configurada. " +
+      "Empieza SIEMPRE por esta tool antes de listar o llenar nada. No envía nada.",
+    inputSchema: {},
+  },
+  async () => tool(() => encuestaStatus()),
+);
+
+server.registerTool(
+  "dutic_encuesta_list",
+  {
+    title: "Listar encuestas docentes",
+    description:
+      "Lista las encuestas de desempeño docente del usuario con su `key`, docente, curso, escuela " +
+      "y estado (pendiente o ya llenada). La `key` es lo que se pasa a las demás tools. Sólo lee.",
+    inputSchema: {},
+  },
+  async () => tool(() => listSurveys()),
+);
+
+server.registerTool(
+  "dutic_encuesta_preview",
+  {
+    title: "Ver el cuestionario y simular las respuestas (no envía)",
+    description:
+      "Descarga el cuestionario de UNA encuesta y devuelve las 21 preguntas con su enunciado, las " +
+      "4 alternativas de cada una, y qué se respondería con la política guardada más los " +
+      "`answers` que le pases. NO ENVÍA NADA.\n\n" +
+      "Úsala SIEMPRE antes de `dutic_encuesta_submit`: es la forma de leerle las preguntas al " +
+      "usuario y acordar con él una evaluación real. Devuelve además el cuerpo exacto que se " +
+      "enviaría y, por cada respuesta, la `rule` que la produjo, para poder explicar el porqué.",
+    inputSchema: {
+      key: z
+        .string()
+        .describe("Identificador de la encuesta, de dutic_encuesta_list (p.ej. '1937-8353-470')."),
+      answers: z
+        .record(z.union([z.string(), z.number()]))
+        .optional()
+        .describe(
+          "Respuestas explícitas para esta simulación. Clave = id de pregunta ('120') o índice " +
+            "('p1'). Valor = 'Nunca' | 'A veces' | 'Usualmente' | 'Siempre' (o 1-4). La pregunta " +
+            "de calificación general acepta un entero 0-20. Lo que no indiques se completa con la " +
+            "política guardada del usuario.",
+        ),
+      escala: z
+        .union([z.string(), z.number()])
+        .optional()
+        .describe("Respuesta para TODAS las preguntas de escala en esta simulación."),
+      calificacion: z
+        .number()
+        .int()
+        .min(0)
+        .max(20)
+        .optional()
+        .describe("Calificación general 0-20 para esta simulación."),
+    },
+  },
+  async ({ key, answers, escala, calificacion }) =>
+    tool(() =>
+      previewSurveys(
+        { key },
+        { answers: { byQuestion: answers, default: escala, score: calificacion } },
+      ),
+    ),
+);
+
+server.registerTool(
+  "dutic_encuesta_submit",
+  {
+    title: "ENVIAR una encuesta docente (IRREVERSIBLE)",
+    description:
+      "Envía DEFINITIVAMENTE la encuesta de UN docente. Es IRREVERSIBLE y sólo se puede hacer una " +
+      "vez por docente: el sistema no permite corregirla ni volver a verla.\n\n" +
+      "Requisitos antes de llamarla: (1) haber usado `dutic_encuesta_preview` y haberle mostrado " +
+      "al usuario las respuestas exactas; (2) que el usuario haya dicho explícitamente que la " +
+      "envíes; (3) pasar confirm='ENVIAR'.\n\n" +
+      "Este es el modo de EVALUACIÓN REAL: con `answers` mandas la valoración concreta que " +
+      "acordaste con el usuario, pregunta por pregunta. Las respuestas deben reflejar lo que el " +
+      "usuario opina — nunca las inventes tú. Si la encuesta ya estaba llenada, no se reenvía.",
+    inputSchema: {
+      key: z.string().describe("Identificador de la encuesta (de dutic_encuesta_list)."),
+      answers: z
+        .record(z.union([z.string(), z.number()]))
+        .optional()
+        .describe(
+          "Igual que en preview. Recomendado: indicar TODAS las preguntas explícitamente para no " +
+            "depender de la política guardada.",
+        ),
+      escala: z
+        .union([z.string(), z.number()])
+        .optional()
+        .describe("Respuesta para todas las preguntas de escala."),
+      calificacion: z.number().int().min(0).max(20).optional().describe("Calificación general 0-20."),
+      confirm: z
+        .literal(CONFIRM_PHRASE)
+        .describe("Literal 'ENVIAR'. Confirma que el usuario aprobó este envío irreversible."),
+    },
+  },
+  async ({ key, answers, escala, calificacion, confirm }) =>
+    tool(() =>
+      fillSurveys(
+        { key },
+        {
+          apply: true,
+          confirm,
+          answers: { byQuestion: answers, default: escala, score: calificacion },
+        },
+      ),
+    ),
+);
+
+server.registerTool(
+  "dutic_encuesta_fill_all",
+  {
+    title: "Llenar TODAS las encuestas pendientes con la política guardada",
+    description:
+      "Modo ZERO TOUCH: aplica la política de respuestas guardada del usuario a TODAS las " +
+      "encuestas pendientes de una vez.\n\n" +
+      "Por defecto sólo SIMULA (dryRun=true) y devuelve el plan completo — muéstraselo al " +
+      "usuario. Para enviar de verdad hay que pasar dryRun=false Y confirm='ENVIAR', y eso es " +
+      "IRREVERSIBLE para todos los docentes a la vez; no lo hagas sin que el usuario haya visto " +
+      "antes el plan y lo haya aprobado.\n\n" +
+      "Usa esta tool cuando el usuario diga 'llénalas todas' o 'ponles a todos X'. Si en cambio " +
+      "quiere evaluar docente por docente, usa preview + submit.",
+    inputSchema: {
+      dryRun: z
+        .boolean()
+        .default(true)
+        .describe("true (por defecto) = sólo simular. false = enviar de verdad."),
+      confirm: z
+        .string()
+        .optional()
+        .describe("Obligatorio y exactamente 'ENVIAR' cuando dryRun=false."),
+      escala: z
+        .union([z.string(), z.number()])
+        .optional()
+        .describe(
+          "Respuesta para todas las preguntas de escala en esta tanda: " +
+            "'Nunca'|'A veces'|'Usualmente'|'Siempre' o 1-4. Sobreescribe la política guardada.",
+        ),
+      calificacion: z
+        .number()
+        .int()
+        .min(0)
+        .max(20)
+        .optional()
+        .describe("Calificación general 0-20 para esta tanda."),
+      docente: z
+        .string()
+        .optional()
+        .describe("Limitar a los docentes o cursos cuyo nombre contenga este texto."),
+      continuarSiFalla: z
+        .boolean()
+        .default(false)
+        .describe("Si el servidor rechaza una, seguir con el resto en vez de detener el lote."),
+    },
+  },
+  async ({ dryRun, confirm, escala, calificacion, docente, continuarSiFalla }) =>
+    tool(() =>
+      fillSurveys(docente ? { query: docente } : { all: true }, {
+        apply: !dryRun,
+        confirm,
+        answers: { default: escala, score: calificacion },
+        continueOnError: continuarSiFalla,
+      }),
+    ),
 );
 
 const transport = new StdioServerTransport();
