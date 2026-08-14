@@ -40,6 +40,7 @@
   ],
   "scripts": {
     "build": "tsc",
+    "test": "tsx --test src/**/*.test.ts",
     "setup": "node dist/cli/index.js setup",
     "dev:cli": "tsx src/cli/index.ts",
     "dev:mcp": "tsx src/mcp/server.ts",
