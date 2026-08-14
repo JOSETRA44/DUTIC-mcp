@@ -1,0 +1,766 @@
+
+
+1|<table width="60%" border="0">
+                            <input type="hidden" name="id_doc" id="id_doc" value="1164" />
+                            <input type="hidden" name="asi" id="asi" value="8355" />
+                                <tr>
+                                  <td colspan="4" valign="middle" bgcolor="#993300"><font color="#FFFFFF" size="4">
+                                  Encuesta de evaluación del desempeño docente</font></td>
+                                </tr>
+                                
+				<!--tr>
+                                  <td colspan="4" valign="middle"><font color="#000000" size="2">
+				- Los estudiantes son una fuente importante de informaci&oacute;n sobre la efectividad del curso, de su profesor y otros.
+				<br>
+				- La Facultad garantiza la reserva de la encuesta, sus datos de identificaci&oacute;n solo sirven para la validaci&oacute;n de la participaci&oacute;n.<BR>
+- Por favor responda honestamente las siguientes preguntas. Los resultados ser&aacute;n usados para mejorar tanto el curso, como la ense&ntilde;anza del docente.
+                                  </font></td>
+                                </tr-->
+
+
+                                <tr>
+                                  <td colspan="4"><hr /></td>
+                                </tr>
+				
+				<tr>
+                                  <td colspan="1" bgcolor="#993300"><font color="#FFFFFF" size="3">
+                                  Docente:</font></td>
+                                  <td colspan="3"><font color="#993300" size="2">DOCENTE/DOS, NOMBRE EJEMPLO</font></td>
+                                </tr>
+				<tr>
+                                  <td colspan="1" bgcolor="#993300"><font color="#FFFFFF" size="3">
+                                  Curso:</font></td>
+                                  <td colspan="3"><font color="#993300" size="2">DESARROLLO EMOCIONAL, GESTIÓN DE CONFLICTOS Y LIDERAZGO</font></td>
+                                </tr>
+				<tr>
+                                  <td colspan="1" bgcolor="#993300"><font color="#FFFFFF" size="3">
+                                  Escuela Profesional de:</font></td>
+                                  <td colspan="3"><font color="#993300" size="2">ECONOMIA</font></td>
+                                </tr>
+
+				<tr>
+                                  <td colspan="4"><hr /></td>
+                                </tr>
+                                <tr>
+                                  <td colspan="4"><table style="color:#000" width = "600" align="center" cellpadding="0" cellspacing="0" border="0"  id="PreguntasYALtenativas" class="pya">
+                            <thead>
+                            <tr >
+                                <td width="40" height="25" align="center" valign="middle" bgcolor="#993300">
+                                <input type="hidden" name="p1" id="p1" value="120:0" /><font color="#FFFFFF" size="2">1.-&nbsp;</font></td>
+                                <td colspan="2" width="287" height="20" valign="middle" bgcolor="#993300">
+                                    <font color="#FFFFFF" size="2">El docente al inicio del curso presenta el sílabo y explica las competencias y los criterios de evaluación.
+                                </font></td>
+                            </tr>
+                          </thead>
+                          <tbody><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">a.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio1" id="radio1" value="731" />
+                                            <font size="2">Nunca</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">b.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio1" id="radio1" value="730" />
+                                            <font size="2">A veces</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">c.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio1" id="radio1" value="729" />
+                                            <font size="2">Usualmente</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">d.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio1" id="radio1" value="728" />
+                                            <font size="2">Siempre</font></td>                                                 
+                                     </tr></tbody>
+                                </table><br><table style="color:#000" width = "600" align="center" cellpadding="0" cellspacing="0" border="0"  id="PreguntasYALtenativas" class="pya">
+                            <thead>
+                            <tr >
+                                <td width="40" height="25" align="center" valign="middle" bgcolor="#993300">
+                                <input type="hidden" name="p2" id="p2" value="121:0" /><font color="#FFFFFF" size="2">2.-&nbsp;</font></td>
+                                <td colspan="2" width="287" height="20" valign="middle" bgcolor="#993300">
+                                    <font color="#FFFFFF" size="2">El docente desarrolla todos los contenidos y actividades programados en el sílabo para la asignatura.
+                                </font></td>
+                            </tr>
+                          </thead>
+                          <tbody><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">a.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio2" id="radio2" value="735" />
+                                            <font size="2">Nunca</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">b.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio2" id="radio2" value="734" />
+                                            <font size="2">A veces</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">c.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio2" id="radio2" value="733" />
+                                            <font size="2">Usualmente</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">d.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio2" id="radio2" value="732" />
+                                            <font size="2">Siempre</font></td>                                                 
+                                     </tr></tbody>
+                                </table><br><table style="color:#000" width = "600" align="center" cellpadding="0" cellspacing="0" border="0"  id="PreguntasYALtenativas" class="pya">
+                            <thead>
+                            <tr >
+                                <td width="40" height="25" align="center" valign="middle" bgcolor="#993300">
+                                <input type="hidden" name="p3" id="p3" value="122:0" /><font color="#FFFFFF" size="2">3.-&nbsp;</font></td>
+                                <td colspan="2" width="287" height="20" valign="middle" bgcolor="#993300">
+                                    <font color="#FFFFFF" size="2">El docente planifica en el sílabo y promueve trabajos de investigación formativa y actividades de responsabilidad social.
+                                </font></td>
+                            </tr>
+                          </thead>
+                          <tbody><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">a.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio3" id="radio3" value="739" />
+                                            <font size="2">Nunca</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">b.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio3" id="radio3" value="738" />
+                                            <font size="2">A veces</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">c.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio3" id="radio3" value="737" />
+                                            <font size="2">Usualmente</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">d.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio3" id="radio3" value="736" />
+                                            <font size="2">Siempre</font></td>                                                 
+                                     </tr></tbody>
+                                </table><br><table style="color:#000" width = "600" align="center" cellpadding="0" cellspacing="0" border="0"  id="PreguntasYALtenativas" class="pya">
+                            <thead>
+                            <tr >
+                                <td width="40" height="25" align="center" valign="middle" bgcolor="#993300">
+                                <input type="hidden" name="p4" id="p4" value="123:0" /><font color="#FFFFFF" size="2">4.-&nbsp;</font></td>
+                                <td colspan="2" width="287" height="20" valign="middle" bgcolor="#993300">
+                                    <font color="#FFFFFF" size="2">El docente inicia y termina sus clases con puntualidad, de acuerdo al horario establecido de la asignatura.
+                                </font></td>
+                            </tr>
+                          </thead>
+                          <tbody><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">a.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio4" id="radio4" value="743" />
+                                            <font size="2">Nunca</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">b.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio4" id="radio4" value="742" />
+                                            <font size="2">A veces</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">c.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio4" id="radio4" value="741" />
+                                            <font size="2">Usualmente</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">d.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio4" id="radio4" value="740" />
+                                            <font size="2">Siempre</font></td>                                                 
+                                     </tr></tbody>
+                                </table><br><table style="color:#000" width = "600" align="center" cellpadding="0" cellspacing="0" border="0"  id="PreguntasYALtenativas" class="pya">
+                            <thead>
+                            <tr >
+                                <td width="40" height="25" align="center" valign="middle" bgcolor="#993300">
+                                <input type="hidden" name="p5" id="p5" value="124:0" /><font color="#FFFFFF" size="2">5.-&nbsp;</font></td>
+                                <td colspan="2" width="287" height="20" valign="middle" bgcolor="#993300">
+                                    <font color="#FFFFFF" size="2">El docente asigna el tiempo adecuado para las tareas, trabajos o actividades.
+                                </font></td>
+                            </tr>
+                          </thead>
+                          <tbody><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">a.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio5" id="radio5" value="747" />
+                                            <font size="2">Nunca</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">b.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio5" id="radio5" value="746" />
+                                            <font size="2">A veces</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">c.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio5" id="radio5" value="745" />
+                                            <font size="2">Usualmente</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">d.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio5" id="radio5" value="744" />
+                                            <font size="2">Siempre</font></td>                                                 
+                                     </tr></tbody>
+                                </table><br><table style="color:#000" width = "600" align="center" cellpadding="0" cellspacing="0" border="0"  id="PreguntasYALtenativas" class="pya">
+                            <thead>
+                            <tr >
+                                <td width="40" height="25" align="center" valign="middle" bgcolor="#993300">
+                                <input type="hidden" name="p6" id="p6" value="125:0" /><font color="#FFFFFF" size="2">6.-&nbsp;</font></td>
+                                <td colspan="2" width="287" height="20" valign="middle" bgcolor="#993300">
+                                    <font color="#FFFFFF" size="2">El dominio que tiene el docente de su asignatura te motiva a investigar más sobre los temas tratados.
+                                </font></td>
+                            </tr>
+                          </thead>
+                          <tbody><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">a.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio6" id="radio6" value="751" />
+                                            <font size="2">Nunca</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">b.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio6" id="radio6" value="750" />
+                                            <font size="2">A veces</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">c.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio6" id="radio6" value="749" />
+                                            <font size="2">Usualmente</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">d.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio6" id="radio6" value="748" />
+                                            <font size="2">Siempre</font></td>                                                 
+                                     </tr></tbody>
+                                </table><br><table style="color:#000" width = "600" align="center" cellpadding="0" cellspacing="0" border="0"  id="PreguntasYALtenativas" class="pya">
+                            <thead>
+                            <tr >
+                                <td width="40" height="25" align="center" valign="middle" bgcolor="#993300">
+                                <input type="hidden" name="p7" id="p7" value="126:0" /><font color="#FFFFFF" size="2">7.-&nbsp;</font></td>
+                                <td colspan="2" width="287" height="20" valign="middle" bgcolor="#993300">
+                                    <font color="#FFFFFF" size="2">El docente utiliza tecnologías de la información y la comunicación (TIC), recursos y/o actividades como foros, chats, cuestionarios, archivos, links, etc. que faciliten el aprendizaje del estudiante.
+                                </font></td>
+                            </tr>
+                          </thead>
+                          <tbody><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">a.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio7" id="radio7" value="755" />
+                                            <font size="2">Nunca</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">b.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio7" id="radio7" value="754" />
+                                            <font size="2">A veces</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">c.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio7" id="radio7" value="753" />
+                                            <font size="2">Usualmente</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">d.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio7" id="radio7" value="752" />
+                                            <font size="2">Siempre</font></td>                                                 
+                                     </tr></tbody>
+                                </table><br><table style="color:#000" width = "600" align="center" cellpadding="0" cellspacing="0" border="0"  id="PreguntasYALtenativas" class="pya">
+                            <thead>
+                            <tr >
+                                <td width="40" height="25" align="center" valign="middle" bgcolor="#993300">
+                                <input type="hidden" name="p8" id="p8" value="127:0" /><font color="#FFFFFF" size="2">8.-&nbsp;</font></td>
+                                <td colspan="2" width="287" height="20" valign="middle" bgcolor="#993300">
+                                    <font color="#FFFFFF" size="2">El docente utiliza estrategias de enseñanza innovadoras y efectivas que hace que los contenidos de la asignatura sean significativos.
+                                </font></td>
+                            </tr>
+                          </thead>
+                          <tbody><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">a.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio8" id="radio8" value="759" />
+                                            <font size="2">Nunca</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">b.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio8" id="radio8" value="758" />
+                                            <font size="2">A veces</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">c.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio8" id="radio8" value="757" />
+                                            <font size="2">Usualmente</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">d.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio8" id="radio8" value="756" />
+                                            <font size="2">Siempre</font></td>                                                 
+                                     </tr></tbody>
+                                </table><br><table style="color:#000" width = "600" align="center" cellpadding="0" cellspacing="0" border="0"  id="PreguntasYALtenativas" class="pya">
+                            <thead>
+                            <tr >
+                                <td width="40" height="25" align="center" valign="middle" bgcolor="#993300">
+                                <input type="hidden" name="p9" id="p9" value="128:0" /><font color="#FFFFFF" size="2">9.-&nbsp;</font></td>
+                                <td colspan="2" width="287" height="20" valign="middle" bgcolor="#993300">
+                                    <font color="#FFFFFF" size="2">El docente utiliza ejemplos y casos prácticos para ilustrar los conceptos.
+                                </font></td>
+                            </tr>
+                          </thead>
+                          <tbody><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">a.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio9" id="radio9" value="763" />
+                                            <font size="2">Nunca</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">b.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio9" id="radio9" value="762" />
+                                            <font size="2">A veces</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">c.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio9" id="radio9" value="761" />
+                                            <font size="2">Usualmente</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">d.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio9" id="radio9" value="760" />
+                                            <font size="2">Siempre</font></td>                                                 
+                                     </tr></tbody>
+                                </table><br><table style="color:#000" width = "600" align="center" cellpadding="0" cellspacing="0" border="0"  id="PreguntasYALtenativas" class="pya">
+                            <thead>
+                            <tr >
+                                <td width="40" height="25" align="center" valign="middle" bgcolor="#993300">
+                                <input type="hidden" name="p10" id="p10" value="129:0" /><font color="#FFFFFF" size="2">10.-&nbsp;</font></td>
+                                <td colspan="2" width="287" height="20" valign="middle" bgcolor="#993300">
+                                    <font color="#FFFFFF" size="2">El docente incluye en el desarrollo de la asignatura el estudio de casos reales y cercanos al campo profesional.
+                                </font></td>
+                            </tr>
+                          </thead>
+                          <tbody><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">a.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio10" id="radio10" value="767" />
+                                            <font size="2">Nunca</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">b.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio10" id="radio10" value="766" />
+                                            <font size="2">A veces</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">c.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio10" id="radio10" value="765" />
+                                            <font size="2">Usualmente</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">d.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio10" id="radio10" value="764" />
+                                            <font size="2">Siempre</font></td>                                                 
+                                     </tr></tbody>
+                                </table><br><table style="color:#000" width = "600" align="center" cellpadding="0" cellspacing="0" border="0"  id="PreguntasYALtenativas" class="pya">
+                            <thead>
+                            <tr >
+                                <td width="40" height="25" align="center" valign="middle" bgcolor="#993300">
+                                <input type="hidden" name="p11" id="p11" value="130:0" /><font color="#FFFFFF" size="2">11.-&nbsp;</font></td>
+                                <td colspan="2" width="287" height="20" valign="middle" bgcolor="#993300">
+                                    <font color="#FFFFFF" size="2">El docente asiste a dictar las clases.
+                                </font></td>
+                            </tr>
+                          </thead>
+                          <tbody><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">a.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio11" id="radio11" value="771" />
+                                            <font size="2">Nunca</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">b.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio11" id="radio11" value="770" />
+                                            <font size="2">A veces</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">c.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio11" id="radio11" value="769" />
+                                            <font size="2">Usualmente</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">d.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio11" id="radio11" value="768" />
+                                            <font size="2">Siempre</font></td>                                                 
+                                     </tr></tbody>
+                                </table><br><table style="color:#000" width = "600" align="center" cellpadding="0" cellspacing="0" border="0"  id="PreguntasYALtenativas" class="pya">
+                            <thead>
+                            <tr >
+                                <td width="40" height="25" align="center" valign="middle" bgcolor="#993300">
+                                <input type="hidden" name="p12" id="p12" value="131:0" /><font color="#FFFFFF" size="2">12.-&nbsp;</font></td>
+                                <td colspan="2" width="287" height="20" valign="middle" bgcolor="#993300">
+                                    <font color="#FFFFFF" size="2">El docente se comunica de manera clara y efectiva con los estudiantes manteniendo un trato con respeto y cordialidad.
+                                </font></td>
+                            </tr>
+                          </thead>
+                          <tbody><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">a.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio12" id="radio12" value="775" />
+                                            <font size="2">Nunca</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">b.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio12" id="radio12" value="774" />
+                                            <font size="2">A veces</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">c.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio12" id="radio12" value="773" />
+                                            <font size="2">Usualmente</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">d.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio12" id="radio12" value="772" />
+                                            <font size="2">Siempre</font></td>                                                 
+                                     </tr></tbody>
+                                </table><br><table style="color:#000" width = "600" align="center" cellpadding="0" cellspacing="0" border="0"  id="PreguntasYALtenativas" class="pya">
+                            <thead>
+                            <tr >
+                                <td width="40" height="25" align="center" valign="middle" bgcolor="#993300">
+                                <input type="hidden" name="p13" id="p13" value="132:0" /><font color="#FFFFFF" size="2">13.-&nbsp;</font></td>
+                                <td colspan="2" width="287" height="20" valign="middle" bgcolor="#993300">
+                                    <font color="#FFFFFF" size="2">El docente absuelve las consultas académicas y/o personales de los estudiantes de manera oportuna.
+                                </font></td>
+                            </tr>
+                          </thead>
+                          <tbody><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">a.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio13" id="radio13" value="779" />
+                                            <font size="2">Nunca</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">b.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio13" id="radio13" value="778" />
+                                            <font size="2">A veces</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">c.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio13" id="radio13" value="777" />
+                                            <font size="2">Usualmente</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">d.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio13" id="radio13" value="776" />
+                                            <font size="2">Siempre</font></td>                                                 
+                                     </tr></tbody>
+                                </table><br><table style="color:#000" width = "600" align="center" cellpadding="0" cellspacing="0" border="0"  id="PreguntasYALtenativas" class="pya">
+                            <thead>
+                            <tr >
+                                <td width="40" height="25" align="center" valign="middle" bgcolor="#993300">
+                                <input type="hidden" name="p14" id="p14" value="133:0" /><font color="#FFFFFF" size="2">14.-&nbsp;</font></td>
+                                <td colspan="2" width="287" height="20" valign="middle" bgcolor="#993300">
+                                    <font color="#FFFFFF" size="2">El docente, fomenta la participación del estudiante y la interacción entre ellos.
+                                </font></td>
+                            </tr>
+                          </thead>
+                          <tbody><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">a.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio14" id="radio14" value="783" />
+                                            <font size="2">Nunca</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">b.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio14" id="radio14" value="782" />
+                                            <font size="2">A veces</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">c.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio14" id="radio14" value="781" />
+                                            <font size="2">Usualmente</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">d.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio14" id="radio14" value="780" />
+                                            <font size="2">Siempre</font></td>                                                 
+                                     </tr></tbody>
+                                </table><br><table style="color:#000" width = "600" align="center" cellpadding="0" cellspacing="0" border="0"  id="PreguntasYALtenativas" class="pya">
+                            <thead>
+                            <tr >
+                                <td width="40" height="25" align="center" valign="middle" bgcolor="#993300">
+                                <input type="hidden" name="p15" id="p15" value="134:0" /><font color="#FFFFFF" size="2">15.-&nbsp;</font></td>
+                                <td colspan="2" width="287" height="20" valign="middle" bgcolor="#993300">
+                                    <font color="#FFFFFF" size="2">El docente muestra un comportamiento ético en su desempeño, respeta y promueve la propiedad intelectual incluyendo referencias, fuentes bibliográficas y digitales.
+                                </font></td>
+                            </tr>
+                          </thead>
+                          <tbody><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">a.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio15" id="radio15" value="787" />
+                                            <font size="2">Nunca</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">b.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio15" id="radio15" value="786" />
+                                            <font size="2">A veces</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">c.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio15" id="radio15" value="785" />
+                                            <font size="2">Usualmente</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">d.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio15" id="radio15" value="784" />
+                                            <font size="2">Siempre</font></td>                                                 
+                                     </tr></tbody>
+                                </table><br><table style="color:#000" width = "600" align="center" cellpadding="0" cellspacing="0" border="0"  id="PreguntasYALtenativas" class="pya">
+                            <thead>
+                            <tr >
+                                <td width="40" height="25" align="center" valign="middle" bgcolor="#993300">
+                                <input type="hidden" name="p16" id="p16" value="135:0" /><font color="#FFFFFF" size="2">16.-&nbsp;</font></td>
+                                <td colspan="2" width="287" height="20" valign="middle" bgcolor="#993300">
+                                    <font color="#FFFFFF" size="2">La evaluación que realiza el docente concuerda con las competencias o logros de aprendizaje de la asignatura.
+                                </font></td>
+                            </tr>
+                          </thead>
+                          <tbody><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">a.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio16" id="radio16" value="791" />
+                                            <font size="2">Nunca</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">b.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio16" id="radio16" value="790" />
+                                            <font size="2">A veces</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">c.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio16" id="radio16" value="789" />
+                                            <font size="2">Usualmente</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">d.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio16" id="radio16" value="788" />
+                                            <font size="2">Siempre</font></td>                                                 
+                                     </tr></tbody>
+                                </table><br><table style="color:#000" width = "600" align="center" cellpadding="0" cellspacing="0" border="0"  id="PreguntasYALtenativas" class="pya">
+                            <thead>
+                            <tr >
+                                <td width="40" height="25" align="center" valign="middle" bgcolor="#993300">
+                                <input type="hidden" name="p17" id="p17" value="136:0" /><font color="#FFFFFF" size="2">17.-&nbsp;</font></td>
+                                <td colspan="2" width="287" height="20" valign="middle" bgcolor="#993300">
+                                    <font color="#FFFFFF" size="2">El docente califica las evaluaciones de acuerdo a los criterios expuestos en el sílabo o en la rúbrica correspondiente.
+                                </font></td>
+                            </tr>
+                          </thead>
+                          <tbody><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">a.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio17" id="radio17" value="795" />
+                                            <font size="2">Nunca</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">b.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio17" id="radio17" value="794" />
+                                            <font size="2">A veces</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">c.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio17" id="radio17" value="793" />
+                                            <font size="2">Usualmente</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">d.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio17" id="radio17" value="792" />
+                                            <font size="2">Siempre</font></td>                                                 
+                                     </tr></tbody>
+                                </table><br><table style="color:#000" width = "600" align="center" cellpadding="0" cellspacing="0" border="0"  id="PreguntasYALtenativas" class="pya">
+                            <thead>
+                            <tr >
+                                <td width="40" height="25" align="center" valign="middle" bgcolor="#993300">
+                                <input type="hidden" name="p18" id="p18" value="137:0" /><font color="#FFFFFF" size="2">18.-&nbsp;</font></td>
+                                <td colspan="2" width="287" height="20" valign="middle" bgcolor="#993300">
+                                    <font color="#FFFFFF" size="2">El docente retroalimenta la participación y producción de los estudiantes, explicando el porqué de los errores y aciertos y cómo mejorar.
+                                </font></td>
+                            </tr>
+                          </thead>
+                          <tbody><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">a.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio18" id="radio18" value="799" />
+                                            <font size="2">Nunca</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">b.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio18" id="radio18" value="798" />
+                                            <font size="2">A veces</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">c.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio18" id="radio18" value="797" />
+                                            <font size="2">Usualmente</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">d.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio18" id="radio18" value="796" />
+                                            <font size="2">Siempre</font></td>                                                 
+                                     </tr></tbody>
+                                </table><br><table style="color:#000" width = "600" align="center" cellpadding="0" cellspacing="0" border="0"  id="PreguntasYALtenativas" class="pya">
+                            <thead>
+                            <tr >
+                                <td width="40" height="25" align="center" valign="middle" bgcolor="#993300">
+                                <input type="hidden" name="p19" id="p19" value="138:0" /><font color="#FFFFFF" size="2">19.-&nbsp;</font></td>
+                                <td colspan="2" width="287" height="20" valign="middle" bgcolor="#993300">
+                                    <font color="#FFFFFF" size="2">El docente utiliza diferentes tipos de evaluación (cuestionarios, exposiciones, etc.) para medir el aprendizaje y la producción de los estudiantes.
+                                </font></td>
+                            </tr>
+                          </thead>
+                          <tbody><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">a.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio19" id="radio19" value="803" />
+                                            <font size="2">Nunca</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">b.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio19" id="radio19" value="802" />
+                                            <font size="2">A veces</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">c.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio19" id="radio19" value="801" />
+                                            <font size="2">Usualmente</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">d.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio19" id="radio19" value="800" />
+                                            <font size="2">Siempre</font></td>                                                 
+                                     </tr></tbody>
+                                </table><br><table style="color:#000" width = "600" align="center" cellpadding="0" cellspacing="0" border="0"  id="PreguntasYALtenativas" class="pya">
+                            <thead>
+                            <tr >
+                                <td width="40" height="25" align="center" valign="middle" bgcolor="#993300">
+                                <input type="hidden" name="p20" id="p20" value="139:0" /><font color="#FFFFFF" size="2">20.-&nbsp;</font></td>
+                                <td colspan="2" width="287" height="20" valign="middle" bgcolor="#993300">
+                                    <font color="#FFFFFF" size="2">El docente entrega oportunamente los resultados de las evaluaciones.
+                                </font></td>
+                            </tr>
+                          </thead>
+                          <tbody><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">a.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio20" id="radio20" value="807" />
+                                            <font size="2">Nunca</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">b.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio20" id="radio20" value="806" />
+                                            <font size="2">A veces</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">c.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio20" id="radio20" value="805" />
+                                            <font size="2">Usualmente</font></td>                                                 
+                                     </tr><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                          <td align = "right" width="30"><font size="2">d.-&nbsp;</font></td>
+                                          <td colspan="2">
+                                            <input type="radio" name="radio20" id="radio20" value="804" />
+                                            <font size="2">Siempre</font></td>                                                 
+                                     </tr></tbody>
+                                </table><br><table style="color:#000" width = "600" align="center" cellpadding="0" cellspacing="0" border="0"  id="PreguntasYALtenativas" class="pya">
+                            <thead>
+                            <tr >
+                                <td width="40" height="25" align="center" valign="middle" bgcolor="#993300">
+                                <input type="hidden" name="p21" id="p21" value="140:2" /><font color="#FFFFFF" size="2">21.-&nbsp;</font></td>
+                                <td colspan="2" width="287" height="20" valign="middle" bgcolor="#993300">
+                                    <font color="#FFFFFF" size="2">En general ¿Cuál es la valoración que le da al docente por el desarrollo de la asignatura? 
+                                </font></td>
+                            </tr>
+                          </thead>
+                          <tbody><tr onmouseover="this.style.backgroundColor='#ddd'" onmouseout="this.style.backgroundColor='#FFFFFF'" style="cursor:pointer;" >
+
+                                      <td colspan="3">
+					<label>Calificación del 0 al 20: &nbsp;</label><input type="number" name="calificacion" id="calificacion"  min="0" max="20">
+                                      </td>
+                                 </tr></tbody>
+                                </table><br></td>
+                           </tr>
+                        </table><br>
+                        <input name="agrega" type="button" id="agrega" value = "Guardar" onclick="validar('Guardar','2'); " /> 
+                        <input name="retornar" type="button" id="retornar" value = "Retornar" onclick="location.href = '../form/listaEncEst.php'" /> 
+                        <input type="hidden" name="np" id="np" value="22" />

@@ -108,6 +108,16 @@ Si el servidor MCP `dutic` está disponible, usa estas herramientas (son la fuen
 - `dutic_pdf_to_markdown` — args: `filePath`, `outPath?`, `maxChars`. Convierte un PDF que ya está
   en disco a Markdown (sin sesión). Útil tras descargar, o para PDFs locales del usuario.
 - `dutic_session_status` / `dutic_refresh_session` — estado y renovación de sesión.
+- `dutic_encuesta_status` — estado de la **encuesta de desempeño docente** (sistema aparte, en el
+  extranet): credenciales, política guardada, cuántas quedan por llenar y qué se envió ya. Empieza
+  por aquí siempre que el usuario hable de la encuesta docente.
+- `dutic_encuesta_list` — las encuestas del usuario con su `key`, docente, curso y estado.
+- `dutic_encuesta_preview` — args: `key`, `answers?`, `escala?`, `calificacion?`. Descarga el
+  cuestionario y **simula** las respuestas. NO envía. Úsala siempre antes de enviar.
+- `dutic_encuesta_submit` — args: `key`, `answers?`, `confirm:"ENVIAR"`. **ENVÍA una encuesta.
+  IRREVERSIBLE.** Modo evaluación real, docente por docente.
+- `dutic_encuesta_fill_all` — args: `dryRun`, `confirm?`, `escala?`, `calificacion?`. Modo **zero
+  touch**: todas las pendientes con la política guardada. Simula salvo `dryRun:false`.
 
 ### Analizar materiales sin gastar tokens
 
@@ -162,6 +172,14 @@ dutic md <archivo.pdf>      # convierte un PDF local a Markdown
 dutic pull <id> --dest ./x  # descarga todos los recursos de un curso
 dutic status                # estado de sesión
 dutic login                 # reautenticación (abre navegador; sólo el usuario puede completarla)
+
+dutic encuesta              # estado de la encuesta docente (pendientes, política, envíos)
+dutic encuesta login        # guarda y verifica usuario/clave de la encuesta (clave sin eco)
+dutic encuesta list         # encuestas pendientes y ya llenadas, con su key
+dutic encuesta show <doc>   # cuestionario + respuestas que se aplicarían (no envía)
+dutic encuesta policy set --escala Siempre --calificacion 18   # política por defecto
+dutic encuesta fill --todas # SIMULA el llenado de todas (no envía nada)
+dutic encuesta fill --todas --enviar --si-es-irreversible      # envía de verdad
 ```
 
 ## Fechas contradictorias: la trampa que hay que vigilar
@@ -214,6 +232,60 @@ docentes/estudiantes de la facultad — eso es scraping masivo de datos personal
 su consentimiento, y está fuera de lo que este servidor hace, sin importar cuánto "ahorre trabajo".
 Si el usuario lo pide, explícale esto igual que se explica aquí y ofrece la alternativa: resolver
 personas puntuales que ya conoce (por nombre, correo, o un id que él mismo te dé).
+
+## Encuesta de desempeño docente (`dutic encuesta`)
+
+Cada semestre hay que llenar la encuesta de evaluación docente en el **extranet**
+(`extranet.unsa.edu.pe/encuesta2`), un sistema aparte del aula virtual y de SISACAD: **21 preguntas
+por cada docente**. Es el trámite más tedioso del ciclo y por eso existe esta integración.
+
+A diferencia de SISACAD, **no tiene CAPTCHA**: el login es usuario + clave de matrícula, así que el
+MCP puede operarlo entero sin navegador.
+
+**Lo único que de verdad importa: el envío es IRREVERSIBLE y sólo se puede hacer una vez por
+docente.** No se puede corregir ni volver a ver lo enviado. Por eso:
+
+1. Empieza por `dutic_encuesta_status` y `dutic_encuesta_list`.
+2. **Siempre** `dutic_encuesta_preview` antes de enviar, y enséñale al usuario lo que saldría.
+3. Sólo entonces `dutic_encuesta_submit` con `confirm:"ENVIAR"`.
+
+### Las respuestas son del usuario, no tuyas
+
+Estás evaluando a personas reales y eso tiene consecuencias para ellas. **Nunca inventes una
+valoración.** Las respuestas tienen que venir de lo que el usuario te diga, o de la política que él
+mismo configuró. Si te pide "llena las encuestas" sin más y no hay política guardada, la
+herramienta se niega a completar (no hay valor por defecto escondido en el código): pregúntale qué
+quiere poner. Basta con una frase — "a todos 4 y 18, salvo Quenaya que le pongo 3 y un 14" — y con
+eso ya puedes resolver las 21 preguntas de cada uno.
+
+Los dos modos, según lo que pida el usuario:
+
+- **Evaluación real, docente por docente:** `preview` → le lees las preguntas y acuerdan las
+  respuestas → `submit` con `answers` explícitos. Es el modo correcto cuando el usuario tiene
+  opiniones distintas por profesor.
+- **Zero touch:** `dutic_encuesta_fill_all` aplica su política guardada a todas las pendientes.
+  Simula por defecto; enviar exige `dryRun:false` **y** `confirm:"ENVIAR"`, y afecta a todos los
+  docentes a la vez — enséñale el plan antes.
+
+### La escala y una trampa del sistema
+
+Escala de las 20 primeras preguntas: `1 Nunca · 2 A veces · 3 Usualmente · 4 Siempre`. La 21 es una
+calificación libre de 0 a 20.
+
+En el HTML del sistema los ids de alternativa van en orden **descendente** respecto a la escala
+(`731=Nunca … 728=Siempre`): la mejor respuesta tiene el id más bajo. La herramienta resuelve la
+alternativa casando la **etiqueta de texto**, nunca la posición, y verifica esa correspondencia otra
+vez justo antes de enviar. No intentes construir ids a mano ni "optimizar" ese camino.
+
+### Política de respuestas
+
+Vive en `~/.dutic/encuesta.json` (permisos 600, junto a las credenciales). Precedencia, de más
+específica a menos: respuesta explícita de la llamada → pregunta del docente → pregunta del curso →
+pregunta global → docente → curso → global. Se edita a mano o con `dutic encuesta policy set`.
+
+Cada envío queda registrado en `~/.dutic/encuesta-log.json`, que es la única prueba de lo enviado
+porque el sistema no da acuse de recibo. Si un envío sale `unknown`, **no lo reintentes**: dile al
+usuario que lo compruebe en la web.
 
 ## Piloto de notificaciones por WhatsApp (`dutic saas enroll` / `dutic saas push`)
 

@@ -1,0 +1,99 @@
+
+<BR> sql: SELECT * FROM encuestas
+                    WHERE id_enc='6' and tip_enc<>'G' and est_enc='A'<BR> sql: SELECT * FROM encuestas
+                    WHERE id_enc='6' and tip_enc<>'G' and est_enc='A'<BR> sql: SELECT * FROM encuestas
+                    WHERE id_enc='6' and tip_enc<>'G' and est_enc='A'<BR> sql: SELECT * FROM encuestas
+                    WHERE id_enc='6' and tip_enc<>'G' and est_enc='A'<BR> sql: SELECT * FROM encuestas
+                    WHERE id_enc='6' and tip_enc<>'G' and est_enc='A'<BR> sql: SELECT * FROM encuestas
+                    WHERE id_enc='6' and tip_enc<>'G' and est_enc='A'<BR> sql: SELECT * FROM encuestas
+                    WHERE id_enc='6' and tip_enc<>'G' and est_enc='A'1| <br><div id="NroEnc" style="color:#600;font-size:15px;text-align:left;position:relative;" ></div><br><h3 style="font-size:18px;background-color:#993300; color:#fff;text-align:left">
+
+                                <label style="margin-left:10px">ECONOMIA</label>
+
+                          </h3><h3 style="font-size:18px;background-color:#999;color:#fff;text-align:left">
+
+                                <label style="margin-left:10px">ECOLOGÍA Y CONSERVACIÓN AMBIENTAL</label>
+
+                          </h3><div><p><table border ="1" cellpadding="0" cellspacing="0" width="100%"><tr height="30px" >
+
+                        <td width="80%"style="font-size:12px"><b>Encuesta Docente&nbsp;(DOCENTE/UNO, NOMBRE EJEMPLO)</td>
+
+                        <td align = "center"><a href="#" onclick="ir_llenado('1937','8353','470')">
+
+                                <img src="../img/LlenaC.png" title="Llenar Encuesta"> Por llenar</a></td>
+
+                        </tr></table></p></div><h3 style="font-size:18px;background-color:#999;color:#fff;text-align:left">
+
+                                <label style="margin-left:10px">DESARROLLO EMOCIONAL, GESTIÓN DE CONFLICTOS Y LIDERAZGO</label>
+
+                          </h3><div><p><table border ="1" cellpadding="0" cellspacing="0" width="100%"><tr height="30px" >
+
+                        <td width="80%"style="font-size:12px"><b>Encuesta Docente&nbsp;(DOCENTE/DOS, NOMBRE EJEMPLO)</td>
+
+                        <td align = "center"><a href="#" onclick="ir_llenado('1164','8355','470')">
+
+                                <img src="../img/LlenaC.png" title="Llenar Encuesta"> Por llenar</a></td>
+
+                        </tr></table></p></div><h3 style="font-size:18px;background-color:#999;color:#fff;text-align:left">
+
+                                <label style="margin-left:10px">MICROECONOMÍA I</label>
+
+                          </h3><div><p><table border ="1" cellpadding="0" cellspacing="0" width="100%"><tr height="30px" >
+
+                        <td width="80%"style="font-size:12px"><b>Encuesta Docente&nbsp;(DOCENTE/TRES, NOMBRE EJEMPLO)</td>
+
+                        <td align = "center"><a href="#" onclick="ir_llenado('186','8359','470')">
+
+                                <img src="../img/LlenaC.png" title="Llenar Encuesta"> Por llenar</a></td>
+
+                        </tr></table></p></div><h3 style="font-size:18px;background-color:#999;color:#fff;text-align:left">
+
+                                <label style="margin-left:10px">MATEMÁTICAS PARA ECONOMISTAS III</label>
+
+                          </h3><div><p><table border ="1" cellpadding="0" cellspacing="0" width="100%"><tr height="30px" >
+
+                        <td width="80%"style="font-size:12px"><b>Encuesta Docente&nbsp;(DOCENTE/CUATRO, NOMBRE EJEMPLO)</td>
+
+                        <td align = "center"><a href="#" onclick="ir_llenado('1314','8363','470')">
+
+                                <img src="../img/LlenaC.png" title="Llenar Encuesta"> Por llenar</a></td>
+
+                        </tr></table></p></div><h3 style="font-size:18px;background-color:#999;color:#fff;text-align:left">
+
+                                <label style="margin-left:10px">ESTADÍSTICA PARA ECONOMISTAS III</label>
+
+                          </h3><div><p><table border ="1" cellpadding="0" cellspacing="0" width="100%"><tr height="30px" >
+
+                        <td width="80%"style="font-size:12px"><b>Encuesta Docente&nbsp;(DOCENTE/CINCO, NOMBRE EJEMPLO)</td>
+
+                        <td align = "center"><a href="#" onclick="ir_llenado('1426','8367','470')">
+
+                                <img src="../img/LlenaC.png" title="Llenar Encuesta"> Por llenar</a></td>
+
+                        </tr></table></p></div><h3 style="font-size:18px;background-color:#999;color:#fff;text-align:left">
+
+                                <label style="margin-left:10px">ECONOMÍA POLITICA (E)</label>
+
+                          </h3><div><p><table border ="1" cellpadding="0" cellspacing="0" width="100%"><tr height="30px" >
+
+                        <td width="80%"style="font-size:12px"><b>Encuesta Docente&nbsp;(DOCENTE/SEIS, NOMBRE EJEMPLO)</td>
+
+                        <td align = "center"><a href="#" onclick="ir_llenado('1855','8371','470')">
+
+                                <img src="../img/LlenaC.png" title="Llenar Encuesta"> Por llenar</a></td>
+
+                        </tr></table></p></div><h3 style="font-size:18px;background-color:#999;color:#fff;text-align:left">
+
+                                <label style="margin-left:10px">DERECHO EMPRESARIAL (E)</label>
+
+                          </h3><div><p><table border ="1" cellpadding="0" cellspacing="0" width="100%"><tr height="30px" >
+
+                        <td width="80%"style="font-size:12px"><b>Encuesta Docente&nbsp;(DOCENTE/SIETE, NOMBRE EJEMPLO)</td>
+
+                        <td align = "center"><a href="#" onclick="ir_llenado('1243','8378','470')">
+
+                                <img src="../img/LlenaC.png" title="Llenar Encuesta"> Por llenar</a></td>
+
+                        </tr></table></p></div><br>|A continuación, encontrará <strong> 7 </strong> cuestionario(s) que sirve para medir el desempeño en aula de sus docentes en el presente semestre, los resultados obtenidos, servirán para el perfeccionamiento docente el cual permitirá mejorar la calidad de nuestra Universidad. Lea cuidadosamente cada proposición y seleccione sólo una alternativa, la que usted considere que mejor refleja el desempeño del docente. Le sugerimos responder con objetividad, sinceridad y veracidad. El cuestionario es totalmente anónimo, por favor conteste todas las preguntas considerando la siguiente escala:<br><br>
+ 1: NUNCA 2: A VECES 3: USUALMENTE 4: SIEMPRE <br>
+
