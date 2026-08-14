@@ -15,10 +15,17 @@ export const unsaAgent = new Agent({
   bodyTimeout: 60_000,
 });
 
-/** true si la URL apunta al host del aula virtual (para decidir si usar unsaAgent). */
-export function isUnsaUrl(url: string): boolean {
+/**
+ * true si la URL apunta al host indicado (por defecto, el del aula virtual).
+ *
+ * Ojo al parámetro `host`: esta función no es sólo un detector para elegir dispatcher, es la
+ * PUERTA DE SEGURIDAD de `dutic fetch` (`domain/fetch.ts`), que rechaza cualquier URL fuera del
+ * aula. Por eso el host se pasa explícitamente en vez de ampliar el permitido a `*.unsa.edu.pe`:
+ * el cliente de la encuesta comprueba contra EXTRANET_HOST sin abrirle el extranet a `dutic fetch`.
+ */
+export function isUnsaUrl(url: string, host: string = HOST): boolean {
   try {
-    return new URL(url).host === HOST;
+    return new URL(url).host === host;
   } catch {
     return false;
   }

@@ -26,3 +26,35 @@ export class NetworkError extends Error {
     this.name = "NetworkError";
   }
 }
+
+/**
+ * El login de la encuesta docente fue rechazado, o su sesión PHP caducó. Es distinto de
+ * SessionExpiredError: aquel habla de Moodle y pide `dutic login` (OAuth de Google), que aquí
+ * no tiene nada que ver.
+ */
+export class EncuestaAuthError extends Error {
+  constructor(
+    message = "No se pudo iniciar sesión en la encuesta docente. Revisa `dutic encuesta login`.",
+  ) {
+    super(message);
+    this.name = "EncuestaAuthError";
+  }
+}
+
+/**
+ * El sistema de encuestas respondió algo que no encaja con el protocolo conocido: un `0|mensaje`,
+ * un HTML sin los campos esperados, o una escala de alternativas irreconocible.
+ *
+ * Es un error DURO y deliberadamente no recuperable: como el envío es irreversible y el sistema no
+ * da acuse de recibo, ante cualquier duda se aborta sin enviar y sin reintentar, en vez de
+ * arriesgarse a mandar una evaluación mal formada o duplicada.
+ */
+export class EncuestaProtocolError extends Error {
+  constructor(
+    message: string,
+    readonly raw: string | null = null,
+  ) {
+    super(message);
+    this.name = "EncuestaProtocolError";
+  }
+}
