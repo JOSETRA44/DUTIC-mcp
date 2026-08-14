@@ -211,6 +211,43 @@ Si tu cliente no resuelve comandos del PATH, usa la ruta absoluta que imprime `d
 
 ---
 
+## Encuesta de desempeño docente
+
+Cada semestre toca llenar la encuesta de evaluación docente en el extranet
+(`extranet.unsa.edu.pe/encuesta2`): **21 preguntas por cada profesor**. Con 7 docentes son ~147
+clics en un formulario de hace quince años. Esto lo reduce a una frase.
+
+```bash
+dutic encuesta login                                          # usuario + clave (la de matrícula)
+dutic encuesta policy set --escala Siempre --calificacion 18  # tu criterio, una sola vez
+dutic encuesta fill --todas                                   # SIMULA: enseña las 21 respuestas
+dutic encuesta fill --todas --enviar --si-es-irreversible     # envía de verdad
+```
+
+Con matices por docente o por pregunta:
+
+```bash
+dutic encuesta policy set --docente QUENAYA --escala "A veces" --calificacion 12
+dutic encuesta show BEJAR --escala Siempre --pregunta 4=Nunca   # puntualidad aparte
+```
+
+**El envío es irreversible y sólo se puede hacer una vez por docente.** Por eso:
+
+- Todo **simula por defecto**; enviar exige `--enviar` **y** `--si-es-irreversible`.
+- No hay respuesta por defecto escondida en el código: sin política configurada, la herramienta se
+  niega a completar en vez de inventarse una valoración.
+- Antes de cada POST se vuelve a comprobar que el id de alternativa que va a viajar corresponde a
+  la etiqueta que se te mostró. En este sistema los ids van al revés que la escala (`731=Nunca` …
+  `728=Siempre`, la mejor respuesta tiene el id más bajo), así que todo se resuelve por la etiqueta
+  de texto y nunca por posición.
+- Nunca se reenvía algo ya llenado: se comprueba contra el servidor y contra un registro local
+  (`~/.dutic/encuesta-log.json`), que es la única prueba de lo enviado porque el sistema no da acuse.
+
+Desde un agente: `dutic_encuesta_preview` para revisar y `dutic_encuesta_submit` para una evaluación
+real docente por docente, o `dutic_encuesta_fill_all` para el modo zero touch con tu política.
+
+---
+
 ## Piloto de notificaciones por WhatsApp (opt-in)
 
 Experimento **separado** del uso personal de arriba: un bot que avisa por WhatsApp cuando aparece una
@@ -265,6 +302,8 @@ Cómo está construido, y por qué:
 | `DUTIC_SEMESTER` | Semestre en la URL del aula (`2026A`, `2026B`…) | `2026A` |
 | `DUTIC_BROWSER_CHANNEL` | Navegador para el login: `chrome`, `msedge`, `chromium` | `chrome` |
 | `DUTIC_DATA_DIR` | Dónde guardar sesión y perfil | `~/.dutic` |
+| `DUTIC_ENCUESTA_USER` | Usuario de la encuesta docente (evita guardarlo en disco) | — |
+| `DUTIC_ENCUESTA_PASSWORD` | Clave de la encuesta docente | — |
 
 El semestre sólo se usa para la URL de login: tras iniciar sesión **se auto-detecta** del propio
 aula, así que al cambiar de período normalmente no hay que tocar nada.
