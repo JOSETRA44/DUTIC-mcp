@@ -38,6 +38,8 @@ import { fetchAulaPage } from "../domain/fetch.js";
 import { getMyProfile } from "../domain/people.js";
 import { checkChanges } from "../domain/watch.js";
 import { compareSisacadWithMoodle, loadSisacadGrades } from "../domain/sisacad.js";
+import { getHorario } from "../domain/horario.js";
+import { resolveSisacadLogin } from "../core/horarioStore.js";
 import {
   CONFIRM_PHRASE,
   encuestaStatus,
@@ -291,6 +293,41 @@ server.registerTool(
           ),
         };
       }, { mode: MCP_MODE });
+    }),
+);
+
+server.registerTool(
+  "dutic_get_horario",
+  {
+    title: "Horario de clases (sistema de matrícula)",
+    description:
+      "Devuelve el horario de clases de un alumno del sistema de matrícula de la UNSA " +
+      "(extranet, distinto del aula virtual y de SISACAD de notas). Sin `cui` usa el del propio " +
+      "usuario; con `cui` el de ese alumno (de la misma escuela por defecto). Cada bloque trae " +
+      "día, hora de inicio/fin, asignatura y aula. Requiere credenciales guardadas con " +
+      "`dutic hrs login` en una terminal; si no las hay, avisa en vez de fallar.",
+    inputSchema: {
+      cui: z
+        .string()
+        .optional()
+        .describe("CUI del alumno (por defecto, el del usuario logueado)."),
+      depe: z
+        .string()
+        .optional()
+        .describe("Código de dependencia/escuela (por defecto, la del login, p.ej. 470 = ECONOMÍA)."),
+    },
+  },
+  async ({ cui, depe }) =>
+    tool(async () => {
+      const creds = await resolveSisacadLogin();
+      if (!creds) {
+        return {
+          available: false,
+          message: "No hay credenciales del sistema de matrícula. Ejecuta `dutic hrs login` en una terminal.",
+        };
+      }
+      const horario = await getHorario({ cui, depe });
+      return { available: true, ...horario };
     }),
 );
 

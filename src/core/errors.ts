@@ -58,3 +58,28 @@ export class EncuestaProtocolError extends Error {
     this.name = "EncuestaProtocolError";
   }
 }
+
+/**
+ * El login del sistema de matrícula (SISACAD/acad_usuario.php) fue rechazado: usuario, clave o
+ * escuela incorrectos, o matrícula no pagada. Es distinto de SessionExpiredError (Moodle) y de
+ * EncuestaAuthError (encuesta): aquí el fallo suele ser de credenciales, no de sesión caducada.
+ */
+export class SisacadAuthError extends Error {
+  constructor(
+    message = "No se pudo iniciar sesión en el sistema de matrícula. Revisa `dutic hrs login`.",
+  ) {
+    super(message);
+    this.name = "SisacadAuthError";
+  }
+}
+
+/** El sistema de matrícula respondió algo que no encaja con el protocolo conocido (HTML inesperado…). */
+export class SisacadProtocolError extends Error {
+  constructor(
+    message: string,
+    readonly raw: string | null = null,
+  ) {
+    super(message);
+    this.name = "SisacadProtocolError";
+  }
+}

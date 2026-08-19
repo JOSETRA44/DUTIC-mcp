@@ -122,6 +122,10 @@ dutic search "estadistica"
 | `dutic sisacad` | Captura tus notas parciales de SISACAD — **tú** haces el login + CAPTCHA; sólo tus datos |
 | `dutic sisacad show` | Muestra las notas ya capturadas, agrupadas por curso con promedio ponderado |
 | `dutic sisacad compare` | Compara el promedio de SISACAD (oficial) con el total que calcula Moodle |
+| `dutic hrs` | **Tu horario de clases** (sistema de matrícula del extranet, sin CAPTCHA) |
+| `dutic hrs <CUI>` | Horario de ese alumno (misma escuela por defecto; `--depe` para otras) |
+| `dutic hrs login` | Guarda y verifica usuario/clave/Escuela del sistema de matrícula (clave sin eco) |
+| `dutic hrs show` / `status` | Último horario descargado (sin red) / estado de credenciales y caché |
 | `dutic task <cmid>` | Detalle: consigna, fechas, adjuntos, conflicto de fechas |
 | `dutic grades [id]` | Notas: resumen de todos los cursos, o detalle de uno |
 | `dutic courses` | Cursos matriculados |
@@ -201,8 +205,8 @@ Si tu cliente no resuelve comandos del PATH, usa la ruta absoluta que imprime `d
 `{ "command": "node", "args": ["<ruta>/dist/mcp/server.js"] }`
 </details>
 
-**24 herramientas**: novedades (`dutic_check_changes`), notas SISACAD (`dutic_get_sisacad_grades`,
-`dutic_compare_grades`), perfil propio (`dutic_whoami`), tareas
+**25 herramientas**: novedades (`dutic_check_changes`), notas SISACAD (`dutic_get_sisacad_grades`,
+`dutic_compare_grades`), horario (`dutic_get_horario`), perfil propio (`dutic_whoami`), tareas
 (`dutic_list_tasks`, `dutic_get_assignment_detail`, …), notas
 (`dutic_get_grades`), materiales (`dutic_list_course_materials`, `dutic_study_course`,
 `dutic_read_resource`, `dutic_pdf_to_markdown`), personas (`dutic_list_participants`,
@@ -245,6 +249,30 @@ dutic encuesta show BEJAR --escala Siempre --pregunta 4=Nunca   # puntualidad ap
 
 Desde un agente: `dutic_encuesta_preview` para revisar y `dutic_encuesta_submit` para una evaluación
 real docente por docente, o `dutic_encuesta_fill_all` para el modo zero touch con tu política.
+
+---
+
+## Horario de clases
+
+El horario vive en el **sistema de matrícula** del extranet (`extranet.unsa.edu.pe/sisacad/...`),
+otro sistema aparte del aula virtual y de SISACAD de notas: login con usuario + clave +
+Escuela/Programa **sin CAPTCHA**, así que el MCP lo opera entero por HTTP.
+
+```bash
+dutic hrs login        # una vez: usuario + clave + escuela (ECONOMÍA o su código 4700)
+dutic hrs              # tu horario, día por día: hora, asignatura y aula
+dutic hrs <CUI>        # el horario de ese alumno (la URL del sistema acepta otro codi_usua)
+dutic hrs show         # el último descargado, sin tocar la red
+```
+
+- Las clases de varias horas seguidas llegan como **un solo bloque** con su franja inicial (el
+  sistema las marca con rowspan en la grilla semanal).
+- Para el horario de alguien de **otra escuela** añade `--depe` con su código de dependencia
+  (por defecto se usa la del propio login, p. ej. `470` = ECONOMÍA).
+- Si las credenciales fallan, el sistema responde su mensaje oficial ("Cuenta NO ES Valida"); la
+  escuela se acepta por nombre o por código y se valida contra el select real del login.
+- Guarda las credenciales en `~/.dutic/sisacad-login.json` (permisos 600) y el último horario en
+  `~/.dutic/horario.json` — nunca se versionan.
 
 ---
 
@@ -304,6 +332,10 @@ Cómo está construido, y por qué:
 | `DUTIC_DATA_DIR` | Dónde guardar sesión y perfil | `~/.dutic` |
 | `DUTIC_ENCUESTA_USER` | Usuario de la encuesta docente (evita guardarlo en disco) | — |
 | `DUTIC_ENCUESTA_PASSWORD` | Clave de la encuesta docente | — |
+| `DUTIC_SISACAD_USER` | Usuario del sistema de matrícula (`dutic hrs`) | — |
+| `DUTIC_SISACAD_PASSWORD` | Clave del sistema de matrícula | — |
+| `DUTIC_SISACAD_ESCUELA` | Escuela del sistema de matrícula (código o nombre) | — |
+| `DUTIC_MATRICULA_PATH` | Ruta del login de matrícula, cambia cada ciclo (`matr_int_2026b_v2.00`) | auto |
 
 El semestre sólo se usa para la URL de login: tras iniciar sesión **se auto-detecta** del propio
 aula, así que al cambiar de período normalmente no hay que tocar nada.
@@ -335,6 +367,11 @@ CAPTCHA, y esa protección se respeta: `dutic sisacad` no automatiza el login ni
 por ti — abre el navegador, **tú** entras con tu usuario/clave y lo resuelves, y sólo cuando aparecen
 tus notas la herramienta las lee y las estructura (por curso, con el promedio ponderado). Nunca
 accede a datos de otros estudiantes.
+
+**El horario (`dutic hrs`) vive en el sistema de matrícula del mismo extranet** — login
+usuario+clave+escuela **sin CAPTCHA** — y su página acepta un CUI cualquiera en la URL
+(`horario_datos.php3?codi_usua=…`), así que se opera entero por HTTP. La ruta del login
+(`matr_int_2026b_v2.00`) cambia cada ciclo: se ajusta con `DUTIC_MATRICULA_PATH`.
 
 ---
 
