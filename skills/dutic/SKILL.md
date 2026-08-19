@@ -74,6 +74,12 @@ Si el servidor MCP `dutic` está disponible, usa estas herramientas (son la fuen
 - `dutic_compare_grades` — compara el promedio de SISACAD (oficial) con el total que calcula Moodle,
   curso por curso. Útil para detectar si el aula virtual está desincronizada del registro oficial, o
   para avisar cuando Moodle aún no tiene calculado el total de un curso que SISACAD sí.
+- `dutic_get_horario` — args: `cui?`, `depe?`. **Horario de clases** del sistema de matrícula del
+  extranet (el mismo login usuario+clave+escuela que la encuesta, sin CAPTCHA). Sin `cui` trae el del
+  propio usuario; con `cui`, el de ese alumno (misma escuela por defecto; `depe` para otras, p.ej.
+  470 = ECONOMÍA). Cada bloque: día, hora inicio/fin, asignatura y aula. Requiere credenciales
+  guardadas con `dutic hrs login`; si faltan, avisa en vez de fallar. Úsalo para "¿cuándo tengo X?",
+  "¿qué clases tengo el lunes?" o el horario de un compañero cuyo CUI conozcas.
 - `dutic_get_grades` — args: `courseId?`. **Calificaciones**: sin `courseId`, resumen de todos los
   cursos (nota total + cuántos ítems por calificar); con `courseId`, detalle por ítem (nota, rango, %).
   Úsalo cuando el usuario pregunte por sus notas, promedio, o cómo va.
@@ -180,6 +186,12 @@ dutic encuesta show <doc>   # cuestionario + respuestas que se aplicarían (no e
 dutic encuesta policy set --escala Siempre --calificacion 18   # política por defecto
 dutic encuesta fill --todas # SIMULA el llenado de todas (no envía nada)
 dutic encuesta fill --todas --enviar --si-es-irreversible      # envía de verdad
+
+dutic hrs                   # tu horario de clases (sistema de matrícula del extranet)
+dutic hrs <CUI>             # horario de ese alumno (misma escuela)
+dutic hrs login             # guarda y verifica usuario/clave/escuela (clave sin eco)
+dutic hrs show              # último horario descargado, sin consultar el sistema
+dutic hrs status            # credenciales guardadas y caché
 ```
 
 ## Fechas contradictorias: la trampa que hay que vigilar
@@ -286,6 +298,22 @@ pregunta global → docente → curso → global. Se edita a mano o con `dutic e
 Cada envío queda registrado en `~/.dutic/encuesta-log.json`, que es la única prueba de lo enviado
 porque el sistema no da acuse de recibo. Si un envío sale `unknown`, **no lo reintentes**: dile al
 usuario que lo compruebe en la web.
+
+## Horario de clases (`dutic hrs`)
+
+El horario vive en el **sistema de matrícula** del extranet (`extranet.unsa.edu.pe/sisacad`), un
+sistema aparte del aula virtual y de SISACAD de notas: login usuario + clave + Escuela/Programa
+**sin CAPTCHA** (las mismas credenciales de matrícula que la encuesta, pero se guardan aparte).
+Una vez con `dutic hrs login` hecho, `dutic hrs` muestra el horario del usuario y `dutic hrs <CUI>`
+el de ese alumno (la URL del sistema acepta cambiar el `codi_usua`).
+
+- Cada bloque trae día, hora de inicio/fin, asignatura y aula; las clases largas (varias horas
+  seguidas) vienen como un solo bloque con la franja inicial.
+- Para el horario de alguien de otra escuela hay que pasar `--depe` con su código de dependencia.
+- El login responde el mensaje oficial si las credenciales son inválidas ("Cuenta NO ES Valida"),
+  y la escuela se puede dar por nombre ("ECONOMÍA") o por código ("4700").
+- Es una consulta a un dato académico público del propio estudiante por su CUI; úsalo con un CUI
+  que el usuario ya conozca, no para recorrer rangos.
 
 ## Piloto de notificaciones por WhatsApp (`dutic saas enroll` / `dutic saas push`)
 
