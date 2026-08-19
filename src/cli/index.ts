@@ -56,6 +56,7 @@ import { MCP_SERVER_PATH, runSetup } from "./setup.js";
 import { registerSaasCommands } from "./saas.js";
 import { registerAutoCommands } from "./auto.js";
 import { registerEncuestaCommands } from "./encuesta.js";
+import { registerHorarioCommands } from "./horario.js";
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -1239,6 +1240,7 @@ function renderGradesSummary(all: CourseGrades[]): void {
 registerSaasCommands(program);
 registerAutoCommands(program);
 registerEncuestaCommands(program);
+registerHorarioCommands(program);
 
 program.parseAsync(process.argv).catch((err) => {
   log(`${mark.err()} ${err?.message ?? err}`);

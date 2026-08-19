@@ -56,6 +56,20 @@ export const SESSION_FILE = join(DATA_DIR, "session.json");
 export const EXTRANET_HOST = "extranet.unsa.edu.pe";
 export const ENCUESTA_BASE = `http://${EXTRANET_HOST}/encuesta2`;
 
+// --- Sistema de matrícula (SISACAD extranet: horarios) ---
+
+/**
+ * El login de matrícula vive en una ruta que cambia cada período (`matr_int_2026b_v2.00`),
+ * mientras que el horario (`/sisacad/horario/`) no. La ruta se sobreescribe con
+ * DUTIC_MATRICULA_PATH cuando cambie el ciclo.
+ */
+export const SISACAD_MATRICULA_BASE = `http://${EXTRANET_HOST}/sisacad/${
+  process.env.DUTIC_MATRICULA_PATH?.trim() || "matr_int_2026b_v2.00"
+}`;
+
+/** Página del horario (a la que el menú llega por GET). */
+export const SISACAD_HORARIO_BASE = `http://${EXTRANET_HOST}/sisacad/horario`;
+
 /** Credenciales + política de respuestas de la encuesta (chmod 600, como session.json). */
 export const ENCUESTA_FILE = join(DATA_DIR, "encuesta.json");
 
@@ -65,3 +79,9 @@ export const ENCUESTA_FILE = join(DATA_DIR, "encuesta.json");
  * no debe poder perderse porque falle una escritura de la política.
  */
 export const ENCUESTA_LEDGER_FILE = join(DATA_DIR, "encuesta-log.json");
+
+/** Credenciales del sistema de matrícula (usuario, clave, escuela) — chmod 600. */
+export const SISACAD_LOGIN_FILE = join(DATA_DIR, "sisacad-login.json");
+
+/** Último horario descargado (para `dutic hrs show` sin red). */
+export const HORARIO_CACHE_FILE = join(DATA_DIR, "horario.json");
