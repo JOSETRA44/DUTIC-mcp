@@ -1,14 +1,18 @@
 import { mkdirSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
-import { join } from "node:path";
-import { DATA_DIR } from "./config.js";
+import { currentContext } from "./context.js";
 
 /**
- * Base de datos persistente de cursos escaneados.
- * Se almacena en ~/.dutic/courses-db.json como un mapa id → CourseRecord.
+ * Base de datos persistente de cursos escaneados: mapa id → CourseRecord, en
+ * `~/.dutic/semesters/<ID>/courses-db.json`.
  *
- * Permite al scan-courses saltar IDs ya conocidos y sólo re-escanear
- * los que han expirado o los que se piden explícitamente con --refresh.
+ * Permite al scan-courses saltar IDs ya conocidos y sólo re-escanear los que han expirado o los
+ * que se piden explícitamente con --refresh.
+ *
+ * UNA BASE POR SEMESTRE, y no una sola con un campo `semester` dentro: los ids de curso se
+ * reutilizan entre períodos, así que un mapa global hacía que el escaneo de 2026B sobrescribiera
+ * el registro de 2026A con el mismo id — y el campo `semester` del superviviente pasaba a mentir
+ * sobre la mitad de la tabla. Separar los archivos elimina la colisión de raíz.
  */
 
 export interface CourseRecord {
@@ -25,14 +29,16 @@ export interface CourseRecord {
 
 export type CoursesDb = Record<number, CourseRecord>;
 
-const DB_FILE = join(DATA_DIR, "courses-db.json");
+function dbFile(): string {
+  return currentContext().paths.coursesDb;
+}
 
 /** TTL por defecto: 7 días. Los nombres de curso cambian muy raramente. */
 export const COURSES_DB_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 async function load(): Promise<CoursesDb> {
   try {
-    const raw = await readFile(DB_FILE, "utf8");
+    const raw = await readFile(dbFile(), "utf8");
     return JSON.parse(raw) as CoursesDb;
   } catch {
     return {};
@@ -40,8 +46,9 @@ async function load(): Promise<CoursesDb> {
 }
 
 async function save(db: CoursesDb): Promise<void> {
-  mkdirSync(DATA_DIR, { recursive: true });
-  await writeFile(DB_FILE, JSON.stringify(db, null, 2), "utf8");
+  const ctx = currentContext();
+  mkdirSync(ctx.paths.dir, { recursive: true });
+  await writeFile(ctx.paths.coursesDb, JSON.stringify(db, null, 2), "utf8");
 }
 
 /** Lee la DB entera. */
@@ -81,7 +88,7 @@ export async function coursesDbInfo(): Promise<{
   return {
     total: entries.length,
     withName: entries.filter((e) => e.name).length,
-    file: DB_FILE,
+    file: dbFile(),
   };
 }
 
