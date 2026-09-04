@@ -1,0 +1,76 @@
+<html>
+<head>
+<title>UNSA: Matricula Virtual</title>
+</head>
+<body>
+<form name="form" method="post" action="">
+<table border=0 cellspacing=0 align=center width=500>
+  <tr><td>
+  <select name="tipo_hora" onchange="document.form.submit()">
+    <option value="1" >Horario Personalizado
+    <option value="2" >Horario Por Aula
+    <option value="3" selected>Horario Por Asignatura
+  </select>
+  <select name="codi_asig_grup" onchange="document.form.submit()">
+    <option value=0><- Seleccione Asignatura ->
+    <option value="0"><- Primer año ------------------------------>
+    <option value="2501209A" >2501209 - METODOLOGÍA DEL TRABAJO ACADÉMICO (A)
+    <option value="2501209B" >2501209 - METODOLOGÍA DEL TRABAJO ACADÉMICO (B)
+    <option value="2501214A" >2501214 - MATEMÁTICAS PARA ECONOMISTAS II (A)
+    <option value="2501214B" >2501214 - MATEMÁTICAS PARA ECONOMISTAS II (B)
+    <option value="2501215A" >2501215 - ESTADÍSTICA PARA ECONOMISTAS II (A)
+    <option value="0"><- Segundo año ------------------------------>
+    <option value="2502223A" >2502223 - CIUDADANIA E INTERCULTURALIDAD (A)
+    <option value="2502223B" >2502223 - CIUDADANIA E INTERCULTURALIDAD (B)
+    <option value="2502225A" >2502225 - MICROECONOMÍA II (A)
+  </select>
+  </td></tr></table>
+  <table width='500' border='1' cellpadding='0' cellspacing='0' bgcolor='#FFFFFF' align='center'>
+    <tr><td>
+    <table width=100% border='0' cellpadding='1' cellspacing='2' bgcolor='#FFFFFF'>
+      <tr>
+        <td width=50><font FACE="Arial, Helvetica, sans-serif" size=-2><strong>CODIGO:</td>
+        <td width=100><font FACE="Arial, Helvetica, sans-serif" size=-2> &nbsp;2501209</td>
+        <td width=50><font FACE="Arial, Helvetica, sans-serif" size=-2><strong>ASIGNATURA:</td>
+        <td width=350><font FACE="Arial, Helvetica, sans-serif" size=-2> &nbsp;METODOLOGÍA DEL TRABAJO ACADÉMICO (A)</td>
+      </tr>
+      <tr>
+        <td width=50><font FACE="Arial, Helvetica, sans-serif" size=-2><strong>FECHA:</td>
+        <td width=100><font FACE="Arial, Helvetica, sans-serif" size=-2> &nbsp;2026/08/19</td>
+        <td width=50><font FACE="Arial, Helvetica, sans-serif" size=-2><strong>ESCUELA:</td>
+        <td width=350><font FACE="Arial, Helvetica, sans-serif" size=-2> &nbsp;ECONOMÍA</td>
+      </tr>
+    </table>
+    </td></tr></table>
+  <table width='500' border='1' cellpadding='0' cellspacing='0' bgcolor='#FFFFFF' align='center'>
+    <tr><td align=center>
+    <table border=1>
+      <tr>
+        <td width=12% align=center bgcolor=#666666> <font FACE="Arial, Helvetica, sans-serif" size=-2 color=white> <strong> Lunes
+        <td width=18% align=center bgcolor=#666666> <font FACE="Arial, Helvetica, sans-serif" size=-2 color=white> <strong> Martes
+        <td width=18% align=center bgcolor=#666666> <font FACE="Arial, Helvetica, sans-serif" size=-2 color=white> <strong> Miercoles
+        <td width=18% align=center bgcolor=#666666> <font FACE="Arial, Helvetica, sans-serif" size=-2 color=white> <strong> Jueves
+        <td width=18% align=center bgcolor=#666666> <font FACE="Arial, Helvetica, sans-serif" size=-2 color=white> <strong> Viernes
+      </tr>
+      <tr>
+        <td align='center' bgcolor=#c6d6f0> <font FACE="Arial, Helvetica, sans-serif" size=-2> <strong> 07:00/07:50
+        <td> <font size=-4> &nbsp;
+        <td bgcolor=#e4e9ff rowspan=2 align=center> <font FACE="Arial, Helvetica, sans-serif" size=-3> <strong> Aula: 40.1-105/aula 105(Interfac/ECONOMÍA)MTA_A
+        <td> <font size=-4> &nbsp;
+        <td bgcolor=#e4e9ff rowspan=2 align=center> <font FACE="Arial, Helvetica, sans-serif" size=-3> <strong> Aula: 40.1-105/aula 105(Interfac/ECONOMÍA)MTA_A
+        <td> <font size=-4> &nbsp;
+      </tr>
+      <tr>
+        <td align='center' bgcolor=#c6d6f0> <font FACE="Arial, Helvetica, sans-serif" size=-2> <strong> 07:50/08:40
+        <td> <font size=-4> &nbsp;
+        <td> <font size=-4> &nbsp;
+        <td> <font size=-4> &nbsp;
+      </tr>
+    </table>
+    </td></tr></table>
+  <input type=hidden name="codi_depe" value="470">
+  <input type=hidden name="codi_oper" value="">
+  <input type=hidden name="codi_usua" value="20250001">
+</form>
+</body>
+</html>

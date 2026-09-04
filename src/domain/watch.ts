@@ -1,6 +1,5 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
-import { join } from "node:path";
-import { DATA_DIR } from "../core/config.js";
+import { currentContext } from "../core/context.js";
 import type { Session } from "../core/session.js";
 import { getAllTasks } from "./tasks.js";
 import { getAllGrades } from "./grades.js";
@@ -12,7 +11,14 @@ import { getAllGrades } from "./grades.js";
  * vistazo lo que apareció desde la última vez que revisó.
  */
 
-const SNAPSHOT_FILE = join(DATA_DIR, "snapshot.json");
+/**
+ * La línea base vive en el directorio del semestre. Compartirla entre períodos era una fuente de
+ * ruido garantizada: al cambiar de ciclo, TODAS las tareas del semestre nuevo aparecían como
+ * "nuevas" y todas las del anterior como desaparecidas.
+ */
+function snapshotFile(): string {
+  return currentContext().paths.snapshot;
+}
 
 interface TaskSnap {
   name: string;
@@ -118,15 +124,16 @@ export function diffSnapshots(prev: Snapshot, curr: Snapshot): Changes {
 
 export async function loadSnapshot(): Promise<Snapshot | null> {
   try {
-    return JSON.parse(await readFile(SNAPSHOT_FILE, "utf8")) as Snapshot;
+    return JSON.parse(await readFile(snapshotFile(), "utf8")) as Snapshot;
   } catch {
     return null;
   }
 }
 
 export async function saveSnapshot(snap: Snapshot): Promise<void> {
-  await mkdir(DATA_DIR, { recursive: true });
-  await writeFile(SNAPSHOT_FILE, JSON.stringify(snap), "utf8");
+  const ctx = currentContext();
+  await mkdir(ctx.paths.dir, { recursive: true });
+  await writeFile(ctx.paths.snapshot, JSON.stringify(snap), "utf8");
 }
 
 export interface WatchResult {

@@ -1,7 +1,8 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { chromium, type Browser } from "playwright";
-import { CHROME_USER_AGENT, DATA_DIR } from "../core/config.js";
+import { CHROME_USER_AGENT } from "../core/config.js";
+import { currentContext } from "../core/context.js";
 import { parseCourseName } from "../core/coursename.js";
 
 /**
@@ -13,7 +14,10 @@ import { parseCourseName } from "../core/coursename.js";
  */
 
 export const SISACAD_URL = "http://extranet.unsa.edu.pe/sisacad/parciales18/";
-const STORE_FILE = join(DATA_DIR, "sisacad.json");
+/** Las notas capturadas son del período: viven en el directorio del semestre en curso. */
+function storeFile(): string {
+  return currentContext().paths.sisacadGrades;
+}
 
 /** Un ítem evaluado: una fila real de la tabla de SISACAD. */
 export interface SisacadItem {
@@ -148,7 +152,7 @@ export async function captureSisacadGrades(opts: {
   // 15 min por defecto: da margen de sobra para leer, escribir usuario/clave y resolver el
   // CAPTCHA sin sentir presión de tiempo (antes 5 min resultaba justo).
   const { timeoutMs = 900_000, onStatus = () => {} } = opts;
-  await mkdir(DATA_DIR, { recursive: true });
+  await mkdir(currentContext().paths.dir, { recursive: true });
 
   const browser = await launchBrowser();
   try {
@@ -215,7 +219,7 @@ export async function captureSisacadGrades(opts: {
       tables,
       courses: parseSisacadTables(tables),
     };
-    await writeFile(STORE_FILE, JSON.stringify(capture, null, 2), "utf8");
+    await writeFile(storeFile(), JSON.stringify(capture, null, 2), "utf8");
     onStatus(`Notas de SISACAD guardadas (${capture.courses.length} curso(s)).`);
     return capture;
   } finally {
@@ -226,7 +230,7 @@ export async function captureSisacadGrades(opts: {
 /** Lee las notas de SISACAD guardadas (las capturó el usuario con `dutic sisacad`). */
 export async function loadSisacadGrades(): Promise<SisacadCapture | null> {
   try {
-    const raw = JSON.parse(await readFile(STORE_FILE, "utf8"));
+    const raw = JSON.parse(await readFile(storeFile(), "utf8"));
     // Compatibilidad: capturas antiguas no tenían `courses` estructurado, sólo `tables`.
     if (!raw.courses && raw.tables) raw.courses = parseSisacadTables(raw.tables);
     return raw as SisacadCapture;
