@@ -42,9 +42,32 @@ y revela las tareas ocultas. Es unos segundos más lento pero es justo donde est
 4. **Ofrece el siguiente paso**: abrir la tarea (tienes su URL), ver el contenido del curso, o
    descargar los materiales.
 
+## Semestres: cada período es un aula distinta
+
+El aula virtual monta un Moodle **independiente por semestre** (`2025A`, `2025B`, `2026A`…), con
+sus propios cursos, tareas y notas. Todas las herramientas del aula aceptan un argumento opcional
+`semester`; si lo omites, consultan el **semestre activo**, que es lo correcto para el 99 % de las
+preguntas ("¿qué tengo pendiente?", "¿me subieron notas?").
+
+Usa `semester` sólo cuando el usuario pregunte explícitamente por otro período ("¿qué notas saqué
+el ciclo pasado?", "las tareas de 2025B"):
+
+- `dutic_semester_list` — qué períodos hay, cuál está activo y cuáles tienen sesión iniciada.
+  Consúltala ANTES de pasar un `semester` que no te hayan dicho literalmente; no inventes el id.
+- `dutic_semester_current` — sobre qué período estás trabajando ahora.
+- `dutic_semester_use` — cambia el activo de forma **persistente**. Para una consulta puntual
+  NO lo uses: pasa `semester` en la herramienta concreta y deja el activo donde estaba.
+- `dutic_semester_discover` — sondea el aula para averiguar qué períodos existen. Útil si el
+  usuario menciona un ciclo que no aparece en la lista.
+
+Si una consulta a otro semestre devuelve `hasSession: false`, no insistas: dile al usuario que
+ejecute `dutic login` en una terminal **después** de cambiar a ese período (la sesión es por
+semestre, entrar a uno no da acceso a los demás).
+
 ## Herramientas del MCP `dutic`
 
-Si el servidor MCP `dutic` está disponible, usa estas herramientas (son la fuente de verdad):
+Si el servidor MCP `dutic` está disponible, usa estas herramientas (son la fuente de verdad).
+Todas las del aula virtual admiten además `semester` (ver arriba):
 
 - `dutic_list_tasks` — args: `scope` (`"upcoming"` = timeline rápido | `"all"` = barrido con
   ocultas), `onlyHidden` (bool), `detailed` (bool, scrapea estado de entrega/nota; por defecto
@@ -74,12 +97,24 @@ Si el servidor MCP `dutic` está disponible, usa estas herramientas (son la fuen
 - `dutic_compare_grades` — compara el promedio de SISACAD (oficial) con el total que calcula Moodle,
   curso por curso. Útil para detectar si el aula virtual está desincronizada del registro oficial, o
   para avisar cuando Moodle aún no tiene calculado el total de un curso que SISACAD sí.
-- `dutic_get_horario` — args: `cui?`, `depe?`. **Horario de clases** del sistema de matrícula del
-  extranet (el mismo login usuario+clave+escuela que la encuesta, sin CAPTCHA). Sin `cui` trae el del
-  propio usuario; con `cui`, el de ese alumno (misma escuela por defecto; `depe` para otras, p.ej.
-  470 = ECONOMÍA). Cada bloque: día, hora inicio/fin, asignatura y aula. Requiere credenciales
-  guardadas con `dutic hrs login`; si faltan, avisa en vez de fallar. Úsalo para "¿cuándo tengo X?",
-  "¿qué clases tengo el lunes?" o el horario de un compañero cuyo CUI conozcas.
+- `dutic_get_horario` — args: `cui?`, `depe?`, `escuela?`. **Horario de clases** del sistema de
+  matrícula del extranet (el mismo login usuario+clave+escuela que la encuesta, sin CAPTCHA). Sin `cui`
+  trae el del propio usuario; con `cui`, el de ese alumno (misma escuela por defecto; `depe` para
+  otras, p.ej. 470 = ECONOMÍA, o `escuela` por nombre/código, p.ej. BIOLOGÍA). Cada bloque: día, hora
+  inicio/fin, asignatura y aula. Requiere credenciales guardadas con `dutic hrs login`; si faltan,
+  avisa en vez de fallar. Úsalo para "¿cuándo tengo X?", "¿qué clases tengo el lunes?" o el horario de
+  un compañero cuyo CUI conozcas.
+- `dutic_get_course_catalog` — args: `depe?`, `escuela?`. **Oferta del ciclo** de una Escuela/Programa
+  del sistema de matrícula: todas las secciones de cada asignatura, agrupadas por año. Sin args usa la
+  escuela del login; con `escuela` ("BIOLOGÍA") o `depe` consulta otra carrera. Úsalo para "¿qué se
+  dicta este ciclo en X?", "¿qué asignaturas tiene BIOLOGÍA?" o para descubrir el código de una
+  asignatura (luego va a `dutic_get_subject_schedule`).
+- `dutic_get_subject_schedule` — args: `codigo`, `depe?`, `escuela?`. Horario semanal de una
+  **asignatura-sección** (p.ej. '2501209A'): días, horas y aulas. El código pelado ('2501209') se
+  resuelve contra la oferta; si hay varias secciones, hay que pasar el código completo.
+- `dutic_get_aula_schedule` — args: `aula`, `depe?`, `escuela?`. Qué asignaturas (y secciones) se
+  dictan en un **aula** y cuándo. Acepta código interno ('15446') o parte del nombre ('105', 'MTA_A')
+  sin distinguir acentos; si coincide con varias aulas, avisa para ser más específico.
 - `dutic_get_grades` — args: `courseId?`. **Calificaciones**: sin `courseId`, resumen de todos los
   cursos (nota total + cuántos ítems por calificar); con `courseId`, detalle por ítem (nota, rango, %).
   Úsalo cuando el usuario pregunte por sus notas, promedio, o cómo va.
@@ -192,6 +227,10 @@ dutic hrs <CUI>             # horario de ese alumno (misma escuela)
 dutic hrs login             # guarda y verifica usuario/clave/escuela (clave sin eco)
 dutic hrs show              # último horario descargado, sin consultar el sistema
 dutic hrs status            # credenciales guardadas y caché
+dutic hrs courses           # oferta del ciclo (todas las secciones, por año)
+dutic hrs courses 2501209A  # horario semanal de esa asignatura-sección
+dutic hrs aulas             # aulas de la escuela (código y nombre)
+dutic hrs aulas 105         # qué se dicta en ese aula (código o parte del nombre)
 ```
 
 ## Fechas contradictorias: la trampa que hay que vigilar
@@ -309,11 +348,26 @@ el de ese alumno (la URL del sistema acepta cambiar el `codi_usua`).
 
 - Cada bloque trae día, hora de inicio/fin, asignatura y aula; las clases largas (varias horas
   seguidas) vienen como un solo bloque con la franja inicial.
-- Para el horario de alguien de otra escuela hay que pasar `--depe` con su código de dependencia.
+- Para otra Escuela/Programa hay que pasar `--escuela` por nombre ("BIOLOGÍA") o código ("4020"), o
+  `--depe` con su código de dependencia (la depe se deriva del código de escuela dividiendo por 10:
+  4700→470, 4020→402). El sistema acepta consultar el horario de CUALQUIER escuela.
+- `dutic hrs courses` lista la **oferta del ciclo** de una escuela (asignaturas con todas sus
+  secciones, por año); `dutic hrs courses <codigo>` el horario de una asignatura-sección (el código
+  pelado se resuelve; si hay varias secciones pide el código completo, p.ej. 2501209A).
+- `dutic hrs aulas` lista las aulas de la escuela; `dutic hrs aulas <aula>` qué se dicta en una
+  (por código interno o parte del nombre, sin acentos; si coincide con varias, avisa).
 - El login responde el mensaje oficial si las credenciales son inválidas ("Cuenta NO ES Valida"),
   y la escuela se puede dar por nombre ("ECONOMÍA") o por código ("4700").
 - Es una consulta a un dato académico público del propio estudiante por su CUI; úsalo con un CUI
   que el usuario ya conozca, no para recorrer rangos.
+- **No abrir `alumno/datos.php` del sistema de matrícula con CUIs ajenos**: el menú "Datos
+  Personales" es un formulario de edición que acepta cualquier `cui` (verificado: 200 con datos de
+  otro alumno y sin ninguno inexistente), es decir, control de acceso roto. Hoy los campos
+  sensibles (DNI, dirección, teléfono, colegio) están vacíos para todos, así que no hay fuga real
+  de PII; el riesgo serio es el de ESCRITURA (`datos_guardar.php`): alterar el registro de otro
+  estudiante. No probar la escritura (modifica datos reales) y no consultar la página de otros —
+  se reporta a la UNSA, no se explota. El horario y la oferta académica sí son datos académicos
+  legítimos.
 
 ## Piloto de notificaciones por WhatsApp (`dutic saas enroll` / `dutic saas push`)
 
@@ -364,8 +418,11 @@ curso 1 h, notas 20 min.
 
 ## Notas de contexto
 
-- El semestre (p. ej. `2026A`) va en la URL del aula y cambia cada período; el sistema lo
-  auto-detecta tras el login, no necesitas gestionarlo.
+- El semestre (p. ej. `2026A`) va en la URL del aula y cambia cada período. Se auto-detecta tras
+  el login y se recuerda, así que en el uso normal no hay que gestionarlo; sólo importa cuando el
+  usuario pregunta por un ciclo anterior (ver "Semestres" arriba).
+- Los datos de cada período están **aislados** en disco: sesión, cursos, notas, horario y caché.
+  Cambiar de semestre no borra nada del anterior, y volver a él lo encuentra tal cual estaba.
 - Algunos cursos aparecen **duplicados** con nombres casi iguales (uno con acentos, otro sin):
   es un error de registro de la OTI (la oficina de TI de la UNSA), no un fallo de la herramienta.
   Trátalos como el mismo curso; no alarmes al usuario por ello.

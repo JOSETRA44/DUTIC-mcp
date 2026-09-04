@@ -132,6 +132,16 @@ export function statusLine() {
 }
 
 /**
+ * Opciones del comando padre, si lo hay. Commander (v12) consume las opciones declaradas por un
+ * padre en cualquier punto del árbol ANTES de despachar al subcomando, así que un subcomando que
+ * declare la misma opción nunca la recibe en su `opts`: hay que leerla del padre.
+ */
+export function parentOpts(cmd: unknown): Record<string, unknown> {
+  const parent = (cmd as { parent?: { opts(): Record<string, unknown> } } | undefined)?.parent;
+  return parent ? parent.opts() : {};
+}
+
+/**
  * Barra de progreso en una sola línea (se reescribe con \r sobre stderr). Llama a `done()` al
  * terminar para dejar la línea limpia.
  */
