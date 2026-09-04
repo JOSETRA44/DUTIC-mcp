@@ -3,7 +3,8 @@ import { Command } from "commander";
 import { writeFile } from "node:fs/promises";
 import { withSession } from "../core/auth.js";
 import { loginWithPlaywright } from "../core/login.js";
-import { getSemester } from "../core/config.js";
+import { currentContext, markContextUsed, resolveContext, setDefaultContext } from "../core/context.js";
+import { formatSemesterLabel, normalizeSemester } from "../core/semester.js";
 import { isExpired, isValid, loadSession } from "../core/session.js";
 import { getEnrolledCourses } from "../domain/courses.js";
 import { getAllTasks, getCourseTasks, getUpcomingTasks } from "../domain/tasks.js";
@@ -57,6 +58,7 @@ import { registerSaasCommands } from "./saas.js";
 import { registerAutoCommands } from "./auto.js";
 import { registerEncuestaCommands } from "./encuesta.js";
 import { registerHorarioCommands } from "./horario.js";
+import { registerSemesterCommands } from "./semester.js";
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -84,10 +86,28 @@ program
   .version(pkgVersion())
   .option("--refresh", "Ignora la caché y trae datos frescos (reescribe la caché).")
   .option("--no-cache", "Desactiva la caché para este comando.")
+  .option(
+    "-s, --semester <id>",
+    "Semestre sobre el que operar (2026A, 2026-B, 2026II). Por defecto, el activo.",
+  )
+  // El contexto de semestre se fija ANTES de que corra ningún subcomando: a partir de aquí,
+  // cualquier módulo que toque disco (sesión, caché, cursos, horario) resuelve sus rutas dentro
+  // del período correcto sin que haya que pasárselo por parámetro. Ver core/context.ts.
   .hook("preAction", (thisCommand) => {
     const o = thisCommand.opts();
     if (o.cache === false) setCacheEnabled(false);
     if (o.refresh) setCacheRefresh(true);
+    // Un --semester ilegible se rechaza en vez de ignorarse. La resolución del contexto lo
+    // descarta en silencio a propósito —una tool MCP puede recibir cualquier cosa de un modelo—,
+    // pero aquí lo escribió una persona: caer al semestre activo ante un typo como "2026C" le
+    // mostraría datos de otro período con toda naturalidad.
+    if (o.semester && !normalizeSemester(o.semester)) {
+      log(
+        `${mark.err()} "${o.semester}" no es un semestre válido. Se espera 2026A, 2026-B o 2026II.`,
+      );
+      process.exit(1);
+    }
+    setDefaultContext(resolveContext(o.semester));
   });
 
 const cache = program.command("cache").description("Gestiona la caché local (perfiles, cursos…).");
@@ -111,8 +131,9 @@ program
   .command("setup")
   .description("Configura el MCP en tus agentes (Claude Code, Antigravity, OpenCode…) e instala la skill.")
   .action(() => {
-    out(banner("Configuración de dutic", `semestre ${getSemester()}`));
-    const results = runSetup(getSemester());
+    const ctx = currentContext();
+    out(banner("Configuración de dutic", `semestre ${formatSemesterLabel(ctx.id)}`));
+    const results = runSetup(ctx.id);
     for (const r of results) {
       const icon = r.status === "ok" ? mark.ok() : r.status === "skip" ? c.gray("[-]") : mark.err();
       out(`  ${icon} ${r.label.padEnd(20)} ${c.dim(r.detail)}`);
@@ -129,7 +150,8 @@ program
   .description("Inicia sesión con Google y guarda la sesión de Moodle.")
   .action(async () => {
     const session = await loginWithPlaywright({ headless: false, onStatus: log });
-    out(`${mark.ok()} Sesión guardada.`);
+    markContextUsed();
+    out(`${mark.ok()} Sesión guardada para ${c.cyan(formatSemesterLabel(currentContext().id))}.`);
 
     // Sincronizar usuario con Supabase de forma silenciosa
     try {
@@ -138,9 +160,7 @@ program
       const profile = await getMyProfile(session);
       spin.done();
       if (profile.userId) {
-        // Extraer semestre del siteUrl (e.g. "https://...unsa.edu.pe/2026A" → "2026A")
-        const semesterMatch = session.siteUrl.match(/\/([0-9]{4}[A-Z])\/?$/);
-        const semester = semesterMatch?.[1] ?? getSemester();
+        const semester = currentContext().id;
         await syncUserToSupabase({
           moodle_user_id: profile.userId,
           name: profile.name,
@@ -160,10 +180,12 @@ program
   .command("status")
   .description("Muestra el estado de la sesión y el semestre.")
   .action(async () => {
+    const ctx = currentContext();
     const s = await loadSession();
-    out(banner("DUTIC", `semestre ${getSemester()}`));
+    out(banner("DUTIC", `semestre ${formatSemesterLabel(ctx.id)}`));
     if (!s) {
-      out(`${mark.warn()} Sin sesión. Ejecuta ${c.cyan("dutic login")}.`);
+      out(`${mark.warn()} Sin sesión para ${formatSemesterLabel(ctx.id)}. Ejecuta ${c.cyan("dutic login")}.`);
+      out(`  ${c.dim("otros semestres:")} ${c.cyan("dutic semester list")}`);
       return;
     }
     const estado = isValid(s)
@@ -187,7 +209,7 @@ program
         out(`  ${c.dim("correo:")}   ${me.email ? c.cyan(me.email) : c.gray("—")}`);
         out(`  ${c.dim("id:")}       ${me.userId ?? "—"}`);
         out(`  ${c.dim("sitio:")}    ${session.siteUrl}`);
-        out(`  ${c.dim("semestre:")} ${getSemester()}`);
+        out(`  ${c.dim("semestre:")} ${formatSemesterLabel(currentContext().id)}`);
       },
       { login: { onStatus: log } },
     );
@@ -547,7 +569,7 @@ program
 
     await withSession(
       async (session) => {
-        const semester = getSemester();
+        const semester = currentContext().id;
         const allResults: CourseRecord[] = [];
         const spin = statusLine();
 
@@ -1240,6 +1262,7 @@ function renderGradesSummary(all: CourseGrades[]): void {
 registerSaasCommands(program);
 registerAutoCommands(program);
 registerEncuestaCommands(program);
+registerSemesterCommands(program);
 registerHorarioCommands(program);
 
 program.parseAsync(process.argv).catch((err) => {

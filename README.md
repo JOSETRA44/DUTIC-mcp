@@ -123,9 +123,11 @@ dutic search "estadistica"
 | `dutic sisacad show` | Muestra las notas ya capturadas, agrupadas por curso con promedio ponderado |
 | `dutic sisacad compare` | Compara el promedio de SISACAD (oficial) con el total que calcula Moodle |
 | `dutic hrs` | **Tu horario de clases** (sistema de matrícula del extranet, sin CAPTCHA) |
-| `dutic hrs <CUI>` | Horario de ese alumno (misma escuela por defecto; `--depe` para otras) |
+| `dutic hrs <CUI>` | Horario de ese alumno (misma escuela por defecto; `--escuela`/`--depe` para otras) |
 | `dutic hrs login` | Guarda y verifica usuario/clave/Escuela del sistema de matrícula (clave sin eco) |
 | `dutic hrs show` / `status` | Último horario descargado (sin red) / estado de credenciales y caché |
+| `dutic hrs courses [codigo]` | Oferta del ciclo (todas las secciones, por año) / horario de una asignatura-sección |
+| `dutic hrs aulas [aula]` | Aulas de la escuela / qué se dicta en un aula (por código o parte del nombre) |
 | `dutic task <cmid>` | Detalle: consigna, fechas, adjuntos, conflicto de fechas |
 | `dutic grades [id]` | Notas: resumen de todos los cursos, o detalle de uno |
 | `dutic courses` | Cursos matriculados |
@@ -194,19 +196,23 @@ materiales y usará las herramientas del servidor.
 {
   "mcpServers": {
     "dutic": {
-      "command": "dutic-mcp",
-      "env": { "DUTIC_SEMESTER": "2026A" }
+      "command": "dutic-mcp"
     }
   }
 }
 ```
 
+El semestre **no** se configura aquí: vive en `~/.dutic/semesters.json` y el servidor lo lee en
+cada llamada, así que `dutic semester use` surte efecto sin reiniciar el agente.
+
 Si tu cliente no resuelve comandos del PATH, usa la ruta absoluta que imprime `dutic setup`:
 `{ "command": "node", "args": ["<ruta>/dist/mcp/server.js"] }`
 </details>
 
-**25 herramientas**: novedades (`dutic_check_changes`), notas SISACAD (`dutic_get_sisacad_grades`,
-`dutic_compare_grades`), horario (`dutic_get_horario`), perfil propio (`dutic_whoami`), tareas
+**37 herramientas**: semestres (`dutic_semester_list`, `dutic_semester_use`,
+`dutic_semester_current`, `dutic_semester_discover`), novedades (`dutic_check_changes`), notas SISACAD (`dutic_get_sisacad_grades`,
+`dutic_compare_grades`), horario (`dutic_get_horario`, `dutic_get_course_catalog`,
+`dutic_get_subject_schedule`, `dutic_get_aula_schedule`), perfil propio (`dutic_whoami`), tareas
 (`dutic_list_tasks`, `dutic_get_assignment_detail`, …), notas
 (`dutic_get_grades`), materiales (`dutic_list_course_materials`, `dutic_study_course`,
 `dutic_read_resource`, `dutic_pdf_to_markdown`), personas (`dutic_list_participants`,
@@ -263,12 +269,17 @@ dutic hrs login        # una vez: usuario + clave + escuela (ECONOMÍA o su cód
 dutic hrs              # tu horario, día por día: hora, asignatura y aula
 dutic hrs <CUI>        # el horario de ese alumno (la URL del sistema acepta otro codi_usua)
 dutic hrs show         # el último descargado, sin tocar la red
+dutic hrs courses      # oferta del ciclo de tu escuela: todas las secciones, por año
+dutic hrs courses 2501209A   # horario semanal de esa asignatura-sección (2501209 sin sección se resuelve)
+dutic hrs aulas        # las aulas de la escuela (código y nombre)
+dutic hrs aulas 105    # qué asignaturas se dictan en esa aula y cuándo (por código o parte del nombre)
 ```
 
 - Las clases de varias horas seguidas llegan como **un solo bloque** con su franja inicial (el
   sistema las marca con rowspan en la grilla semanal).
-- Para el horario de alguien de **otra escuela** añade `--depe` con su código de dependencia
-  (por defecto se usa la del propio login, p. ej. `470` = ECONOMÍA).
+- Para otra **Escuela/Programa** añade `--escuela` con su nombre (BIOLOGÍA) o código (4020), o
+  `--depe` con su código de dependencia (p. ej. `470` = ECONOMÍA; la depe se deriva del código de
+  escuela dividiendo por 10). Sin nada, se usa la del propio login.
 - Si las credenciales fallan, el sistema responde su mensaje oficial ("Cuenta NO ES Valida"); la
   escuela se acepta por nombre o por código y se valida contra el select real del login.
 - Guarda las credenciales en `~/.dutic/sisacad-login.json` (permisos 600) y el último horario en
@@ -327,7 +338,7 @@ Cómo está construido, y por qué:
 
 | Variable | Para qué | Por defecto |
 |---|---|---|
-| `DUTIC_SEMESTER` | Semestre en la URL del aula (`2026A`, `2026B`…) | `2026A` |
+| `DUTIC_SEMESTER` | Fija el semestre desde el entorno (`2026A`, `2026B`…). Normalmente **no hace falta**: usa `dutic semester use` | auto |
 | `DUTIC_BROWSER_CHANNEL` | Navegador para el login: `chrome`, `msedge`, `chromium` | `chrome` |
 | `DUTIC_DATA_DIR` | Dónde guardar sesión y perfil | `~/.dutic` |
 | `DUTIC_ENCUESTA_USER` | Usuario de la encuesta docente (evita guardarlo en disco) | — |
@@ -335,10 +346,29 @@ Cómo está construido, y por qué:
 | `DUTIC_SISACAD_USER` | Usuario del sistema de matrícula (`dutic hrs`) | — |
 | `DUTIC_SISACAD_PASSWORD` | Clave del sistema de matrícula | — |
 | `DUTIC_SISACAD_ESCUELA` | Escuela del sistema de matrícula (código o nombre) | — |
-| `DUTIC_MATRICULA_PATH` | Ruta del login de matrícula, cambia cada ciclo (`matr_int_2026b_v2.00`) | auto |
+| `DUTIC_MATRICULA_PATH` | Ruta del login de matrícula. Se deriva del semestre (`matr_int_2026b_v2.00`); sólo hace falta si el patrón cambia | auto |
 
-El semestre sólo se usa para la URL de login: tras iniciar sesión **se auto-detecta** del propio
-aula, así que al cambiar de período normalmente no hay que tocar nada.
+### Varios semestres a la vez
+
+Cada período académico es un **Moodle independiente** (`/2025B/`, `/2026A/`…) con su propia sesión,
+sus cursos y sus notas. `dutic` los mantiene aislados en `~/.dutic/semesters/<ID>/`, así que
+cambiar de ciclo no pierde nada del anterior.
+
+```bash
+dutic semester discover        # sondea el aula: qué períodos existen
+dutic semester list            # cuáles conoces, cuál está activo, cuál tiene sesión
+dutic semester use 2025B       # cambiar el activo (persistente)
+dutic semester use 2025B --login   # …y entrar de una vez
+dutic tasks --all -s 2026A     # consulta puntual sin cambiar el activo
+dutic semester auto            # volver a la selección automática (por fecha)
+dutic semester forget 2024B --purge --yes   # archivar un ciclo y liberar su espacio
+```
+
+El semestre se resuelve por precedencia: `--semester` → `DUTIC_SEMESTER` → activo guardado →
+sesión existente → deducido de la fecha. `dutic semester current` te dice cuál se aplicó y por qué.
+
+Al actualizar desde una versión anterior, el estado plano de `~/.dutic/` se **migra solo** al
+directorio del semestre que declara la sesión guardada; no hay que hacer nada.
 
 ---
 
