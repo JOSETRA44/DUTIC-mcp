@@ -7,8 +7,16 @@ import {
   saveSisacadLogin,
 } from "../core/horarioStore.js";
 import { resolveEscuelaCode, sisacadLogin } from "../core/sisacadClient.js";
-import { DAYS, getHorario, type Horario } from "../domain/horario.js";
-import { banner, c, mark, rule, statusLine, table } from "./ui.js";
+import {
+  DAYS,
+  getAulaList,
+  getAulaSchedule,
+  getCourseCatalog,
+  getHorario,
+  getSubjectSchedule,
+  type Horario,
+} from "../domain/horario.js";
+import { banner, c, mark, parentOpts, rule, statusLine, table } from "./ui.js";
 
 const out = (msg = "") => process.stdout.write(msg + "\n");
 const log = (msg: string) => process.stderr.write(msg + "\n");
@@ -39,7 +47,9 @@ async function promptHidden(question: string): Promise<string> {
 }
 
 function renderHorario(horario: Horario): void {
-  const subtitle = [horario.cui, horario.name, horario.school].filter(Boolean).join(" · ");
+  const subtitle = [horario.code, horario.label, horario.cui, horario.name, horario.school]
+    .filter(Boolean)
+    .join(" · ");
   out(banner("Horario", subtitle));
   if (horario.blocks.length === 0) {
     out(`${mark.warn()} El horario está vacío (¿semana sin clases registradas?).`);
@@ -58,7 +68,11 @@ function renderHorario(horario: Horario): void {
           { header: "curso" },
           { header: "aula", color: c.dim },
         ],
-        blocks.map((b) => [`${b.start}-${b.end}`, b.subject, b.location ?? "—"]),
+        blocks.map((b) => [
+          `${b.start}-${b.end}`,
+          b.group ? `${b.subject} ${c.dim(`(${b.group})`)}` : b.subject,
+          b.location ?? "—",
+        ]),
       ),
     );
   }
@@ -67,11 +81,11 @@ function renderHorario(horario: Horario): void {
 /** Descarga y guarda en caché. El renderizado depende del formato pedido (tabla o JSON). */
 async function fetchAndSave(
   cui: string | undefined,
-  opts: { depe?: string; espe?: string },
+  opts: { depe?: string; escuela?: string; espe?: string },
 ): Promise<Horario> {
   const status = statusLine();
   status.set("consultando horario en el sistema de matrícula…");
-  const horario = await getHorario({ cui, depe: opts.depe, espe: opts.espe });
+  const horario = await getHorario({ cui, depe: opts.depe, escuela: opts.escuela, espe: opts.espe });
   status.done();
   await saveHorarioCache({ fetchedAt: Date.now(), horario });
   return horario;
@@ -87,6 +101,10 @@ export function registerHorarioCommands(program: Command): void {
     .argument("[cui]", "CUI del alumno (por defecto, el tuyo).")
     .option("--json", "Salida en JSON.")
     .option("--depe <codigo>", "Código de dependencia/escuela para el horario (por defecto el del login).")
+    .option(
+      "--escuela <nombre|codigo>",
+      "Otra Escuela/Programa por nombre (BIOLOGÍA) o código (4020); su depe se deriva solo.",
+    )
     .option("--espe <codigo>", "Parámetro espe (por defecto el del login).")
     .action(async (cui: string | undefined, opts) => {
       try {
@@ -150,13 +168,13 @@ export function registerHorarioCommands(program: Command): void {
     .command("show")
     .description("Muestra el último horario descargado (sin consultar el sistema).")
     .option("--json", "Salida en JSON.")
-    .action(async (opts) => {
+    .action(async (opts, cmd) => {
       const cache = await loadHorarioCache();
       if (!cache) {
         out(`${mark.warn()} No hay horario guardado. Ejecuta ${c.cyan("dutic hrs")}.`);
         return;
       }
-      if (opts.json) {
+      if (opts.json || parentOpts(cmd).json) {
         out(JSON.stringify(cache.horario, null, 2));
         return;
       }
@@ -168,10 +186,10 @@ export function registerHorarioCommands(program: Command): void {
     .command("status")
     .description("Estado: credenciales guardadas y horario en caché.")
     .option("--json", "Salida en JSON.")
-    .action(async (opts) => {
+    .action(async (opts, cmd) => {
       const creds = await resolveSisacadLogin();
       const cache = await loadHorarioCache();
-      if (opts.json) {
+      if (opts.json || parentOpts(cmd).json) {
         out(
           JSON.stringify(
             {
@@ -196,5 +214,146 @@ export function registerHorarioCommands(program: Command): void {
             ? `${cache.horario.cui} · ${new Date(cache.fetchedAt).toLocaleString("es-PE")}`
             : `ninguno — corre ${c.cyan("dutic hrs")}`),
       );
+    });
+
+  hrs
+    .command("courses")
+    .description(
+      "Oferta de asignaturas del ciclo de una escuela (todas las secciones, por año). " +
+        "`dutic hrs courses <codigo>` muestra el horario semanal de esa asignatura-sección.",
+    )
+    .argument("[codigo]", "Código de asignatura: '2501209A' (con sección) o '2501209' (se resuelve).")
+    .option("--json", "Salida en JSON.")
+    .option(
+      "--depe <codigo>",
+      "Código de dependencia/escuela para el horario (por defecto el del login, p.ej. 470 = ECONOMÍA).",
+    )
+    .option(
+      "--escuela <nombre|codigo>",
+      "Otra Escuela/Programa por nombre (BIOLOGÍA) o código (4020); su depe se deriva solo.",
+    )
+    .option("--espe <codigo>", "Parámetro espe (por defecto el del login).")
+    .action(async (codigo: string | undefined, opts, cmd) => {
+      try {
+        const parent = parentOpts(cmd);
+        const escuela = (opts.escuela ?? parent.escuela) as string | undefined;
+        const json = Boolean(opts.json || parent.json);
+        if (codigo) {
+          const horario = await getSubjectSchedule(codigo, {
+            depe: opts.depe,
+            escuela,
+            espe: opts.espe,
+          });
+          if (json) {
+            out(JSON.stringify(horario, null, 2));
+          } else {
+            renderHorario(horario);
+          }
+          return;
+        }
+        const status = statusLine();
+        status.set("consultando la oferta del ciclo…");
+        const { school, courses } = await getCourseCatalog({
+          depe: opts.depe,
+          escuela,
+          espe: opts.espe,
+        });
+        status.done();
+        if (json) {
+          out(JSON.stringify({ school, courses }, null, 2));
+          return;
+        }
+        out(banner("Oferta del ciclo", school ?? undefined));
+        if (courses.length === 0) {
+          out(`${mark.warn()} La escuela no tiene asignaturas registradas para este ciclo.`);
+          return;
+        }
+        // Una línea por asignatura: las secciones se unen en el corchete (A, B, C…).
+        const byCode = new Map<string, (typeof courses)[number]>();
+        for (const course of courses) {
+          const existing = byCode.get(course.code);
+          if (!existing) {
+            byCode.set(course.code, { ...course });
+          } else {
+            byCode.set(course.code, { ...existing, group: `${existing.group}, ${course.group}` });
+          }
+        }
+        let year: string | null = null;
+        for (const course of byCode.values()) {
+          if (course.year !== year) {
+            year = course.year;
+            out("\n" + rule(year ?? "Sin agrupar"));
+          }
+          out(` ${c.cyan(course.code)}  ${course.name}  ${c.dim(`[${course.group}]`)}`);
+        }
+      } catch (err) {
+        out(`${mark.err()} ${(err as Error).message}`);
+        process.exitCode = 1;
+      }
+    });
+
+  hrs
+    .command("aulas")
+    .description(
+      "Aulas de la escuela. `dutic hrs aulas <aula>` muestra qué asignaturas (y secciones) se " +
+        "dictan ahí y cuándo.",
+    )
+    .argument("[aula]", "Aula: código interno o parte del nombre (p.ej. '105').")
+    .option("--json", "Salida en JSON.")
+    .option(
+      "--depe <codigo>",
+      "Código de dependencia/escuela para el horario (por defecto el del login, p.ej. 470 = ECONOMÍA).",
+    )
+    .option(
+      "--escuela <nombre|codigo>",
+      "Otra Escuela/Programa por nombre (BIOLOGÍA) o código (4020); su depe se deriva solo.",
+    )
+    .option("--espe <codigo>", "Parámetro espe (por defecto el del login).")
+    .action(async (aula: string | undefined, opts, cmd) => {
+      try {
+        const parent = parentOpts(cmd);
+        const escuela = (opts.escuela ?? parent.escuela) as string | undefined;
+        const json = Boolean(opts.json || parent.json);
+        if (aula) {
+          const horario = await getAulaSchedule(aula, {
+            depe: opts.depe,
+            escuela,
+            espe: opts.espe,
+          });
+          if (json) {
+            out(JSON.stringify(horario, null, 2));
+          } else {
+            renderHorario(horario);
+          }
+          return;
+        }
+        const status = statusLine();
+        status.set("consultando el listado de aulas…");
+        const { school, aulas } = await getAulaList({
+          depe: opts.depe,
+          escuela,
+          espe: opts.espe,
+        });
+        status.done();
+        if (json) {
+          out(JSON.stringify({ school, aulas }, null, 2));
+          return;
+        }
+        out(banner("Aulas de la escuela", school ?? undefined));
+        if (aulas.length === 0) {
+          out(`${mark.warn()} La escuela no tiene aulas registradas para este ciclo.`);
+          return;
+        }
+        out(
+          table(
+            [{ header: "código", align: "right" }, { header: "aula" }],
+            aulas.map((a) => [a.code, a.name]),
+          ),
+        );
+        out(c.dim(`    ${aulas.length} aulas · dutic hrs aulas "<parte del nombre>" para ver su uso`));
+      } catch (err) {
+        out(`${mark.err()} ${(err as Error).message}`);
+        process.exitCode = 1;
+      }
     });
 }

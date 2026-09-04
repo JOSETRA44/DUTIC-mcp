@@ -12,7 +12,7 @@ import {
 import { loadOrInitConfig, saveCreds, saveEncuestaConfig } from "../core/encuestaStore.js";
 import { EncuestaPolicySchema, type EncuestaPolicy } from "../core/encuestaModels.js";
 import type { AnswerOverrides } from "../domain/encuestaPolicy.js";
-import { banner, c, mark, rule, statusLine, table } from "./ui.js";
+import { banner, c, mark, parentOpts, rule, statusLine, table } from "./ui.js";
 
 const out = (msg = "") => process.stdout.write(msg + "\n");
 const log = (msg: string) => process.stderr.write(msg + "\n");
@@ -138,7 +138,12 @@ export function registerEncuestaCommands(program: Command): void {
 
   // --- estado (acción por defecto) ---
 
-  const showStatus = async (opts: { json?: boolean; offline?: boolean }) => {
+  const showStatus = async (opts: { json?: boolean; offline?: boolean }, cmd?: unknown) => {
+    const parent = parentOpts(cmd);
+    opts = {
+      json: opts.json ?? (parent.json as boolean | undefined),
+      offline: opts.offline ?? (parent.offline as boolean | undefined),
+    };
     const status = await encuestaStatus({ online: !opts.offline });
     if (opts.json) {
       out(JSON.stringify(status, null, 2));
@@ -226,13 +231,13 @@ export function registerEncuestaCommands(program: Command): void {
     .command("list")
     .description("Lista tus encuestas: pendientes y ya llenadas.")
     .option("--json", "Salida en JSON.")
-    .action(async (opts) => {
+    .action(async (opts, cmd) => {
       const status = statusLine();
       status.set("consultando encuestas…");
       const listing = await listSurveys();
       status.done();
 
-      if (opts.json) {
+      if (opts.json || parentOpts(cmd).json) {
 
         out(JSON.stringify(listing, null, 2));
 
@@ -272,7 +277,7 @@ export function registerEncuestaCommands(program: Command): void {
     .option("--calificacion <0-20>", "Calificación general.")
     .option("--pregunta <n=valor>", "Override puntual, repetible (p.ej. --pregunta 4=Nunca).", collectQuestion, {})
     .option("--json", "Salida en JSON.")
-    .action(async (docente, opts) => {
+    .action(async (docente, opts, cmd) => {
       const status = statusLine();
       status.set("cargando cuestionario…");
       const items = await previewSurveys(selectorFrom(docente, false), {
@@ -284,7 +289,7 @@ export function registerEncuestaCommands(program: Command): void {
         out(`${mark.warn()} Ninguna encuesta pendiente casa con "${docente}".`);
         return;
       }
-      if (opts.json) {
+      if (opts.json || parentOpts(cmd).json) {
         out(JSON.stringify(items, null, 2));
         return;
       }
@@ -299,9 +304,9 @@ export function registerEncuestaCommands(program: Command): void {
 
   policyCmd
     .option("--json", "Salida en JSON.")
-    .action(async (opts) => {
+    .action(async (opts, cmd) => {
       const cfg = await loadOrInitConfig();
-      if (opts.json) {
+      if (opts.json || parentOpts(cmd).json) {
         out(JSON.stringify(cfg.policy, null, 2));
         return;
       }
@@ -370,7 +375,7 @@ export function registerEncuestaCommands(program: Command): void {
     .option(CONFIRM_FLAG, "Confirma que entiendes que el envío no se puede deshacer.")
     .option("--seguir-si-falla", "No detener el lote si el servidor rechaza una encuesta.")
     .option("--json", "Salida en JSON.")
-    .action(async (docente, opts) => {
+    .action(async (docente, opts, cmd) => {
       const selector = selectorFrom(docente, Boolean(opts.todas));
       const answers = overridesFrom(opts);
 
@@ -396,7 +401,7 @@ export function registerEncuestaCommands(program: Command): void {
           out(`${mark.warn()} No hay encuestas pendientes que casen con la selección.`);
           return;
         }
-        if (opts.json) {
+        if (opts.json || parentOpts(cmd).json) {
           out(JSON.stringify(items, null, 2));
           return;
         }
@@ -423,7 +428,7 @@ export function registerEncuestaCommands(program: Command): void {
         onStatus: log,
       });
 
-      if (opts.json) {
+      if (opts.json || parentOpts(cmd).json) {
 
         out(JSON.stringify(report, null, 2));
 

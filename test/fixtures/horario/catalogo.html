@@ -1,0 +1,63 @@
+<html>
+<head>
+<title>UNSA: Matricula Virtual</title>
+</head>
+<body>
+<form name="form" method="post" action="">
+<table border=0 cellspacing=0 align=center width=500>
+  <tr><td>
+  <select name="tipo_hora" onchange="document.form.submit()">
+    <option value="1" >Horario Personalizado
+    <option value="2" >Horario Por Aula
+    <option value="3" selected>Horario Por Asignatura
+  </select>
+  <select name="codi_asig_grup" onchange="document.form.submit()">
+    <option value=0><- Seleccione Asignatura ->
+    <option value="0"><- Primer año ------------------------------>
+    <option value="2501209A" >2501209 - METODOLOGÍA DEL TRABAJO ACADÉMICO (A)
+    <option value="2501209B" >2501209 - METODOLOGÍA DEL TRABAJO ACADÉMICO (B)
+    <option value="2501209C" >2501209 - METODOLOGÍA DEL TRABAJO ACADÉMICO (C)
+    <option value="2501209D" >2501209 - METODOLOGÍA DEL TRABAJO ACADÉMICO (D)
+    <option value="2501209E" >2501209 - METODOLOGÍA DEL TRABAJO ACADÉMICO (E)
+    <option value="2501210A" >2501210 - EDUCACIÓN PARA LA SALUD (A)
+    <option value="2501210B" >2501210 - EDUCACIÓN PARA LA SALUD (B)
+    <option value="2501211A" >2501211 - INGLÉS (A)
+    <option value="2501211B" >2501211 - INGLÉS (B)
+    <option value="2501212A" >2501212 - LITERATURA INTERNACIONAL NACIONAL Y REGIONAL (A)
+    <option value="2501213A" >2501213 - METODOLOGÍA DE LA INVESTIGACIÓN ECONÓMICA (A)
+    <option value="2501214A" >2501214 - MATEMÁTICAS PARA ECONOMISTAS II (A)
+    <option value="2501215A" >2501215 - ESTADÍSTICA PARA ECONOMISTAS II (A)
+    <option value="0"><- Segundo año ------------------------------>
+    <option value="2502223A" >2502223 - CIUDADANIA E INTERCULTURALIDAD (A)
+    <option value="2502223B" >2502223 - CIUDADANIA E INTERCULTURALIDAD (B)
+    <option value="2502224A" >2502224 - POLÍTICAS PÚBLICAS Y ANTICORRUPCIÓN (A)
+    <option value="2502225A" >2502225 - MICROECONOMÍA II (A)
+    <option value="2502226A" >2502226 - CÁLCULO FINANCIERO (A)
+    <option value="0"><- Tercer año ------------------------------>
+    <option value="1705267A" >1705267 - TRABAJO DE INVESTIGACIÓN (A)
+  </select>
+  </td></tr></table>
+  <table width='500' border='1' cellpadding='0' cellspacing='0' bgcolor='#FFFFFF' align='center'>
+    <tr><td>
+    <table width=100% border='0' cellpadding='1' cellspacing='2' bgcolor='#FFFFFF'>
+      <tr>
+        <td width=50><font FACE="Arial, Helvetica, sans-serif" size=-2><strong>CODIGO:</td>
+        <td width=100><font FACE="Arial, Helvetica, sans-serif" size=-2> &nbsp;</td>
+        <td width=50><font FACE="Arial, Helvetica, sans-serif" size=-2><strong>ASIGNATURA:</td>
+        <td width=350><font FACE="Arial, Helvetica, sans-serif" size=-2> &nbsp; ()</td>
+      </tr>
+      <tr>
+        <td width=50><font FACE="Arial, Helvetica, sans-serif" size=-2><strong>FECHA:</td>
+        <td width=100><font FACE="Arial, Helvetica, sans-serif" size=-2> &nbsp;2026/08/19</td>
+        <td width=50><font FACE="Arial, Helvetica, sans-serif" size=-2><strong>ESCUELA:</td>
+        <td width=350><font FACE="Arial, Helvetica, sans-serif" size=-2> &nbsp;ECONOMÍA</td>
+      </tr>
+    </table>
+    </td></tr></table>
+  <BR><center><font color=#000000 FACE="Arial, Helvetica, sans-serif" size=-1><strong>No hay horario programado!!!</strong></font><BR>
+  <input type=hidden name="codi_depe" value="470">
+  <input type=hidden name="codi_oper" value="">
+  <input type=hidden name="codi_usua" value="20250001">
+</form>
+</body>
+</html>

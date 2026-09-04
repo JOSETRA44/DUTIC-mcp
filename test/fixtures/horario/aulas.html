@@ -1,0 +1,54 @@
+<html>
+<head>
+<title>UNSA: Matricula Virtual</title>
+</head>
+<body>
+<form name="form" method="post" action="">
+<table border=0 cellspacing=0 align=center width=500>
+  <tr><td>
+  <select name="tipo_hora" onchange="document.form.submit()">
+    <option value="1" >Horario Personalizado
+    <option value="2" selected>Horario Por Aula
+    <option value="3" >Horario Por Asignatura
+  </select>
+  <select name="codi_aula" onchange="document.form.submit()">
+    <option value="0"><- Seleccione Aula ->
+    <option value="15446" >40.1-105/AULA 105 AFORO REAL 55
+    <option value="15691" >40.1-105/aula 105(Interfac/ECONOMÍA)MTA_A
+    <option value="15447" >40.1-106/AULA 106 AFORO REAL 55
+    <option value="15693" >40.1-106/aula 106(Interfac/ECONOMÍA)CI_D
+    <option value="15448" >40.1-107/AULA 107 AFORO REAL 55
+    <option value="15449" >40.1-108/AULA 108 AFORO REAL 55
+    <option value="15450" >40.1-205/AULA 205 AFORO REAL 55
+    <option value="15451" >40.1-206/AULA 206 AFORO REAL 55
+    <option value="15452" >40.1-207/AULA 207 AFORO REAL 55
+    <option value="15455" >40.1-302/AULA 302 AFORO REAL 55
+    <option value="15453" >40.2-201/AULA 201 AFORO REAL 55
+    <option value="15454" >40.2-203/AULA 203 AFORO REAL 55
+    <option value="15692" >42.1.201 C/AULA 201 C(Interfac/HISTORIA)MTA_e
+    <option value="15694" >49.3-002/CENDOC(Interfac/RELACIONES INDUSTRIALES)CI_e
+    <option value="15695" >Aula: 48.1.305 / AULA 305(Interfac/TURISMO Y HOTELERIA)CI_f
+  </select>
+  </td></tr></table>
+  <table width='500' border='1' cellpadding='0' cellspacing='0' bgcolor='#FFFFFF' align='center'>
+    <tr><td>
+    <table width=100% border='0' cellpadding='1' cellspacing='2' bgcolor='#FFFFFF'>
+      <tr>
+        <td width=50><font FACE="Arial, Helvetica, sans-serif" size=-2><strong>AULA:</td>
+        <td width=100><font FACE="Arial, Helvetica, sans-serif" size=-2> &nbsp;</td>
+        <td width=50><font FACE="Arial, Helvetica, sans-serif" size=-2><strong>FECHA:</td>
+        <td width=350><font FACE="Arial, Helvetica, sans-serif" size=-2> &nbsp;2026/08/19</td>
+      </tr>
+      <tr>
+        <td width=50><font FACE="Arial, Helvetica, sans-serif" size=-2><strong>ESCUELA:</td>
+        <td width=350><font FACE="Arial, Helvetica, sans-serif" size=-2> &nbsp;ECONOMÍA</td>
+      </tr>
+    </table>
+    </td></tr></table>
+  <BR><center><font color=#000000 FACE="Arial, Helvetica, sans-serif" size=-1><strong>No hay horario programado!!!</strong></font><BR>
+  <input type=hidden name="codi_depe" value="470">
+  <input type=hidden name="codi_oper" value="">
+  <input type=hidden name="codi_usua" value="20250001">
+</form>
+</body>
+</html>
