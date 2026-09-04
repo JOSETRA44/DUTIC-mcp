@@ -1,12 +1,16 @@
 import { mkdir, readFile, writeFile, chmod } from "node:fs/promises";
 import { z } from "zod";
-import { DATA_DIR, SESSION_FILE } from "./config.js";
+import { currentContext, type SemesterContext } from "./context.js";
 
 /**
  * Sesión de Moodle capturada tras el login. Los dos artefactos que importan son:
  *  - moodleSession: valor de la cookie MoodleSession (autenticación).
  *  - sesskey: token CSRF que Moodle exige en cada llamada AJAX.
  * siteUrl se auto-deriva del dashboard (incluye el semestre real).
+ *
+ * Hay UNA sesión por semestre, en `~/.dutic/semesters/<ID>/session.json`: cada período es un
+ * Moodle distinto, con su propia cookie y su propio sesskey. Guardarlas en un único archivo
+ * —como antes— hacía que entrar a 2026B invalidara silenciosamente el acceso a 2026A.
  */
 export const SessionSchema = z.object({
   moodleSession: z.string().min(1),
@@ -42,21 +46,32 @@ export function isValid(session: Session | null): session is Session {
   );
 }
 
-export async function saveSession(session: Session): Promise<void> {
-  await mkdir(DATA_DIR, { recursive: true });
-  await writeFile(SESSION_FILE, JSON.stringify(session, null, 2), "utf8");
+/** Guarda la sesión en el directorio del semestre indicado (por defecto, el del contexto). */
+export async function saveSession(
+  session: Session,
+  ctx: SemesterContext = currentContext(),
+): Promise<void> {
+  await mkdir(ctx.paths.dir, { recursive: true });
+  await writeFile(ctx.paths.session, JSON.stringify(session, null, 2), "utf8");
   // Permisos restrictivos (best-effort; en Windows es no-op práctico).
   try {
-    await chmod(SESSION_FILE, 0o600);
+    await chmod(ctx.paths.session, 0o600);
   } catch {
     /* ignorar en plataformas sin permisos POSIX */
   }
 }
 
-export async function loadSession(): Promise<Session | null> {
+export async function loadSession(
+  ctx: SemesterContext = currentContext(),
+): Promise<Session | null> {
   try {
-    const raw = await readFile(SESSION_FILE, "utf8");
-    return SessionSchema.parse(JSON.parse(raw));
+    const raw = await readFile(ctx.paths.session, "utf8");
+    const session = SessionSchema.parse(JSON.parse(raw));
+    // Cinturón contra un archivo colocado en el directorio equivocado (copia manual, restore de
+    // backup): una sesión cuyo siteUrl apunta a otro período no sirve para éste y usarla daría
+    // datos del semestre ajeno sin ningún aviso.
+    if (!session.siteUrl.includes(`/${ctx.id}`)) return null;
+    return session;
   } catch {
     return null;
   }

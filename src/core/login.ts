@@ -9,9 +9,11 @@ import {
   BROWSER_PROFILE_DIR,
   CHROME_USER_AGENT,
   DATA_DIR,
-  getLoginUrl,
   HOST,
 } from "./config.js";
+import { contextFor, currentContext, type SemesterContext } from "./context.js";
+import { upsertSemester } from "./registry.js";
+import { semesterFromUrl } from "./semester.js";
 import { deriveSiteUrl, saveSession, type Session } from "./session.js";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -177,6 +179,8 @@ export interface LoginOptions {
   timeoutMs?: number;
   /** Callback opcional para reportar progreso (a stderr en CLI, a log en MCP). */
   onStatus?: (msg: string) => void;
+  /** Semestre al que entrar. Por defecto, el del contexto en curso. */
+  ctx?: SemesterContext;
 }
 
 /**
@@ -191,8 +195,9 @@ export async function loginWithPlaywright(opts: LoginOptions = {}): Promise<Sess
   const { headless = false, timeoutMs = 300_000, onStatus = () => {} } = opts;
   await mkdir(DATA_DIR, { recursive: true });
 
-  const loginUrl = getLoginUrl();
-  onStatus(`Abriendo navegador → ${loginUrl}`);
+  const requested = opts.ctx ?? currentContext();
+  const loginUrl = requested.loginUrl;
+  onStatus(`Abriendo navegador → ${loginUrl} (semestre ${requested.id})`);
 
   const context = await launchContext(headless);
   const deadline = Date.now() + timeoutMs;
@@ -260,7 +265,24 @@ export async function loginWithPlaywright(opts: LoginOptions = {}): Promise<Sess
       siteUrl,
       capturedAt: Date.now(),
     };
-    await saveSession(session);
+    // El semestre REAL es el que dice la URL del dashboard, no el que se pidió: si el aula
+    // redirige a otro período (típico al arrancar un ciclo nuevo, cuando el anterior ya no
+    // admite login), la sesión se guarda donde de verdad corresponde en vez de quedar archivada
+    // bajo una etiqueta falsa que luego devolvería datos del semestre equivocado.
+    const landedId = semesterFromUrl(siteUrl);
+    const target = landedId && landedId !== requested.id ? contextFor(landedId, "session") : requested;
+    if (target.id !== requested.id) {
+      onStatus(`El aula redirigió a ${target.id}; la sesión se guarda en ese semestre.`);
+    }
+    await saveSession(session, target);
+    // Un login exitoso es la prueba MÁS fuerte de que ese período existe: se registra como
+    // verificado (sin gastar el sondeo de red del descubrimiento) y se marca como usado, para
+    // que aparezca en `dutic semester list` aunque nadie lo diera de alta a mano.
+    try {
+      upsertSemester(target.id, { verified: true, lastUsedAt: Date.now() });
+    } catch {
+      /* el registro es conveniencia: nunca debe tumbar un login que ya funcionó */
+    }
     onStatus(`Sesión capturada para ${siteUrl}`);
     return session;
   } finally {

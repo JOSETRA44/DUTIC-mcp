@@ -3,10 +3,22 @@ import {
   CHROME_USER_AGENT,
   EXTRANET_HOST,
   SISACAD_HORARIO_BASE,
-  SISACAD_MATRICULA_BASE,
 } from "./config.js";
+import { currentContext } from "./context.js";
 import { SisacadAuthError, SisacadProtocolError, SessionExpiredError } from "./errors.js";
 import { fetchUnsa, isUnsaUrl } from "./http.js";
+
+const RETRY_DELAYS_MS = [800, 1600];
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Base del login de matrícula para el semestre en curso. SISACAD versiona esa carpeta por
+ * período (`matr_int_2026b_v2.00`), así que se lee del contexto en cada llamada —y no de una
+ * constante de módulo— para que cambiar de semestre en caliente apunte al sistema correcto.
+ */
+function matriculaBase(): string {
+  return currentContext().matriculaBase;
+}
 
 /**
  * Cliente HTTP del sistema de matrícula de la UNSA (SISACAD extranet): el que sirve los horarios.
@@ -78,32 +90,39 @@ async function request(
     throw new SisacadProtocolError(`URL fuera de ${EXTRANET_HOST}: ${url}`);
   }
 
-  let res: Response;
-  try {
-    res = await fetchUnsa(
-      url,
-      {
-        method: opts.method ?? "GET",
-        headers: {
-          "User-Agent": CHROME_USER_AGENT,
-          Referer: SISACAD_MATRICULA_BASE,
-          ...(opts.headers ?? {}),
-          ...(opts.cookie ? { Cookie: opts.cookie } : {}),
+  let res: Response | undefined;
+  let lastErr: unknown;
+  for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+    if (attempt > 0) await sleep(RETRY_DELAYS_MS[attempt - 1]);
+    try {
+      res = await fetchUnsa(
+        url,
+        {
+          method: opts.method ?? "GET",
+          headers: {
+            "User-Agent": CHROME_USER_AGENT,
+            Referer: matriculaBase(),
+            ...(opts.headers ?? {}),
+            ...(opts.cookie ? { Cookie: opts.cookie } : {}),
+          },
+          body: opts.body,
+          // Este sistema redirige por JavaScript, nunca por HTTP. Con "manual" evitamos que
+          // fetchUnsa interprete un redirect inesperado como SessionExpiredError (que habla de
+          // Moodle y de `dutic login`, y aquí sólo despistaría).
+          redirect: "manual",
         },
-        body: opts.body,
-        // Este sistema redirige por JavaScript, nunca por HTTP. Con "manual" evitamos que
-        // fetchUnsa interprete un redirect inesperado como SessionExpiredError (que habla de
-        // Moodle y de `dutic login`, y aquí sólo despistaría).
-        redirect: "manual",
-      },
-      30_000,
-    );
-  } catch (err) {
-    if (err instanceof SessionExpiredError) {
-      throw new SisacadAuthError("La sesión de matrícula se perdió a mitad de la operación. Vuelve a intentarlo.");
+        30_000,
+      );
+      break;
+    } catch (err) {
+      if (err instanceof SessionExpiredError) {
+        throw new SisacadAuthError("La sesión de matrícula se perdió a mitad de la operación. Vuelve a intentarlo.");
+      }
+      // El servidor del extranet es viejo y a veces corta la conexión sin motivo: se reintenta.
+      lastErr = err;
     }
-    throw err;
   }
+  if (!res) throw lastErr;
 
   // OJO con la codificación: la cabecera declara charset=iso-8859-1 pero los bytes SON UTF-8
   // (verificado byte a byte: "ECONOMÍA" llega como C3 8D). Decodificar como latin1 partiría los
@@ -124,7 +143,7 @@ export async function sisacadLogin(creds: SisacadCreds): Promise<SisacadSession>
     `&pass_oper=${encodeURIComponent(creds.password)}` +
     `&escuela=${encodeURIComponent(creds.escuela)}`;
 
-  const { text, setCookie } = await request(`${SISACAD_MATRICULA_BASE}/acad_usuario.php`, {
+  const { text, setCookie } = await request(`${matriculaBase()}/acad_usuario.php`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body,
@@ -156,6 +175,37 @@ export async function sisacadLogin(creds: SisacadCreds): Promise<SisacadSession>
   return { phpsessid, cui: m[1], name: m[2], depe: m[4], school: m[5], espe: m[6] };
 }
 
+const AUTH_REDIRECT_MSG =
+  "El sistema de matrícula pidió volver a iniciar sesión. Revisa `dutic hrs login`.";
+
+/** Las tres vistas del horario: personal, por asignatura y por aula. */
+export type HorarioVista = "course" | "aula";
+
+/** Comprueba el redirect JavaScript de sesión caducada y lo traduce a SisacadAuthError. */
+function assertActiveSession(text: string): void {
+  if (/acad_login\.php/.test(text)) {
+    throw new SisacadAuthError(AUTH_REDIRECT_MSG);
+  }
+}
+
+/** POST al formulario del horario (vistas por asignatura/aula) con la sesión activa. */
+async function postHorario(
+  session: SisacadSession,
+  fields: Record<string, string>,
+): Promise<string> {
+  const body = Object.entries(fields)
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join("&");
+  const { text } = await request(`${SISACAD_HORARIO_BASE}/horario_datos.php3`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body,
+    cookie: `PHPSESSID=${session.phpsessid}`,
+  });
+  assertActiveSession(text);
+  return text;
+}
+
 /**
  * Descarga la página del horario de un CUI. El sistema no exige que el CUI sea el del propio
  * usuario: el menú mismo navega por GET cambiando `codi_usua`. Con la sesión caducada responde un
@@ -171,12 +221,42 @@ export async function fetchHorarioRaw(
   const { text } = await request(url, {
     cookie: `PHPSESSID=${session.phpsessid}`,
   });
-  if (/acad_login\.php/.test(text)) {
-    throw new SisacadAuthError(
-      "El sistema de matrícula pidió volver a iniciar sesión. Revisa `dutic hrs login`.",
-    );
-  }
+  assertActiveSession(text);
   return text;
+}
+
+/**
+ * Listado previo de una vista (sin seleccionar): para "course" la oferta del ciclo (todas las
+ * secciones de cada asignatura) y para "aula" las aulas de la escuela. Lo parsea domain/horario.ts.
+ */
+export async function fetchCatalogRaw(
+  session: SisacadSession,
+  depe: string,
+  vista: HorarioVista,
+): Promise<string> {
+  return postHorario(session, {
+    codi_usua: session.cui,
+    codi_depe: depe,
+    tipo_hora: vista === "course" ? "3" : "2",
+  });
+}
+
+/**
+ * Descarga la grilla semanal de una asignatura-sección (`selector` = "2501209A") o de un aula
+ * (`selector` = código interno de aula). El sistema no pide anno/cicl: usa el periodo vigente.
+ */
+export async function fetchScheduleRaw(
+  session: SisacadSession,
+  depe: string,
+  vista: HorarioVista,
+  selector: string,
+): Promise<string> {
+  return postHorario(session, {
+    codi_usua: session.cui,
+    codi_depe: depe,
+    tipo_hora: vista === "course" ? "3" : "2",
+    [vista === "course" ? "codi_asig_grup" : "codi_aula"]: selector,
+  });
 }
 
 /**
@@ -187,7 +267,7 @@ export async function resolveEscuelaCode(input: string): Promise<string> {
   const trimmed = input.trim();
   if (/^\d+$/.test(trimmed)) return trimmed;
 
-  const { text } = await request(`${SISACAD_MATRICULA_BASE}/acad_login.php`, {});
+  const { text } = await request(`${matriculaBase()}/acad_login.php`, {});
   const $ = load(text);
   const options: { code: string; name: string }[] = [];
   $('select[name="escuela"] option').each((_, el) => {
