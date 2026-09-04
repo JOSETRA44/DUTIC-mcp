@@ -46,16 +46,23 @@ function backupAndWrite(file: string, obj: unknown): void {
   writeFileSync(file, JSON.stringify(obj, null, 2) + "\n", "utf8");
 }
 
-function mcpServersEntry(semester: string) {
-  return { command: "node", args: [SERVER_JS], env: { DUTIC_SEMESTER: semester } };
+/**
+ * El semestre NO se graba en el entorno del servidor MCP, y es deliberado. Antes se escribía
+ * `DUTIC_SEMESTER` aquí, lo que congelaba el período en la configuración del agente: para pasar
+ * al ciclo siguiente había que reeditar los JSON de cada agente y reiniciarlos, y —peor— esa
+ * variable habría ganado siempre al semestre activo, dejando sin efecto `dutic semester use` y
+ * la herramienta `dutic_semester_use`. El semestre vive ahora en `~/.dutic/semesters.json`, que
+ * el servidor lee en cada llamada, así que cambiarlo surte efecto al instante.
+ */
+function mcpServersEntry(_semester: string) {
+  return { command: "node", args: [SERVER_JS] };
 }
 
-function localMcpEntry(semester: string) {
+function localMcpEntry(_semester: string) {
   return {
     type: "local",
     command: ["node", SERVER_JS],
     enabled: true,
-    env: { DUTIC_SEMESTER: semester },
   };
 }
 

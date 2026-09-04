@@ -4,7 +4,19 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { ensureSession, withSession, type AuthMode } from "../core/auth.js";
 import { SessionExpiredError } from "../core/errors.js";
-import { getSemester } from "../core/config.js";
+import {
+  currentContext,
+  resolveContext,
+  runWithSemester,
+  setDefaultContext,
+} from "../core/context.js";
+import { formatSemesterLabel } from "../core/semester.js";
+import { discoverSemesters } from "../core/discovery.js";
+import {
+  currentSemesterSummary,
+  listSemesterStates,
+  switchSemester,
+} from "../domain/semesters.js";
 import { isExpired, isValid, loadSession } from "../core/session.js";
 import { getEnrolledCourses, getCourseContents } from "../domain/courses.js";
 import { getAllTasks, getCourseTasks, getUpcomingTasks } from "../domain/tasks.js";
@@ -38,7 +50,12 @@ import { fetchAulaPage } from "../domain/fetch.js";
 import { getMyProfile } from "../domain/people.js";
 import { checkChanges } from "../domain/watch.js";
 import { compareSisacadWithMoodle, loadSisacadGrades } from "../domain/sisacad.js";
-import { getHorario } from "../domain/horario.js";
+import {
+  getAulaSchedule,
+  getCourseCatalog,
+  getHorario,
+  getSubjectSchedule,
+} from "../domain/horario.js";
 import { resolveSisacadLogin } from "../core/horarioStore.js";
 import {
   CONFIRM_PHRASE,
@@ -56,7 +73,44 @@ import { setCacheRefresh } from "../core/cache.js";
  */
 const MCP_MODE: AuthMode = "headless-only";
 
-const server = new McpServer({ name: "dutic-mcp", version: "0.1.0" });
+const server = new McpServer({ name: "dutic-mcp", version: "0.2.0" });
+
+/**
+ * Parámetro común a todas las herramientas que leen el aula virtual. Cada semestre es un Moodle
+ * distinto, así que "¿qué tareas tengo?" sólo está bien planteada dentro de un período.
+ */
+const SEMESTER_PARAM = {
+  semester: z
+    .string()
+    .optional()
+    .describe(
+      "Semestre sobre el que consultar (p.ej. '2025A', '2026B'). " +
+        "Si se omite, se usa el semestre activo. Usa dutic_semester_list para ver cuáles hay.",
+    ),
+};
+
+type ToolResult = Awaited<ReturnType<typeof tool>>;
+
+/**
+ * Registra una herramienta con alcance de semestre: le añade el parámetro `semester` al esquema
+ * y ejecuta el handler dentro de ese contexto.
+ *
+ * Se hace en UN solo sitio, y no repitiendo el parámetro en cada herramienta, por dos razones:
+ * ninguna tool nueva puede olvidarse de soportarlo, y el aislamiento queda garantizado por
+ * construcción — `runWithSemester` usa AsyncLocalStorage, así que dos llamadas concurrentes con
+ * semestres distintos no comparten estado, cosa que una variable global sí les dejaría hacer.
+ */
+function registerScoped<S extends z.ZodRawShape>(
+  name: string,
+  config: { title: string; description: string; inputSchema: S },
+  handler: (args: z.objectOutputType<S, z.ZodTypeAny> & { semester?: string }) => Promise<ToolResult>,
+): void {
+  const inputSchema = { ...config.inputSchema, ...SEMESTER_PARAM };
+  server.registerTool(name, { ...config, inputSchema } as never, ((args: Record<string, unknown>) =>
+    runWithSemester(resolveContext((args?.semester as string | undefined) ?? null), () =>
+      handler(args as never),
+    )) as never);
+}
 
 /** Envuelve un handler traduciendo SessionExpiredError a un mensaje accionable. */
 async function tool<T>(fn: () => Promise<T>) {
@@ -82,7 +136,7 @@ async function tool<T>(fn: () => Promise<T>) {
   }
 }
 
-server.registerTool(
+registerScoped(
   "dutic_list_tasks",
   {
     title: "Listar tareas DUTIC",
@@ -111,7 +165,7 @@ server.registerTool(
     }),
 );
 
-server.registerTool(
+registerScoped(
   "dutic_list_courses",
   {
     title: "Listar cursos DUTIC",
@@ -137,7 +191,7 @@ server.registerTool(
     ),
 );
 
-server.registerTool(
+registerScoped(
   "dutic_get_course_contents",
   {
     title: "Contenido de un curso",
@@ -148,7 +202,7 @@ server.registerTool(
     tool(() => withSession((s) => getCourseContents(s, courseId), { mode: MCP_MODE })),
 );
 
-server.registerTool(
+registerScoped(
   "dutic_get_course_tasks",
   {
     title: "Tareas de un curso",
@@ -159,7 +213,7 @@ server.registerTool(
     tool(() => withSession((s) => getCourseTasks(s, courseId), { mode: MCP_MODE })),
 );
 
-server.registerTool(
+registerScoped(
   "dutic_list_course_files",
   {
     title: "Recursos descargables de un curso",
@@ -170,7 +224,7 @@ server.registerTool(
     tool(() => withSession((s) => listCourseFiles(s, courseId), { mode: MCP_MODE })),
 );
 
-server.registerTool(
+registerScoped(
   "dutic_download_file",
   {
     title: "Descargar un archivo",
@@ -186,7 +240,7 @@ server.registerTool(
     tool(() => withSession((s) => downloadFile(s, url, destPath), { mode: MCP_MODE })),
 );
 
-server.registerTool(
+registerScoped(
   "dutic_read_resource",
   {
     title: "Leer un recurso como texto/Markdown",
@@ -210,7 +264,7 @@ server.registerTool(
     tool(() => withSession((s) => readResourceAsMarkdown(s, url, maxChars), { mode: MCP_MODE })),
 );
 
-server.registerTool(
+registerScoped(
   "dutic_check_changes",
   {
     title: "Novedades desde la última revisión",
@@ -233,7 +287,7 @@ server.registerTool(
     }),
 );
 
-server.registerTool(
+registerScoped(
   "dutic_get_sisacad_grades",
   {
     title: "Notas de SISACAD (parciales oficiales)",
@@ -263,7 +317,7 @@ server.registerTool(
     }),
 );
 
-server.registerTool(
+registerScoped(
   "dutic_compare_grades",
   {
     title: "Comparar notas SISACAD vs. Moodle",
@@ -296,7 +350,7 @@ server.registerTool(
     }),
 );
 
-server.registerTool(
+registerScoped(
   "dutic_get_horario",
   {
     title: "Horario de clases (sistema de matrícula)",
@@ -315,9 +369,13 @@ server.registerTool(
         .string()
         .optional()
         .describe("Código de dependencia/escuela (por defecto, la del login, p.ej. 470 = ECONOMÍA)."),
+      escuela: z
+        .string()
+        .optional()
+        .describe("Otra Escuela/Programa por nombre (BIOLOGÍA) o código (4020); su depe se deriva solo."),
     },
   },
-  async ({ cui, depe }) =>
+  async ({ cui, depe, escuela }) =>
     tool(async () => {
       const creds = await resolveSisacadLogin();
       if (!creds) {
@@ -326,12 +384,116 @@ server.registerTool(
           message: "No hay credenciales del sistema de matrícula. Ejecuta `dutic hrs login` en una terminal.",
         };
       }
-      const horario = await getHorario({ cui, depe });
+      const horario = await getHorario({ cui, depe, escuela });
       return { available: true, ...horario };
     }),
 );
 
-server.registerTool(
+registerScoped(
+  "dutic_get_course_catalog",
+  {
+    title: "Oferta de asignaturas del ciclo (matrícula)",
+    description:
+      "Lista la oferta de asignaturas del ciclo vigente de una Escuela/Programa del sistema de " +
+      "matrícula de la UNSA: todas las secciones de cada asignatura, agrupadas por año. " +
+      "Sirve para ver qué se dicta en otras carreras (p.ej. BIOLOGÍA). Con `codigo` en " +
+      "`dutic_get_subject_schedule` se obtiene el horario semanal de una asignatura-sección.",
+    inputSchema: {
+      depe: z
+        .string()
+        .optional()
+        .describe("Código de dependencia/escuela (por defecto, la del login, p.ej. 470 = ECONOMÍA)."),
+      escuela: z
+        .string()
+        .optional()
+        .describe("Otra Escuela/Programa por nombre (BIOLOGÍA) o código (4020); su depe se deriva solo."),
+    },
+  },
+  async ({ depe, escuela }) =>
+    tool(async () => {
+      const creds = await resolveSisacadLogin();
+      if (!creds) {
+        return {
+          available: false,
+          message: "No hay credenciales del sistema de matrícula. Ejecuta `dutic hrs login` en una terminal.",
+        };
+      }
+      return { available: true, ...(await getCourseCatalog({ depe, escuela })) };
+    }),
+);
+
+registerScoped(
+  "dutic_get_subject_schedule",
+  {
+    title: "Horario de una asignatura-sección (matrícula)",
+    description:
+      "Horario semanal (días, horas y aulas) de una asignatura-sección del sistema de matrícula, " +
+      "p.ej. '2501209A'. El código pelado ('2501209') se resuelve contra la oferta: si la " +
+      "asignatura tiene varias secciones hay que pasar el código completo. Requiere credenciales " +
+      "guardadas con `dutic hrs login`.",
+    inputSchema: {
+      codigo: z
+        .string()
+        .describe("Código de asignatura: '2501209A' (con sección) o '2501209' (se resuelve)."),
+      depe: z
+        .string()
+        .optional()
+        .describe("Código de dependencia/escuela (por defecto, la del login)."),
+      escuela: z
+        .string()
+        .optional()
+        .describe("Otra Escuela/Programa por nombre (BIOLOGÍA) o código (4020)."),
+    },
+  },
+  async ({ codigo, depe, escuela }) =>
+    tool(async () => {
+      const creds = await resolveSisacadLogin();
+      if (!creds) {
+        return {
+          available: false,
+          message: "No hay credenciales del sistema de matrícula. Ejecuta `dutic hrs login` en una terminal.",
+        };
+      }
+      return { available: true, ...(await getSubjectSchedule(codigo, { depe, escuela })) };
+    }),
+);
+
+registerScoped(
+  "dutic_get_aula_schedule",
+  {
+    title: "Horario de un aula (matrícula)",
+    description:
+      "Qué asignaturas (y secciones) se dictan en un aula del sistema de matrícula y cuándo. " +
+      "Acepta un código interno ('15446') o parte del nombre ('105', 'MTA_A'), sin distinguir " +
+      "acentos; si el texto coincide con varias aulas avisa para ser más específico.",
+    inputSchema: {
+      aula: z
+        .string()
+        .describe("Aula: código interno o parte del nombre (p.ej. '105', 'MTA_A')."),
+      depe: z
+        .string()
+        .optional()
+        .describe("Código de dependencia/escuela (por defecto, la del login)."),
+      escuela: z
+        .string()
+        .optional()
+        .describe("Otra Escuela/Programa por nombre (BIOLOGÍA) o código (4020)."),
+    },
+  },
+  async ({ aula, depe, escuela }) =>
+    tool(async () => {
+      const creds = await resolveSisacadLogin();
+      if (!creds) {
+        return {
+          available: false,
+          message: "No hay credenciales del sistema de matrícula. Ejecuta `dutic hrs login` en una terminal.",
+        };
+      }
+      return { available: true, ...(await getAulaSchedule(aula, { depe, escuela })) };
+    }),
+);
+
+registerScoped(
   "dutic_whoami",
   {
     title: "Mi propio perfil",
@@ -341,7 +503,7 @@ server.registerTool(
   async () => tool(() => withSession((s) => getMyProfile(s), { mode: MCP_MODE })),
 );
 
-server.registerTool(
+registerScoped(
   "dutic_get_assignment_detail",
   {
     title: "Detalle completo de una tarea",
@@ -365,7 +527,7 @@ server.registerTool(
     ),
 );
 
-server.registerTool(
+registerScoped(
   "dutic_list_participants",
   {
     title: "Participantes de un curso",
@@ -388,7 +550,7 @@ server.registerTool(
     ),
 );
 
-server.registerTool(
+registerScoped(
   "dutic_find_person",
   {
     title: "Buscar una persona por nombre o correo",
@@ -408,7 +570,7 @@ server.registerTool(
     tool(() => withSession((s) => findPeople(s, query), { mode: MCP_MODE })),
 );
 
-server.registerTool(
+registerScoped(
   "dutic_get_person_profile",
   {
     title: "Perfil de una persona (por id)",
@@ -448,7 +610,7 @@ server.registerTool(
     ),
 );
 
-server.registerTool(
+registerScoped(
   "dutic_fetch_page",
   {
     title: "Explorar cualquier página del aula por URL",
@@ -469,7 +631,7 @@ server.registerTool(
     tool(() => withSession((s) => fetchAulaPage(s, url, format, maxChars), { mode: MCP_MODE })),
 );
 
-server.registerTool(
+registerScoped(
   "dutic_get_course_teachers",
   {
     title: "Docentes de un curso",
@@ -483,7 +645,7 @@ server.registerTool(
     tool(() => withSession((s) => getCourseTeachers(s, courseId), { mode: MCP_MODE })),
 );
 
-server.registerTool(
+registerScoped(
   "dutic_get_grades",
   {
     title: "Ver calificaciones",
@@ -509,7 +671,7 @@ server.registerTool(
     ),
 );
 
-server.registerTool(
+registerScoped(
   "dutic_list_course_materials",
   {
     title: "Listar materiales de un curso (carpetas expandidas)",
@@ -530,7 +692,7 @@ server.registerTool(
     tool(() => withSession((s) => listCourseMaterials(s, courseId, { section }), { mode: MCP_MODE })),
 );
 
-server.registerTool(
+registerScoped(
   "dutic_study_course",
   {
     title: "Preparar materiales de un curso para estudiar",
@@ -553,7 +715,7 @@ server.registerTool(
     tool(() => withSession((s) => studyCourseMaterials(s, courseId, destDir, { section }), { mode: MCP_MODE })),
 );
 
-server.registerTool(
+registerScoped(
   "dutic_pull_course_files",
   {
     title: "Descargar todos los recursos de un curso",
@@ -595,18 +757,23 @@ server.registerTool(
     tool(() => convertLocalPdfToMarkdown(filePath, outPath, maxChars)),
 );
 
-server.registerTool(
+registerScoped(
   "dutic_session_status",
   {
     title: "Estado de sesión DUTIC",
-    description: "Indica si hay una sesión válida, el semestre y cuándo caduca.",
+    description:
+      "Indica si hay una sesión válida para el semestre indicado (o el activo), y de dónde " +
+      "salió ese semestre.",
     inputSchema: {},
   },
   async () =>
     tool(async () => {
+      const ctx = currentContext();
       const s = await loadSession();
       return {
-        semester: getSemester(),
+        semester: ctx.id,
+        semesterLabel: formatSemesterLabel(ctx.id),
+        semesterSource: ctx.source,
         hasSession: s !== null,
         siteUrl: s?.siteUrl ?? null,
         valid: isValid(s),
@@ -616,7 +783,87 @@ server.registerTool(
     }),
 );
 
+// --- Gestión de semestres ---
+
 server.registerTool(
+  "dutic_semester_list",
+  {
+    title: "Listar semestres DUTIC",
+    description:
+      "Lista los períodos académicos conocidos: cuál está activo, cuáles tienen sesión iniciada " +
+      "y cuántos cursos hay guardados de cada uno. Úsala antes de consultar datos de un ciclo " +
+      "anterior, para saber qué identificador pasar en el parámetro `semester`.",
+    inputSchema: {},
+  },
+  async () =>
+    tool(async () => ({
+      active: currentContext().id,
+      semesters: await listSemesterStates(),
+    })),
+);
+
+server.registerTool(
+  "dutic_semester_current",
+  {
+    title: "Semestre actual DUTIC",
+    description:
+      "Devuelve el semestre sobre el que se está trabajando, su URL y de dónde salió esa " +
+      "elección (opción explícita, entorno, activo guardado, sesión existente o la fecha).",
+    inputSchema: {},
+  },
+  async () => tool(() => currentSemesterSummary()),
+);
+
+server.registerTool(
+  "dutic_semester_use",
+  {
+    title: "Cambiar de semestre DUTIC",
+    description:
+      "Cambia el semestre ACTIVO de forma persistente: a partir de aquí, las herramientas que no " +
+      "reciban un `semester` explícito consultarán ese período. Para una consulta puntual es " +
+      "mejor pasar `semester` en la propia herramienta que cambiar el activo. " +
+      "No inicia sesión: si el período no la tiene, se indica en `hasSession` y el usuario " +
+      "debe ejecutar `dutic login` en una terminal.",
+    inputSchema: {
+      semester: z.string().describe("Semestre al que cambiar, p.ej. '2025A' o '2026-B'."),
+    },
+  },
+  async ({ semester }) =>
+    tool(async () => {
+      const result = await switchSemester(semester);
+      return {
+        ...result,
+        hint: result.hasSession
+          ? null
+          : `No hay sesión guardada para ${result.current}. Ejecuta \`dutic login\` en una terminal.`,
+      };
+    }),
+);
+
+server.registerTool(
+  "dutic_semester_discover",
+  {
+    title: "Descubrir semestres DUTIC",
+    description:
+      "Sondea el aula virtual para averiguar qué períodos existen realmente y los registra. " +
+      "Útil al empezar un ciclo nuevo o para localizar uno antiguo cuyo identificador no se " +
+      "recuerda. Hace unas pocas peticiones de sólo lectura a la página de login de cada período.",
+    inputSchema: {
+      from: z.string().optional().describe("Inicio del rango a sondear (por defecto, dos períodos atrás)."),
+      to: z.string().optional().describe("Fin del rango a sondear (por defecto, el período siguiente)."),
+    },
+  },
+  async ({ from, to }) =>
+    tool(async () => {
+      const results = await discoverSemesters({ from, to });
+      return {
+        found: results.filter((r) => r.exists).map((r) => r.id),
+        probed: results,
+      };
+    }),
+);
+
+registerScoped(
   "dutic_refresh_session",
   {
     title: "Renovar sesión DUTIC",
@@ -806,6 +1053,21 @@ server.registerTool(
         continueOnError: continuarSiFalla,
       }),
     ),
+);
+
+/**
+ * Contexto por defecto del proceso. Se resuelve UNA vez al arrancar —migrando de paso el layout
+ * plano anterior— para que el primer `resolveContext` no ocurra a mitad de una llamada. Cada
+ * herramienta puede seguir apuntando a otro período con su parámetro `semester`; esto sólo fija
+ * el que se usa cuando no se indica ninguno.
+ *
+ * Se registra en stderr, no en stdout: stdout es el canal del protocolo MCP.
+ */
+const bootCtx = resolveContext();
+setDefaultContext(bootCtx);
+process.stderr.write(
+  `dutic-mcp · semestre ${bootCtx.id} (${bootCtx.source}) · ${bootCtx.siteUrl}
+`,
 );
 
 const transport = new StdioServerTransport();
