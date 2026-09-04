@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { mkdirSync } from "node:fs";
 import { readFile, writeFile, rm, readdir, stat } from "node:fs/promises";
 import { join } from "node:path";
-import { DATA_DIR } from "./config.js";
+import { currentContext } from "./context.js";
 
 /**
  * Caché en disco (`~/.dutic/cache/`) para operaciones lentas de scraping que cambian poco
@@ -12,9 +12,16 @@ import { DATA_DIR } from "./config.js";
  * Nota: la caché es por-usuario (vive en el home del usuario) — asume un único dueño del aula.
  * Se puede desactivar con DUTIC_NO_CACHE=1, forzar refresco con --refresh, o limpiar con
  * `dutic cache clear`.
+ *
+ * Vive DENTRO del directorio del semestre. Las claves ya incluían el siteUrl, así que no había
+ * riesgo de leer datos cruzados; separarla por período sirve para otra cosa: que `cache clear`
+ * y las estadísticas hablen del semestre que el usuario tiene delante, y que archivar un ciclo
+ * viejo se lleve su caché consigo.
  */
 
-const CACHE_DIR = join(DATA_DIR, "cache");
+function cacheDir(): string {
+  return currentContext().paths.cacheDir;
+}
 
 let enabled = process.env.DUTIC_NO_CACHE !== "1";
 /** --refresh: ignora lo cacheado al leer, pero reescribe con datos frescos. */
@@ -44,7 +51,7 @@ function ttlFor(ns: string, fallback: number): number {
 
 function keyFile(ns: string, parts: (string | number)[]): string {
   const h = createHash("sha256").update(`${ns}|${parts.join("|")}`).digest("hex").slice(0, 24);
-  return join(CACHE_DIR, `${ns}-${h}.json`);
+  return join(cacheDir(), `${ns}-${h}.json`);
 }
 
 /**
@@ -71,7 +78,7 @@ export async function withCache<T>(
 
   const data = await producer();
   try {
-    mkdirSync(CACHE_DIR, { recursive: true });
+    mkdirSync(cacheDir(), { recursive: true });
     await writeFile(file, JSON.stringify({ ts: Date.now(), data }), "utf8");
   } catch {
     /* si no se puede escribir, seguimos sin cachear */
@@ -79,10 +86,12 @@ export async function withCache<T>(
   return data;
 }
 
+/** Borra la caché del semestre en curso. Devuelve cuántas entradas había. */
 export async function clearCache(): Promise<number> {
+  const dir = cacheDir();
   try {
-    const files = await readdir(CACHE_DIR);
-    await rm(CACHE_DIR, { recursive: true, force: true });
+    const files = await readdir(dir);
+    await rm(dir, { recursive: true, force: true });
     return files.length;
   } catch {
     return 0;
@@ -90,12 +99,13 @@ export async function clearCache(): Promise<number> {
 }
 
 export async function cacheInfo(): Promise<{ entries: number; bytes: number; dir: string }> {
+  const dir = cacheDir();
   try {
-    const files = await readdir(CACHE_DIR);
+    const files = await readdir(dir);
     let bytes = 0;
-    for (const f of files) bytes += (await stat(join(CACHE_DIR, f)).catch(() => ({ size: 0 }))).size;
-    return { entries: files.length, bytes, dir: CACHE_DIR };
+    for (const f of files) bytes += (await stat(join(dir, f)).catch(() => ({ size: 0 }))).size;
+    return { entries: files.length, bytes, dir };
   } catch {
-    return { entries: 0, bytes: 0, dir: CACHE_DIR };
+    return { entries: 0, bytes: 0, dir };
   }
 }
