@@ -90,3 +90,35 @@ export async function fetchAulaPage(
   const text = main.text().replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
   return { ...base, content: text.slice(0, maxChars), links: links.slice(0, 60) };
 }
+
+/**
+ * Descarga el HTML CRUDO de una página del aula. `fetchAulaPage` devuelve texto ya procesado
+ * (pensado para que lo lea un modelo); los parsers estructurados de este proyecto necesitan el
+ * marcado intacto, y todos repetían el mismo bloque de cabeceras y detección de sesión muerta.
+ */
+export async function fetchAulaHtml(
+  session: Session,
+  urlOrPath: string,
+  timeoutMs = 45_000,
+  init: RequestInit = {},
+): Promise<string> {
+  const url = resolveUrl(session, urlOrPath);
+  if (!isUnsaUrl(url)) throw new Error(`Sólo se permiten URLs de ${HOST}. Recibido: ${url}`);
+
+  const res = await fetchUnsa(
+    url,
+    {
+      ...init,
+      headers: {
+        Cookie: `MoodleSession=${session.moodleSession}`,
+        "User-Agent": CHROME_USER_AGENT,
+        ...(init.headers ?? {}),
+      },
+    },
+    timeoutMs,
+  );
+  if (res.status === 302 || res.status === 303) throw new SessionExpiredError();
+  const html = await res.text();
+  if (/\/login\//.test(res.url) && /loginform/i.test(html)) throw new SessionExpiredError();
+  return html;
+}
