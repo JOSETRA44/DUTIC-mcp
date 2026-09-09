@@ -41,6 +41,8 @@ export const TTL = {
   participants: 6 * 60 * 60 * 1000,
   state: 60 * 60 * 1000,
   grades: 20 * 60 * 1000,
+  // El árbol de categorías (áreas y Escuelas) cambia una vez por período, no dentro de él.
+  catalog: 24 * 60 * 60 * 1000,
 } as const;
 
 function ttlFor(ns: string, fallback: number): number {
