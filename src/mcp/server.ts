@@ -65,6 +65,20 @@ import {
   previewSurveys,
 } from "../domain/encuesta.js";
 import { setCacheRefresh } from "../core/cache.js";
+import {
+  categoryPath,
+  findCategories,
+  getCategoryTree,
+  groupByTeacher,
+  listSchoolCourses,
+} from "../domain/catalog.js";
+import {
+  addDashboardBlock,
+  getDashboardState,
+  listAddableBlocks,
+  removeDashboardBlock,
+} from "../domain/dashboard.js";
+import { getOnlinePresence, matchOnline } from "../domain/presence.js";
 
 /**
  * En contexto MCP la renovación de sesión es "headless-only": si el SSO de Google sigue
@@ -1063,6 +1077,202 @@ server.registerTool(
  *
  * Se registra en stderr, no en stdout: stdout es el canal del protocolo MCP.
  */
+registerScoped(
+  "dutic_online_users",
+  {
+    title: "Quién está conectado ahora mismo",
+    description:
+      "Presencia en vivo del aula, leída del bloque 'Usuarios en línea' del Dashboard: cuánta " +
+      "gente hay conectada en los últimos minutos y, de ella, QUIÉNES son los que compartes " +
+      "curso contigo, con la antigüedad de su última señal en segundos. Con `person` responde " +
+      "'¿está conectado X?' buscando por nombre (sin acentos, palabras en cualquier orden) o id. " +
+      "IMPORTANTE al redactar la respuesta: `total` es el recuento global del sitio y `users` " +
+      "sólo la parte que el servidor te deja identificar — no son la misma cifra, y que alguien " +
+      "no aparezca en `users` NO significa que esté desconectado: puede estar entre los " +
+      "`hiddenCount` anónimos. El dato caduca en segundos, así que no lo reutilices de una " +
+      "respuesta anterior; vuelve a llamar.",
+    inputSchema: {
+      person: z
+        .string()
+        .optional()
+        .describe("Nombre (o parte) o id de usuario para comprobar si esa persona está conectada."),
+    },
+  },
+  async ({ person }) =>
+    tool(async () => {
+      const presence = await withSession((s) => getOnlinePresence(s), { mode: MCP_MODE });
+      if (!presence.blockPresent) {
+        return {
+          ...presence,
+          message:
+            "El Dashboard de este usuario no tiene el bloque 'Usuarios en línea'. " +
+            "Añádelo con dutic_dashboard_add_block({ block: 'online_users' }) y vuelve a consultar.",
+        };
+      }
+      if (!person) return presence;
+      const matches = matchOnline(presence, person);
+      return {
+        query: person,
+        online: matches.length > 0,
+        matches,
+        total: presence.total,
+        hiddenCount: presence.hiddenCount,
+        windowMinutes: presence.windowMinutes,
+        note:
+          matches.length === 0
+            ? "No aparece entre los usuarios identificables. Puede estar conectado y ser uno de " +
+              "los anónimos (hiddenCount), o no compartir ningún curso contigo."
+            : undefined,
+      };
+    }),
+);
+
+registerScoped(
+  "dutic_list_schools",
+  {
+    title: "Escuelas y áreas del aula",
+    description:
+      "Árbol de categorías del semestre: las tres áreas (BIOMÉDICAS, INGENIERÍAS, SOCIALES) y las " +
+      "~46 Escuelas Profesionales que cuelgan de ellas, con su id de categoría. Úsalo ANTES de " +
+      "dutic_school_courses para resolver el nombre que dijo el usuario ('sistemas', 'derecho') " +
+      "al id correcto. Los ids son distintos en cada semestre: no los memorices entre períodos.",
+    inputSchema: {
+      query: z
+        .string()
+        .optional()
+        .describe("Filtra por nombre (sin acentos, por trozo) o id. Si se omite, devuelve todo."),
+    },
+  },
+  async ({ query }) =>
+    tool(async () => {
+      const tree = await withSession((s) => getCategoryTree(s), { mode: MCP_MODE });
+      const schools = query ? findCategories(tree, query) : tree.categories;
+      return {
+        total: tree.categories.length,
+        matched: schools.length,
+        categories: schools.map((cat) => ({
+          id: cat.id,
+          name: cat.name,
+          depth: cat.depth,
+          kind: cat.depth === 3 ? "escuela" : cat.depth === 2 ? "área" : "período",
+          path: categoryPath(tree, cat.id),
+        })),
+      };
+    }),
+);
+
+registerScoped(
+  "dutic_school_courses",
+  {
+    title: "Cursos de una Escuela, con su docente",
+    description:
+      "Todos los cursos que una Escuela Profesional dicta este semestre —de cualquier carrera, sin " +
+      "estar matriculado en ella— con la asignatura, el grupo (GA, GB…) y QUIÉN LO ENSEÑA. " +
+      "Responde a '¿qué cursos lleva la escuela de X?', '¿quién dicta Y en Z?' y, con " +
+      "`byTeacher`, '¿qué dicta el profesor W?'. Acepta el nombre de la Escuela o su id " +
+      "(dutic_list_schools). Cuesta dos peticiones, así que es barato incluso para Escuelas " +
+      "grandes; `deep` sólo si quedaron cursos sin docente y de verdad hacen falta.",
+    inputSchema: {
+      school: z.string().describe("Nombre de la Escuela ('sistemas', 'ECONOMÍA') o su id de categoría."),
+      byTeacher: z
+        .boolean()
+        .optional()
+        .describe("Agrupar por docente en vez de por curso (para '¿qué dicta el profesor X?')."),
+      deep: z
+        .boolean()
+        .optional()
+        .describe("Abrir la ficha de los cursos sin docente, uno a uno. Lento: úsalo sólo si hace falta."),
+    },
+  },
+  async ({ school, byTeacher, deep }) =>
+    tool(() =>
+      withSession(
+        async (s) => {
+          const tree = await getCategoryTree(s);
+          const hits = findCategories(tree, school);
+          if (hits.length === 0) {
+            return {
+              found: false,
+              message: `Ninguna categoría coincide con "${school}". Usa dutic_list_schools para ver los nombres exactos.`,
+            };
+          }
+          const target = hits[0];
+          const courses = await listSchoolCourses(s, target.id, { deep });
+          return byTeacher
+            ? { found: true, category: courses.categoryName, path: courses.path, teachers: groupByTeacher(courses) }
+            : { found: true, ...courses };
+        },
+        { mode: MCP_MODE },
+      ),
+    ),
+);
+
+registerScoped(
+  "dutic_dashboard_blocks",
+  {
+    title: "Bloques del Dashboard del aula",
+    description:
+      "Qué bloques tiene puestos el usuario en su Dashboard (/my/) y, con `available`, cuáles " +
+      "puede añadir. Importa porque el Dashboard se renderiza en el servidor: un bloque que no " +
+      "está puesto es información que NO llega — 'Usuarios en línea' (online_users) es el caso " +
+      "típico, y 'Estado de Finalización' (completion_progress) o 'Próximos eventos' " +
+      "(calendar_upcoming) añaden datos que hoy no se ven.",
+    inputSchema: {
+      available: z
+        .boolean()
+        .optional()
+        .describe("Incluir el catálogo de bloques añadibles. Cuesta un par de peticiones más."),
+    },
+  },
+  async ({ available }) =>
+    tool(() =>
+      withSession(
+        async (s) => {
+          const state = await getDashboardState(s);
+          return {
+            editing: state.editing,
+            blocks: state.blocks,
+            addable: available ? await listAddableBlocks(s) : undefined,
+          };
+        },
+        { mode: MCP_MODE },
+      ),
+    ),
+);
+
+registerScoped(
+  "dutic_dashboard_add_block",
+  {
+    title: "Añadir un bloque al Dashboard",
+    description:
+      "Añade un bloque al Dashboard del usuario. MODIFICA la cuenta del usuario en el aula (su " +
+      "Dashboard cambiará también cuando entre desde el navegador), así que pídele permiso antes " +
+      "salvo que te lo haya pedido él. Es idempotente y reversible con " +
+      "dutic_dashboard_remove_block. El uso previsto es habilitar 'online_users' cuando " +
+      "dutic_online_users avisa de que falta.",
+    inputSchema: {
+      block: z
+        .string()
+        .describe("Nombre del plugin: 'online_users', 'completion_progress', 'calendar_upcoming'…"),
+    },
+  },
+  async ({ block }) =>
+    tool(() => withSession((s) => addDashboardBlock(s, block), { mode: MCP_MODE })),
+);
+
+registerScoped(
+  "dutic_dashboard_remove_block",
+  {
+    title: "Quitar un bloque del Dashboard",
+    description:
+      "Quita un bloque del Dashboard del usuario. MODIFICA su cuenta en el aula: pide permiso " +
+      "antes salvo que te lo haya pedido él. Se identifica por nombre de plugin, no por instancia.",
+    inputSchema: { block: z.string().describe("Nombre del plugin a quitar, p.ej. 'online_users'.") },
+  },
+  async ({ block }) =>
+    tool(() => withSession((s) => removeDashboardBlock(s, block), { mode: MCP_MODE })),
+);
+
 const bootCtx = resolveContext();
 setDefaultContext(bootCtx);
 process.stderr.write(
