@@ -209,15 +209,17 @@ Si tu cliente no resuelve comandos del PATH, usa la ruta absoluta que imprime `d
 `{ "command": "node", "args": ["<ruta>/dist/mcp/server.js"] }`
 </details>
 
-**37 herramientas**: semestres (`dutic_semester_list`, `dutic_semester_use`,
+**43 herramientas**: semestres (`dutic_semester_list`, `dutic_semester_use`,
 `dutic_semester_current`, `dutic_semester_discover`), novedades (`dutic_check_changes`), notas SISACAD (`dutic_get_sisacad_grades`,
 `dutic_compare_grades`), horario (`dutic_get_horario`, `dutic_get_course_catalog`,
 `dutic_get_subject_schedule`, `dutic_get_aula_schedule`), perfil propio (`dutic_whoami`), tareas
 (`dutic_list_tasks`, `dutic_get_assignment_detail`, …), notas
 (`dutic_get_grades`), materiales (`dutic_list_course_materials`, `dutic_study_course`,
 `dutic_read_resource`, `dutic_pdf_to_markdown`), personas (`dutic_list_participants`,
-`dutic_find_person`, `dutic_get_person_profile`, `dutic_get_course_teachers`), exploración por URL
-(`dutic_fetch_page`) y sesión.
+`dutic_find_person`, `dutic_get_person_profile`, `dutic_get_course_teachers`), presencia en vivo
+(`dutic_online_users`), catálogo institucional (`dutic_list_schools`, `dutic_school_courses`),
+Dashboard (`dutic_dashboard_blocks`, `dutic_dashboard_add_block`, `dutic_dashboard_remove_block`),
+exploración por URL (`dutic_fetch_page`) y sesión.
 
 ---
 
@@ -369,6 +371,34 @@ sesión existente → deducido de la fecha. `dutic semester current` te dice cu�
 
 Al actualizar desde una versión anterior, el estado plano de `~/.dutic/` se **migra solo** al
 directorio del semestre que declara la sesión guardada; no hay que hacer nada.
+
+### Presencia, Escuelas y bloques del Dashboard
+
+El aula publica más de lo que enseña su interfaz. Tres cosas que `dutic` ahora sabe leer
+(el detalle técnico, con lo medido y lo que **no** se puede hacer, está en
+[`docs/hallazgos-aula.md`](docs/hallazgos-aula.md)):
+
+```bash
+# Quién está conectado ahora mismo (precisión de segundos)
+dutic online
+dutic online "carpio"            # ¿está conectada esta persona?
+
+# Cursos y docentes de CUALQUIER Escuela, sin estar matriculado
+dutic escuela list               # las ~46 Escuelas del semestre
+dutic escuela cursos "sistemas"  # sus cursos, con grupo y profesor
+dutic escuela cursos economia --por-docente
+
+# El Dashboard es una composición de bloques: lo que no está puesto, no llega
+dutic dashboard list --disponibles
+dutic dashboard add online_users
+```
+
+Dos advertencias que el propio servidor impone:
+
+- El bloque de presencia da el **total** del sitio pero sólo **nombra** a quien comparte curso
+  contigo, y corta en 50. Que alguien no aparezca no prueba que esté desconectado.
+- `dashboard add` / `remove` **modifican tu cuenta** en el aula: el cambio se ve también desde el
+  navegador.
 
 ---
 

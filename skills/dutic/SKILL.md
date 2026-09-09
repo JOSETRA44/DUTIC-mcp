@@ -64,6 +64,41 @@ Si una consulta a otro semestre devuelve `hasSession: false`, no insistas: dile 
 ejecute `dutic login` en una terminal **después** de cambiar a ese período (la sesión es por
 semestre, entrar a uno no da acceso a los demás).
 
+## Quién está conectado ahora (`dutic_online_users`)
+
+El aula publica presencia **en vivo** en el Dashboard: cuánta gente hay conectada en los últimos
+5 minutos y, de ella, quiénes son los que comparten curso con el usuario, con la antigüedad de su
+última señal **en segundos**. Sirve para "¿está conectado mi profesor?" antes de escribirle.
+
+Al redactar la respuesta hay dos trampas que NO puedes cruzar:
+
+- `total` es el recuento del sitio entero; `users` son sólo los que el servidor te deja
+  identificar. **No son la misma cifra.** "Hay 8 personas conectadas" es falso si `total` dice 179.
+- Que alguien **no** salga en `users` no significa que esté desconectado: puede estar entre los
+  `hiddenCount` anónimos, o simplemente no compartir curso con el usuario. Dilo así.
+
+El dato caduca en segundos: no reutilices el de una respuesta anterior, vuelve a llamar. Si
+`blockPresent` es `false`, el Dashboard no tiene el bloque puesto; ofrécele añadirlo con
+`dutic_dashboard_add_block({ block: "online_users" })` — pero **pide permiso primero**, porque
+modifica su cuenta en el aula.
+
+## Cursos y docentes de cualquier Escuela
+
+`dutic_list_schools` da las tres áreas (BIOMÉDICAS, INGENIERÍAS, SOCIALES) y las ~46 Escuelas
+Profesionales del semestre. `dutic_school_courses` da **todos** los cursos de una Escuela con su
+asignatura, su grupo (GA, GB…) y **quién lo enseña**, aunque el usuario no esté matriculado ahí.
+
+- "¿Qué cursos lleva la escuela de X?" → `dutic_school_courses({ school: "X" })`.
+- "¿Quién dicta Y?" → lo mismo y filtras por asignatura.
+- "¿Qué dicta el profesor W?" → `byTeacher: true`.
+
+Resuelve el nombre con `dutic_list_schools` si dudas; los ids de categoría **cambian cada
+semestre**, así que no los memorices entre períodos. Un curso sin docente no es un fallo: hay
+cursos que no lo publican (`deep: true` lo intenta abriendo la ficha uno a uno, pero es lento).
+
+Para los cursos **del propio usuario** sigue usando `dutic_list_courses` y
+`dutic_get_course_teachers`: son más directos y traen su matrícula real.
+
 ## Herramientas del MCP `dutic`
 
 Si el servidor MCP `dutic` está disponible, usa estas herramientas (son la fuente de verdad).
@@ -89,6 +124,18 @@ Todas las del aula virtual admiten además `semester` (ver arriba):
   nuevo/cambiado — tareas nuevas (incl. ocultas), notas publicadas o modificadas, cambios de entrega y
   de fecha. Úsalo para "¿hay algo nuevo?" o un chequeo periódico. Usa datos frescos (ignora la caché).
 - `dutic_whoami` — tu propio perfil (nombre, correo, id).
+- `dutic_online_users` — args: `person?`. **Quién está conectado ahora mismo** (ver arriba las dos
+  trampas al redactarlo). Con `person` responde "¿está conectado X?" por nombre (sin acentos,
+  palabras en cualquier orden) o id.
+- `dutic_list_schools` — args: `query?`. Áreas y **Escuelas Profesionales** del semestre, con su id
+  de categoría. Úsalo para resolver el nombre que dijo el usuario antes de pedir sus cursos.
+- `dutic_school_courses` — args: `school`, `byTeacher?`, `deep?`. **Cursos de una Escuela con su
+  docente**, aunque el usuario no esté matriculado ahí: asignatura, grupo y profesor. Con
+  `byTeacher` agrupa al revés, para "¿qué dicta el profesor X?".
+- `dutic_dashboard_blocks` — args: `available?`. Bloques del Dashboard y, opcionalmente, cuáles se
+  pueden añadir.
+- `dutic_dashboard_add_block` / `dutic_dashboard_remove_block` — args: `block`. **Modifican la
+  cuenta del usuario**: pide permiso salvo que te lo haya pedido él.
 - `dutic_get_sisacad_grades` — notas parciales OFICIALES de **SISACAD** (sistema aparte con CAPTCHA),
   agrupadas por curso con cada ítem (parcial, nota, peso %, ausente) y `weightedAverageSoFar` (promedio
   ponderado ya calculado con lo calificado hasta ahora). Sólo LEE lo que el usuario ya capturó con el
@@ -426,5 +473,9 @@ curso 1 h, notas 20 min.
 - Algunos cursos aparecen **duplicados** con nombres casi iguales (uno con acentos, otro sin):
   es un error de registro de la OTI (la oficina de TI de la UNSA), no un fallo de la herramienta.
   Trátalos como el mismo curso; no alarmes al usuario por ello.
+- El Dashboard (`/my/`) se compone de **bloques** que el usuario elige, y Moodle los renderiza en
+  el servidor: un bloque que no está puesto es información que no llega. `dutic_dashboard_blocks`
+  dice cuáles hay. Añadir o quitar bloques **modifica la cuenta del usuario** (lo verá también
+  desde el navegador): pide permiso salvo que te lo haya pedido él.
 - Las tareas ocultas suelen salir "sin fecha" porque efectivamente no tienen fecha de entrega en
   Moodle (por eso no generan evento de calendario). El `submission` te dice igual si ya cumplió.
