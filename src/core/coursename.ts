@@ -39,8 +39,15 @@ const keyify = (s: string) =>
 /** Sufijo de grupo al final del nombre: G + letra, con posible "-X" (GD-I). */
 const GROUP_RE = /\s+G([A-Z])(-[A-Z0-9]+)?\s*$/;
 
-/** Prefijo de período + escuela: "26A ECONOMÍA:" / "26A ECONOMA:" (con o sin acentos). */
-const PREFIX_RE = /^\s*\d{2}[A-Z]\s+[A-Za-zÁÉÍÓÚÑ]+\s*:\s*/;
+/**
+ * Prefijo de período + escuela: "26A ECONOMÍA:", "26B LINGÜÍSTICA:", "26B SISTEMAS:".
+ *
+ * Todo lo que haya entre el período y el primer ":" es el prefijo, sin enumerar qué letras
+ * caben: enumerarlas dejaba fuera la diéresis ("26B LINGÜÍSTICA:" no se reconocía y la
+ * asignatura se quedaba con el prefijo pegado). El ancla del período (dos dígitos + letra) es
+ * la que evita comerse un ":" que forme parte del título de la asignatura.
+ */
+const PREFIX_RE = /^\s*\d{2}[A-Z]\s+[^:]{2,40}:\s*/;
 
 export function parseCourseName(fullname: string): ParsedCourse {
   let subject = fullname.trim();
