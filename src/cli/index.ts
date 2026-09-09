@@ -58,6 +58,7 @@ import { registerSaasCommands } from "./saas.js";
 import { registerAutoCommands } from "./auto.js";
 import { registerEncuestaCommands } from "./encuesta.js";
 import { registerHorarioCommands } from "./horario.js";
+import { registerAulaCommands } from "./aula.js";
 import { registerSemesterCommands } from "./semester.js";
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -1263,6 +1264,7 @@ registerSaasCommands(program);
 registerAutoCommands(program);
 registerEncuestaCommands(program);
 registerSemesterCommands(program);
+registerAulaCommands(program);
 registerHorarioCommands(program);
 
 program.parseAsync(process.argv).catch((err) => {
