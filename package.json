@@ -1,6 +1,6 @@
 {
   "name": "@josetra/dutic-mcp",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Servidor MCP + CLI para el aula virtual DUTIC (Moodle) de la UNSA: tareas ocultas, notas, horarios, materiales de estudio y personas.",
   "type": "module",
   "bin": {
