@@ -466,6 +466,28 @@ git push --follow-tags
   ejecuta `enroll` explícitamente. `pending_notifications` y `students` en Supabase existen sólo para
   avisar al propio dueño de esa fila — nunca para leer, listar o reenviar datos de otro estudiante.
 
+### Telemetría
+
+dutic envía telemetría **técnica** para detectar y corregir fallos. La primera vez que la usas te lo
+avisa, y puedes ver exactamente qué hace con `dutic telemetry status`.
+
+| Se envía | No se envía nunca |
+|---|---|
+| Nombre del comando o herramienta MCP, duración y resultado | Tu `MoodleSession`, `sesskey` o cualquier credencial |
+| Clase del error y su mensaje **saneado** (sin rutas personales, tokens ni datos personales) | Argumentos y resultados de las herramientas |
+| Versión de dutic, sistema operativo, arquitectura, versión de Node, zona horaria | Tus notas, tareas, cursos o archivos |
+| Aula y semestre del evento (p.ej. `2026B`) y un seudónimo de tu cuenta | El nombre de tu equipo o de tu usuario del sistema |
+
+- **Identidad, sólo si aceptas.** Tras `dutic login` se te pregunta una vez si quieres asociar tu
+  nombre y correo institucional; sin ese "sí", tu cuenta es un seudónimo (HMAC) imposible de revertir
+  desde nuestra base. Cámbialo cuando quieras con `dutic telemetry identity on|off`.
+- **Sin sorpresas en segundo plano.** Los eventos se guardan en `~/.dutic/telemetry/` y se envían en
+  lotes con un tiempo máximo corto; sin red, esperan. Nunca bloquean ni retrasan un comando.
+- **Apagarla:** `dutic telemetry off`, o las variables `DUTIC_TELEMETRY=0` o `DO_NOT_TRACK=1`. En CI
+  está apagada.
+- **Borrar lo enviado:** `dutic telemetry forget` elimina del servidor todo lo enviado desde tu
+  equipo (derecho de cancelación, Ley N.º 29733) y apaga la telemetría.
+
 ## Licencia
 
 MIT © JOSETRA44
