@@ -85,6 +85,48 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 // ── El trabajo real ────────────────────────────────────────────────────────────────
 
 async function runOnce(opts: { now?: boolean; verbose?: boolean }): Promise<number> {
+  // Latido del agente. La consola distingue "PC apagada" (no hay latidos) de "agente roto"
+  // (hay latidos, pero con `session_expired` o `error`), que es lo que `last_push_at` sola
+  // no podía decir.
+  const telemetry = await import("../telemetry/index.js");
+  telemetry.initTelemetry({ surface: "auto" });
+  const started = performance.now();
+  const beat = { outcome: "error", queued: 0 };
+  let failure: unknown;
+
+  try {
+    const queued = await work();
+    beat.queued = queued;
+    return queued;
+  } catch (err) {
+    failure = err;
+    throw err;
+  } finally {
+    telemetry.record({
+      kind: "agent.heartbeat",
+      name: "auto",
+      status: failure === undefined ? "ok" : "error",
+      error: failure,
+      durationMs: performance.now() - started,
+      attrs: beat,
+    });
+    // Sin nadie esperando: hay más paciencia que en un comando a mano.
+    await telemetry.flush({ budgetMs: 8000 });
+  }
+
+  async function work(): Promise<number> {
+    return runPass(opts, (outcome) => {
+      beat.outcome = outcome;
+    });
+  }
+}
+
+type PassOutcome = "ok" | "baseline" | "locked" | "no_network" | "not_enrolled" | "session_expired";
+
+async function runPass(
+  opts: { now?: boolean; verbose?: boolean },
+  report: (outcome: PassOutcome) => void,
+): Promise<number> {
   const say = (msg: string) => {
     if (opts.verbose) out(msg);
   };
@@ -93,6 +135,7 @@ async function runOnce(opts: { now?: boolean; verbose?: boolean }): Promise<numb
   // navegador. Si está ocupado no es un error: simplemente toca en la próxima pasada.
   const lock = await acquireLock("auto", { label: "auto run" });
   if (!lock) {
+    report("locked");
     await log("omitido: otra instancia de dutic tiene el lock");
     say(`${mark.info()} Otra instancia está corriendo; se omite esta pasada.`);
     return 0;
@@ -100,6 +143,7 @@ async function runOnce(opts: { now?: boolean; verbose?: boolean }): Promise<numb
 
   try {
     if (!(await hasNetwork())) {
+      report("no_network");
       await log("omitido: sin conexión");
       say(`${mark.info()} Sin conexión; se omite esta pasada.`);
       return 0;
@@ -107,6 +151,7 @@ async function runOnce(opts: { now?: boolean; verbose?: boolean }): Promise<numb
 
     const enrollment = await loadSaasEnrollment();
     if (!enrollment) {
+      report("not_enrolled");
       await log("omitido: no enrolado (corre `dutic saas enroll`)");
       say(`${mark.warn()} No estás enrolado. Corre ${c.cyan("dutic saas enroll")}.`);
       return 0;
@@ -131,9 +176,9 @@ async function runOnce(opts: { now?: boolean; verbose?: boolean }): Promise<numb
       if (err instanceof SessionExpiredError) {
         await log("sesión expirada: no se pudo renovar en silencio, avisando por WhatsApp");
         say(`${mark.warn()} Sesión expirada; avisando por WhatsApp.`);
-        await pushNotice(enrollment.enrollToken, "session_expired", {
-          message: "Tu sesión del aula virtual expiró. Corre `dutic login` para reactivar los avisos.",
-        }).catch(() => {});
+        // Sin texto: el mensaje lo pone el dispatcher según el tipo de aviso.
+        await pushNotice(enrollment.enrollToken, "session_expired").catch(() => {});
+        report("session_expired");
         return 0;
       }
       throw err;
@@ -144,12 +189,14 @@ async function runOnce(opts: { now?: boolean; verbose?: boolean }): Promise<numb
     const { changes, previousAt, snapshot } = await checkChanges(session);
 
     if (!previousAt) {
+      report("baseline");
       await log("línea base guardada (primera pasada)");
       say(`${mark.info()} Línea base guardada.`);
       return 0;
     }
 
     const result = await pushChanges(enrollment.enrollToken, snapshot, changes);
+    report("ok");
     await log(`ok: ${result.notificationsQueued} novedad(es) encoladas`);
     say(`${mark.ok()} ${result.notificationsQueued} novedad(es) encoladas.`);
     return result.notificationsQueued;
