@@ -68,6 +68,8 @@ export interface ScopedPaths {
   horario: string;
   sisacadGrades: string;
   cacheDir: string;
+  /** Quién es el usuario EN ESTE semestre (id de Moodle, nombre). Ver `core/identity.ts`. */
+  identity: string;
 }
 
 export function semesterDir(id: SemesterId): string {
@@ -84,6 +86,7 @@ export function scopedPaths(id: SemesterId): ScopedPaths {
     horario: join(dir, "horario.json"),
     sisacadGrades: join(dir, "sisacad.json"),
     cacheDir: join(dir, "cache"),
+    identity: join(dir, "identity.json"),
   };
 }
 
