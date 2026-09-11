@@ -264,6 +264,7 @@ export async function loginWithPlaywright(opts: LoginOptions = {}): Promise<Sess
       sesskey,
       siteUrl,
       capturedAt: Date.now(),
+      ref: crypto.randomUUID(),
     };
     // El semestre REAL es el que dice la URL del dashboard, no el que se pidió: si el aula
     // redirige a otro período (típico al arrancar un ciclo nuevo, cuando el anterior ya no

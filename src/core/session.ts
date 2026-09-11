@@ -18,6 +18,12 @@ export const SessionSchema = z.object({
   siteUrl: z.string().url(),
   /** epoch ms del momento de captura. */
   capturedAt: z.number(),
+  /**
+   * Identificador aleatorio de ESTA captura. No deriva de la cookie (no revela nada de ella):
+   * sólo permite distinguir una sesión de la siguiente al trazar renovaciones y caducidades.
+   * Opcional para que las sesiones guardadas antes de existir sigan siendo válidas.
+   */
+  ref: z.string().uuid().optional(),
 });
 export type Session = z.infer<typeof SessionSchema>;
 
