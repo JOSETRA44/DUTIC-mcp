@@ -40,8 +40,14 @@ export function registerSaasCommands(program: Command): void {
           out(banner("Piloto de notificaciones"));
           if (enrollment.status === "pending_link") {
             out(`${mark.info()} Registrado como ${c.cyan(profile.name)}.`);
-            out(`  Código de vinculación: ${c.bold(enrollment.linkCode)}`);
+            out(`  Código de vinculación: ${c.bold(enrollment.linkCode ?? "")}`);
             out(`  ${c.dim("Escríbele ese código, tal cual, al número de WhatsApp del bot (pídeselo al operador del piloto).")}`);
+          } else if (enrollment.status === "reenroll_pending") {
+            // La cuenta ya estaba vinculada desde otro equipo. Por seguridad, este equipo
+            // sólo queda habilitado cuando el código llega desde el WhatsApp ya vinculado.
+            out(`${mark.warn()} Tu cuenta ya estaba inscrita desde otro equipo.`);
+            out(`  Código de confirmación: ${c.bold(enrollment.linkCode ?? "")}`);
+            out(`  ${c.dim("Envíalo al bot DESDE el WhatsApp que ya tienes vinculado. Hasta entonces este equipo no envía avisos.")}`);
           } else {
             out(`${mark.ok()} Ya estabas registrado (estado: ${enrollment.status}).`);
           }

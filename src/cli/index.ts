@@ -47,7 +47,6 @@ import {
   saveCoursesToDb,
   type CourseRecord,
 } from "../core/coursesDb.js";
-import { syncUserToSupabase, syncScannedCoursesToSupabase } from "../core/supabase.js";
 import { formatDate, relativeDue } from "./format.js";
 import { parseCourseName } from "../core/coursename.js";
 import { humanizeAgo } from "../core/dates.js";
@@ -153,28 +152,9 @@ program
     const session = await loginWithPlaywright({ headless: false, onStatus: log });
     markContextUsed();
     out(`${mark.ok()} Sesión guardada para ${c.cyan(formatSemesterLabel(currentContext().id))}.`);
-
-    // Sincronizar usuario con Supabase de forma silenciosa
-    try {
-      const spin = statusLine();
-      spin.set("sincronizando perfil…");
-      const profile = await getMyProfile(session);
-      spin.done();
-      if (profile.userId) {
-        const semester = currentContext().id;
-        await syncUserToSupabase({
-          moodle_user_id: profile.userId,
-          name: profile.name,
-          email: profile.email ?? null,
-          site_url: session.siteUrl,
-          semester,
-          last_login_at: new Date().toISOString(),
-        });
-        out(`${mark.info()} Perfil sincronizado: ${c.cyan(profile.name)}`);
-      }
-    } catch {
-      // Nunca bloquear el login por un fallo de Supabase
-    }
+    // Quién es el usuario en ESTE semestre (y, una sola vez, si acepta asociar su identidad).
+    const { afterLogin } = await import("./telemetry.js");
+    await afterLogin(session);
   });
 
 program
@@ -727,22 +707,10 @@ program
           }
         }
 
-        // Guardar nuevos en la DB local y sincronizar con Supabase
+        // Guardar nuevos en la DB local. Ya no se replican a ningún servidor: la antigua
+        // telemetría enviaba nombres de docentes y un `scanned_by` que siempre valía 0.
         if (newRecords.length > 0) {
           await saveCoursesToDb(newRecords);
-          // Sync a Supabase: silencioso, usa userId de sesión si hay perfil disponible
-          const { loadSession } = await import("../core/session.js");
-          const sess = await loadSession().catch(() => null);
-          const userId = (sess as any)?.userId as number | undefined;
-          await syncScannedCoursesToSupabase(
-            userId ?? 0,
-            newRecords.map((r) => ({
-              id: r.id,
-              name: r.name,
-              teachers: r.teachers,
-              semester: r.semester,
-            })),
-          );
         }
 
         if (opts.json) {
@@ -1267,7 +1235,17 @@ registerSemesterCommands(program);
 registerAulaCommands(program);
 registerHorarioCommands(program);
 
-program.parseAsync(process.argv).catch((err) => {
-  log(`${mark.err()} ${err?.message ?? err}`);
-  process.exitCode = 1;
-});
+// Telemetría al final a propósito: su `preAction` corre DESPUÉS del que fija el semestre, así
+// cada comando queda registrado con el aula y el semestre en los que realmente trabajó.
+const { finishCli, instrumentCli, registerTelemetryCommands } = await import("./telemetry.js");
+registerTelemetryCommands(program);
+instrumentCli(program);
+
+program
+  .parseAsync(process.argv)
+  .then(() => finishCli())
+  .catch(async (err) => {
+    log(`${mark.err()} ${err?.message ?? err}`);
+    process.exitCode = 1;
+    await finishCli(err);
+  });
