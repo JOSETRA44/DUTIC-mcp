@@ -4,6 +4,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { ensureSession, withSession, type AuthMode } from "../core/auth.js";
 import { SessionExpiredError } from "../core/errors.js";
+import { APP_VERSION } from "../core/version.js";
 import {
   currentContext,
   resolveContext,
@@ -87,7 +88,7 @@ import { getOnlinePresence, matchOnline } from "../domain/presence.js";
  */
 const MCP_MODE: AuthMode = "headless-only";
 
-const server = new McpServer({ name: "dutic-mcp", version: "0.2.0" });
+const server = new McpServer({ name: "dutic-mcp", version: APP_VERSION });
 
 /**
  * Parámetro común a todas las herramientas que leen el aula virtual. Cada semestre es un Moodle
@@ -106,6 +107,14 @@ const SEMESTER_PARAM = {
 type ToolResult = Awaited<ReturnType<typeof tool>>;
 
 /**
+ * Telemetría (`telemetry/index.ts`). Cada herramienta se mide como un span `tool.call`: nombre,
+ * duración y, si falló, la clase del error. NUNCA sus argumentos ni su resultado, que llevan
+ * datos académicos del usuario.
+ */
+const telemetry = await import("../telemetry/index.js");
+telemetry.initTelemetry({ surface: "mcp" });
+
+/**
  * Registra una herramienta con alcance de semestre: le añade el parámetro `semester` al esquema
  * y ejecuta el handler dentro de ese contexto.
  *
@@ -113,6 +122,9 @@ type ToolResult = Awaited<ReturnType<typeof tool>>;
  * ninguna tool nueva puede olvidarse de soportarlo, y el aislamiento queda garantizado por
  * construcción — `runWithSemester` usa AsyncLocalStorage, así que dos llamadas concurrentes con
  * semestres distintos no comparten estado, cosa que una variable global sí les dejaría hacer.
+ *
+ * El span va DENTRO de `runWithSemester`: el evento sale con el semestre de ESTA llamada, no con
+ * el activo del servidor.
  */
 function registerScoped<S extends z.ZodRawShape>(
   name: string,
@@ -122,8 +134,18 @@ function registerScoped<S extends z.ZodRawShape>(
   const inputSchema = { ...config.inputSchema, ...SEMESTER_PARAM };
   server.registerTool(name, { ...config, inputSchema } as never, ((args: Record<string, unknown>) =>
     runWithSemester(resolveContext((args?.semester as string | undefined) ?? null), () =>
-      handler(args as never),
+      telemetry.span("tool.call", name, () => handler(args as never)),
     )) as never);
+}
+
+/** Registra una herramienta SIN alcance de semestre, con la misma instrumentación. */
+function registerTool<S extends z.ZodRawShape>(
+  name: string,
+  config: { title: string; description: string; inputSchema: S },
+  handler: (args: z.objectOutputType<S, z.ZodTypeAny>) => Promise<ToolResult>,
+): void {
+  server.registerTool(name, config as never, ((args: Record<string, unknown>) =>
+    telemetry.span("tool.call", name, () => handler(args as never))) as never);
 }
 
 /** Envuelve un handler traduciendo SessionExpiredError a un mensaje accionable. */
@@ -132,6 +154,9 @@ async function tool<T>(fn: () => Promise<T>) {
     const data = await fn();
     return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
   } catch (err) {
+    // El error se convierte en un resultado `isError` y no se relanza: se anota en el span para
+    // que la telemetría no lo registre como un éxito.
+    telemetry.noteError(err);
     if (err instanceof SessionExpiredError) {
       return {
         isError: true,
@@ -749,7 +774,7 @@ registerScoped(
     tool(() => withSession((s) => pullCourseFiles(s, courseId, destDir, { section }), { mode: MCP_MODE })),
 );
 
-server.registerTool(
+registerTool(
   "dutic_pdf_to_markdown",
   {
     title: "Convertir un PDF local a Markdown",
@@ -799,7 +824,7 @@ registerScoped(
 
 // --- Gestión de semestres ---
 
-server.registerTool(
+registerTool(
   "dutic_semester_list",
   {
     title: "Listar semestres DUTIC",
@@ -816,7 +841,7 @@ server.registerTool(
     })),
 );
 
-server.registerTool(
+registerTool(
   "dutic_semester_current",
   {
     title: "Semestre actual DUTIC",
@@ -828,7 +853,7 @@ server.registerTool(
   async () => tool(() => currentSemesterSummary()),
 );
 
-server.registerTool(
+registerTool(
   "dutic_semester_use",
   {
     title: "Cambiar de semestre DUTIC",
@@ -854,7 +879,7 @@ server.registerTool(
     }),
 );
 
-server.registerTool(
+registerTool(
   "dutic_semester_discover",
   {
     title: "Descubrir semestres DUTIC",
@@ -895,7 +920,7 @@ registerScoped(
 
 // --- Encuesta de desempeño docente (sistema extranet, aparte del aula virtual) ---
 
-server.registerTool(
+registerTool(
   "dutic_encuesta_status",
   {
     title: "Estado de la encuesta docente",
@@ -909,7 +934,7 @@ server.registerTool(
   async () => tool(() => encuestaStatus()),
 );
 
-server.registerTool(
+registerTool(
   "dutic_encuesta_list",
   {
     title: "Listar encuestas docentes",
@@ -921,7 +946,7 @@ server.registerTool(
   async () => tool(() => listSurveys()),
 );
 
-server.registerTool(
+registerTool(
   "dutic_encuesta_preview",
   {
     title: "Ver el cuestionario y simular las respuestas (no envía)",
@@ -967,7 +992,7 @@ server.registerTool(
     ),
 );
 
-server.registerTool(
+registerTool(
   "dutic_encuesta_submit",
   {
     title: "ENVIAR una encuesta docente (IRREVERSIBLE)",
@@ -1012,7 +1037,7 @@ server.registerTool(
     ),
 );
 
-server.registerTool(
+registerTool(
   "dutic_encuesta_fill_all",
   {
     title: "Llenar TODAS las encuestas pendientes con la política guardada",
@@ -1279,6 +1304,25 @@ process.stderr.write(
   `dutic-mcp · semestre ${bootCtx.id} (${bootCtx.source}) · ${bootCtx.siteUrl}
 `,
 );
+
+// Qué agente usa este servidor (Claude Code, OpenCode, Antigravity…): lo declara el cliente en
+// `initialize`. Permite ver si una herramienta falla sólo en ciertos entornos.
+server.server.oninitialized = () => {
+  const client = server.server.getClientVersion();
+  telemetry.setMcpClient(client?.name, client?.version);
+};
+
+// Envío periódico que no mantiene vivo el proceso. El servidor dura lo que la sesión del agente;
+// al cerrarse intenta un último envío corto, y lo que no alcance sale en la próxima ejecución.
+const flushTimer = setInterval(() => void telemetry.flush({ budgetMs: 5000 }), 60_000);
+flushTimer.unref();
+const flushAndExit = () => {
+  clearInterval(flushTimer);
+  void telemetry.flush({ budgetMs: 1500 }).finally(() => process.exit(0));
+};
+process.stdin.once("end", flushAndExit);
+process.once("SIGTERM", flushAndExit);
+process.once("SIGINT", flushAndExit);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
