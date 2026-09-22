@@ -1,0 +1,5202 @@
+
+
+
+
+
+
+
+
+
+ 
+ 
+
+
+<!DOCTYPE html>
+<!-- TEMPLATE FILE: opac-results.tt -->
+
+
+
+
+
+<html lang="es-ES" class="no-js">
+<head>
+
+<title>Universidad Nacional de San Agustín Koha &rsaquo;   Resultados de la búsqueda para 'economia'  </title>
+
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Koha 19.1129000" /> <!-- leave this for stats -->
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="shortcut icon" href="http://vri.unsa.edu.pe/ogcv/wp-content/themes/observatorio/img/unsa-logo.png" type="image/x-icon" />
+
+ <link rel="stylesheet" href="/opac-tmpl/bootstrap/lib/bootstrap/css/bootstrap.min_19.1129000.css" type="text/css">
+ <link rel="stylesheet" href="/opac-tmpl/bootstrap/lib/jquery/jquery-ui-1.12.1.min_19.1129000.css" type="text/css">
+
+
+ 
+
+
+ <link type="text/css" href="/opac-tmpl/bootstrap/css/opac_19.1129000.css" rel="stylesheet">
+
+
+
+<link media="print" href="/opac-tmpl/bootstrap/css/print_19.1129000.css" rel="stylesheet" type="text/css">
+
+ <style><style type="text/css">
+  body{
+    color: purple;
+    background-color: #d8da3d }
+</style>
+
+</style>
+
+
+
+
+<!-- Respond.js brings responsive layout behavior to IE < v.9 -->
+<!--[if lt IE 9]>
+ <script src="/opac-tmpl/bootstrap/lib/respond.min.js"></script>
+<![endif]-->
+
+<script>
+    var Koha = {};
+    function _(s) { return s } // dummy function for gettext
+</script>
+
+ <script src="/opac-tmpl/bootstrap/es-ES/js/locale_data_19.1129000.js"></script>
+
+<script src="/opac-tmpl/bootstrap/js/Gettext_19.1129000.js"></script>
+<script src="/opac-tmpl/bootstrap/js/i18n_19.1129000.js"></script>
+
+<script src="/opac-tmpl/bootstrap/lib/modernizr.min_19.1129000.js"></script>
+<link href="/opac-tmpl/bootstrap/lib/font-awesome/css/font-awesome.min_19.1129000.css" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&count=50&sort_by=acqdate_dsc&format=rss" rel="alternate" title="Universidad Nacional de San Agustín Buscar en fuente RSS" type="application/rss+xml" />
+</head>
+
+
+
+
+ 
+
+
+ 
+
+
+
+
+ 
+
+<body ID="results" class="branch-default scrollto" >
+
+
+
+
+
+
+<div id="wrap">
+ <div id="header-region" class="noprint">
+ <div class="navbar navbar-inverse navbar-static-top">
+ <div class="navbar-inner">
+ <div class="container-fluid">
+ <button id="scrolltocontent">Saltar al contenido principal</button>
+ <h1 id="logo">
+ <a class="brand" href="/cgi-bin/koha/opac-main.pl">
+  Universidad Nacional de San Agustín  </a>
+ </h1>
+ 
+ <div id="cartDetails" class="cart-message">Su carrito está vacío.</div>
+ 
+ <ul class="nav">
+ 
+ <li>
+ <a href="#" id="cartmenulink" role="button" title="Reunir ítems en los que esta interesado">
+ <i id="carticon" class="fa fa-shopping-cart fa-icon-white"></i> <span class="cartlabel">Carrito</span> <span id="basketcount"></span>
+ </a>
+ </li>
+ 
+ 
+ <li class="divider-vertical"></li>
+ 
+ 
+ <li class="dropdown">
+ <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="listsmenu" role="button" title="Mostrar listas"><i class="fa fa-list fa-icon-white"></i> <span class="listslabel">Listas</span> <b class="caret"></b></a>
+ <ul aria-labelledby="listsmenu" role="menu" class="dropdown-menu">
+ 
+ <li role="presentation"><a href="/cgi-bin/koha/opac-shelves.pl?op=list&amp;category=2" tabindex="-1" role="menuitem"><strong>Listas públicas</strong></a></li>
+ 
+ 
+ <li role="presentation"><a href="/cgi-bin/koha/opac-shelves.pl?op=view&amp;shelfnumber=14&amp;sortfield=author" tabindex="-1" role="menuitem">Pavimentos</a></li>
+ 
+ 
+ 
+ <li role="presentation"><a href="/cgi-bin/koha/opac-shelves.pl?op=view&amp;shelfnumber=4&amp;sortfield=title" tabindex="-1" role="menuitem">Sociología</a></li>
+ 
+ 
+ 
+ 
+ <li role="presentation"><a href="/cgi-bin/koha/opac-shelves.pl?op=list&amp;category=2" tabindex="-1" role="menuitem" class="listmenulink">Ver todo</a></li>
+ 
+ 
+ 
+ <li class="divider" role="presentation"></li>
+ 
+ 
+ <li role="presentation"><a href="/cgi-bin/koha/opac-shelves.pl?op=list&amp;category=1" tabindex="-1" role="menuitem"><strong>Sus listas</strong></a></li>
+ 
+ 
+ <li role="presentation"><a href="/cgi-bin/koha/opac-user.pl" tabindex="-1" class="menu-inactive loginModal-trigger" role="menuitem">Ingrese para crear sus propias listas</a></li>
+ 
+ 
+ 
+ </ul> <!-- / .dropdown-menu -->
+ </li> <!-- / .dropdown -->
+ 
+ </ul> <!-- / .nav -->
+
+ 
+
+ <div id="members" class="pull-right">
+ 
+ <ul class="nav">
+ <li class="dropdown">
+ 
+ 
+ 
+ <a href="/cgi-bin/koha/opac-user.pl" class="login-link loginModal-trigger"><i class="fa fa-user fa-icon-white fa-fw"></i> <span class="userlabel">Ingresar a su cuenta</span></a>
+ 
+ 
+ 
+
+ 
+ </li>
+ 
+ 
+ <li class="search_history">
+ <a href="/cgi-bin/koha/opac-search-history.pl" title="Ver su historial de búsqueda">Historial de búsqueda</a>
+ <span class="divider-vertical"></span>
+ <a class="logout clearsh" href="/cgi-bin/koha/opac-search-history.pl?action=delete" title="Eliminar historial de búsqueda"><i class="fa fa-trash"></i> Limpiar</a>
+ </li>
+ 
+ 
+ </ul>
+ </div> <!-- /members -->
+ 
+
+ </div> <!-- /container-fluid -->
+ </div> <!-- /navbar-inner -->
+ </div> <!-- /navbar -->
+
+ 
+ </div> <!-- / header-region -->
+
+ <div class="container-fluid">
+ <div class="row-fluid">
+ <div id="opac-main-search">
+ <div class="span12">
+ 
+ 
+ 
+ <div class="mastheadsearch librarypulldown">
+ 
+ 
+ <form name="searchform" method="get" action="/cgi-bin/koha/opac-search.pl" id="searchform" class="form-inline">
+ <label for="masthead_search"> Buscar  </label>
+
+ <select name="idx" id="masthead_search">
+ 
+ <option value="">Catálogo de biblioteca</option>
+ 
+ 
+ <option value="ti">Título</option>
+ 
+ 
+ <option value="au">Autor</option>
+ 
+ 
+ <option value="su">Tema</option>
+ 
+ 
+ <option value="nb">ISBN</option>
+ 
+ 
+ <option value="ns">ISSN</option>
+ 
+ 
+ <option value="se">Series</option>
+ 
+ 
+ 
+ <option value="callnum">Signatura</option>
+ 
+ 
+ </select>
+
+ 
+ 
+ <input class="transl1" id="translControl1" name="q" title="Escriba el término de búsqueda" type="text" value="economia" /><span id="translControl"></span>
+ 
+
+ 
+
+ 
+ <div class="input-append">
+ <select name="branch_group_limit" id="select_library">
+ <option value="">Todas las bibliotecas</option>
+
+ <optgroup label="Bibliotecas">
+
+ 
+ 
+ <option value="branch:UNSA">B. Universidad Nacional de San Agustín</option>
+ 
+ 
+ 
+ <option value="branch:BPB">Bibl. Central de Biomédicas</option>
+ 
+ 
+ 
+ <option value="branch:BPI">Bibl. Central de Ingenierías</option>
+ 
+ 
+ 
+ <option value="branch:BPS">Bibl. Central de Sociales</option>
+ 
+ 
+ 
+ <option value="branch:BPF">Bibl. Filosofía y Humanidades</option>
+ 
+ 
+ 
+ <option value="branch:BESCAAD">Bibl. Sede Camaná (Administración)</option>
+ 
+ 
+ 
+ <option value="branch:BESMAAG">Bibl. Sede Majes (Agronomía)</option>
+ 
+ 
+ 
+ <option value="branch:BESMOAD">Bibl. Sede Mollendo (Administración)</option>
+ 
+ 
+ 
+ <option value="branch:BESPEAD">Bibl. Sede Pedregal (Administración)</option>
+ 
+ 
+ 
+ <option value="branch:BESAQ">Cendoc de Arquitectura</option>
+ 
+ 
+ 
+ <option value="branch:BESBI">Cendoc de Biología</option>
+ 
+ 
+ 
+ <option value="branch:BESCO">Cendoc de Ciencias Contables y Financieras</option>
+ 
+ 
+ 
+ <option value="branch:BESART">Cendoc de Escuela de Artes</option>
+ 
+ 
+ 
+ <option value="branch:BEIAM">Cendoc de Escuela de Ing. Ambiental</option>
+ 
+ 
+ 
+ <option value="branch:BESLIT">Cendoc de Escuela de Literatura  -  Filosofía</option>
+ 
+ 
+ 
+ <option value="branch:BESMT">Cendoc de Escuela de Matemáticas</option>
+ 
+ 
+ 
+ <option value="branch:BESAD">Cendoc de Facultad de Administración</option>
+ 
+ 
+ 
+ <option value="branch:BESAG">Cendoc de Facultad de Agronomía</option>
+ 
+ 
+ 
+ <option value="branch:BESDE">Cendoc de Facultad de Derecho</option>
+ 
+ 
+ 
+ <option value="branch:BESED">Cendoc de Facultad de Educación</option>
+ 
+ 
+ 
+ <option value="branch:BESAL">Cendoc de Industrias Alimentarias</option>
+ 
+ 
+ 
+ <option value="branch:BESIC">Cendoc de Ing. Civil - Ing, Sanitaria</option>
+ 
+ 
+ 
+ <option value="branch:BESMAT">Cendoc de Ing. de Materiales</option>
+ 
+ 
+ 
+ <option value="branch:BESIS">Cendoc de Ing. de Sistemas</option>
+ 
+ 
+ 
+ <option value="branch:BESELE">Cendoc de Ing. Eléctrica</option>
+ 
+ 
+ 
+ <option value="branch:BESIE">Cendoc de Ing. electrónica</option>
+ 
+ 
+ 
+ <option value="branch:BESII">Cendoc de Ing. Industrial</option>
+ 
+ 
+ 
+ <option value="branch:BESMEC">Cendoc de Ing. Mecánica</option>
+ 
+ 
+ 
+ <option value="branch:BESMET">Cendoc de Ing. Metalurgica</option>
+ 
+ 
+ 
+ <option value="branch:BESIP">Cendoc de Ing. Pesquera</option>
+ 
+ 
+ 
+ <option value="branch:BESIQ">Cendoc de Ing. Química</option>
+ 
+ 
+ 
+ <option value="branch:BESEN">Cendoc de la Facultad de Enfermería</option>
+ 
+ 
+ 
+ <option value="branch:BESPSRI">Cendoc de Piscología y Relaciones industriales</option>
+ 
+ 
+ 
+ <option value="branch:BESQU">Cendoc de Química</option>
+ 
+ 
+ 
+ <option value="branch:LEA">LEAR</option>
+ 
+ 
+
+ 
+ </optgroup>
+ <optgroup label="Grupos">
+ 
+ 
+ <option value="multibranchlimit-1">Bibliotecas Centrales</option>
+ 
+ 
+ 
+ <option value="multibranchlimit-5">Bibliotecas Sedes</option>
+ 
+ 
+ 
+ <option value="multibranchlimit-6">Bibliotecas Especializadas</option>
+ 
+ 
+ </optgroup>
+ 
+ </select>
+ <button type="submit" id="searchsubmit" class="btn btn-primary">Ir</button>
+ </div>
+ 
+
+ </form>
+ 
+ </div> <!-- / .mastheadsearch -->
+ 
+
+ <div class="row-fluid">
+ <div id="moresearches">
+ <ul>
+ <li><a href="/cgi-bin/koha/opac-search.pl">Búsqueda avanzada</a></li>
+ 
+ 
+ <li><a href="/cgi-bin/koha/opac-authorities-home.pl">Búsqueda de autoridad</a></li>
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ </ul>
+ </div> <!-- /#moresearches -->
+ </div> <!-- /.row-fluid -->
+
+ 
+ </div> <!-- /.span10 -->
+ </div> <!-- /.opac-main-search -->
+ </div> <!-- / .row-fluid -->
+ </div> <!-- /.container-fluid -->
+
+ <!-- Login form hidden by default, used for modal window -->
+ <div id="loginModal" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="modalLoginLabel" aria-hidden="true">
+ <div class="modal-header">
+ <button type="button" class="closebtn" data-dismiss="modal" aria-hidden="true">×</button>
+ <h2 id="modalLoginLabel">Ingresar a su cuenta</h2>
+ </div>
+ <form action="/cgi-bin/koha/opac-user.pl" method="post" name="auth" id="modalAuth">
+ <input type="hidden" name="has-search-query" id="has-search-query" value="" />
+ <div class="modal-body">
+ 
+ <input type="hidden" name="koha_login_context" value="opac" />
+ <fieldset class="brief">
+ <label for="muserid">Usuario:</label><input type="text" id="muserid" name="userid" />
+ <label for="mpassword">Contraseña:</label><input type="password" id="mpassword" name="password" />
+ 
+ <div id="nologininstructions-modal" class="nologininstructions">
+ <center>Estimado usuario ingrese su usuario y contraseña en la parte superior para poder realizar reservas de libros en formato impreso.</center>
+<hr>
+
+ </div>
+ 
+ 
+ <div id="forgotpassword-modal" class="forgotpassword">
+ <a href="/cgi-bin/koha/opac-password-recovery.pl">¿Olvidó su contraseña?</a>
+ </div>
+ 
+ 
+ </fieldset>
+ </div>
+ <div class="modal-footer">
+ <input class="btn btn-primary" type="submit" value="Ingresar" />
+ </div>
+ </form> <!-- /#auth -->
+ </div> <!-- /#modalAuth -->
+
+
+ <div class="main">
+ <ul class="breadcrumb">
+ <li><a href="/cgi-bin/koha/opac-main.pl">Inicio</a> <span class="divider">&rsaquo;</span></li>
+ 
+ 
+ <li>
+ 
+ <a href="#" title="Ha buscado  para 'kw,wrdl: economia'">Resultados de la búsqueda para 'economia'</a>
+ 
+ </li>
+ 
+ </ul>
+
+ 
+
+ <div class="container-fluid">
+ <div class="row-fluid">
+ 
+ <div class="span2">
+ <div id="facetcontainer">
+ <!-- FACETS START -->
+ 
+
+
+
+ <div id="search-facets">
+ <h2><a href="#" class="menu-collapse-toggle">Refinar su búsqueda</a></h2>
+ <ul class="menu-collapse">
+ <li id="availability_facet"><h3 id="facet-availability">Disponibilidad</h3>
+ <ul>
+ <li>
+ 
+ <a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&amp;limit=available">Limitar a ítems actualmente disponibles.</a>
+ 
+ </li>
+ </ul>
+ 
+ </li>
+
+ 
+ 
+ <li id="au_id">
+ <h3 id="facet-authors">Autores</h3>
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ <ul>
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ <li>
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=au:Boluarte%20G.,%20Boritz" title="Boluarte G., Boritz">Boluarte G., Boritz</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li>
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=au:CEPAL" title="CEPAL">CEPAL</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li>
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=au:Cepal" title="Cepal">Cepal</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li>
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=au:CEPLAN" title="CEPLAN">CEPLAN</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li>
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=au:Chomsky,%20Noam" title="Chomsky, Noam">Chomsky, Noam</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=au:Costa%20V.,%20L%C3%A1zaro" title="Costa V., Lázaro">Costa V., Lázaro</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=au:Fairlie%20Reinoso,%20Alan" title="Fairlie Reinoso, Alan">Fairlie Reinoso, Ala...</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=au:INEI" title="INEI">INEI</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=au:Kotler,%20Philip" title="Kotler, Philip">Kotler, Philip</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=au:LIND" title="LIND">LIND</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=au:MARCHAL%20-%20WATHEN" title="MARCHAL - WATHEN">MARCHAL - WATHEN</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=au:Meyer,%20Warren%20G." title="Meyer, Warren G.">Meyer, Warren G.</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=au:Ministerio%20De%20Econom%C3%ADa" title="Ministerio De Economía">Ministerio De Econom...</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=au:ONU" title="ONU">ONU</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=au:Parkin,%20Michael" title="Parkin, Michael">Parkin, Michael</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=au:Rep%C3%BAblica%20del%20Per%C3%BA" title="República del Perú">República del Perú</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=au:Salvat%20Editores" title="Salvat Editores">Salvat Editores</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=au:Samuelson,%20Paul%20A." title="Samuelson, Paul A.">Samuelson, Paul A.</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=au:Webb,%20Richard" title="Webb, Richard">Webb, Richard</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ <li class="moretoggle">
+ <a href="#"><strong>Mostrar más</strong></a>
+ </li>
+ <li class="moretoggle" style="display:none">
+ <a href="#"><strong>Mostrar menos</strong></a>
+ </li>
+ 
+ </ul>
+ </li>
+ 
+ 
+ 
+ <li id="holdingbranch_id">
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ <h3 id="facet-holding-libraries">Bibliotecas depositarias</h3>
+ 
+ 
+ <ul>
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ <li>
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=holdingbranch:BPB" title="BPB">Bibl. Central de Biomédicas</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li>
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=holdingbranch:BPI" title="BPI">Bibl. Central de Ingenierías</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li>
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=holdingbranch:BPS" title="BPS">Bibl. Central de Sociales</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li>
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=holdingbranch:BPF" title="BPF">Bibl. Filosofía y Humanidades</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li>
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=holdingbranch:BESCAAD" title="BESCAAD">Bibl. Sede Camaná (Administración)</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=holdingbranch:BESMAAG" title="BESMAAG">Bibl. Sede Majes (Agronomía)</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=holdingbranch:BESMOAD" title="BESMOAD">Bibl. Sede Mollendo (Administración)</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=holdingbranch:BESPEAD" title="BESPEAD">Bibl. Sede Pedregal (Administración)</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=holdingbranch:BESAQ" title="BESAQ">Cendoc de Arquitectura</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=holdingbranch:BESCO" title="BESCO">Cendoc de Ciencias Contables y Financieras</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=holdingbranch:BEIAM" title="BEIAM">Cendoc de Escuela de Ing. Ambiental</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=holdingbranch:BESMT" title="BESMT">Cendoc de Escuela de Matemáticas</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=holdingbranch:BESAD" title="BESAD">Cendoc de Facultad de Administración</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=holdingbranch:BESAG" title="BESAG">Cendoc de Facultad de Agronomía</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=holdingbranch:BESDE" title="BESDE">Cendoc de Facultad de Derecho</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=holdingbranch:BESED" title="BESED">Cendoc de Facultad de Educación</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=holdingbranch:BESELE" title="BESELE">Cendoc de Ing. Eléctrica</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=holdingbranch:BESII" title="BESII">Cendoc de Ing. Industrial</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=holdingbranch:BESIP" title="BESIP">Cendoc de Ing. Pesquera</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=holdingbranch:BESEN" title="BESEN">Cendoc de la Facultad de Enfermería</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ <li class="moretoggle">
+ <a href="#"><strong>Mostrar más</strong></a>
+ </li>
+ <li class="moretoggle" style="display:none">
+ <a href="#"><strong>Mostrar menos</strong></a>
+ </li>
+ 
+ </ul>
+ </li>
+ 
+ 
+ 
+ <li id="itype_id">
+ 
+ 
+ 
+ 
+ 
+ <h3 id="facet-itemtypes">Tipos de ítem</h3>
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ <ul>
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ <li>
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=itype:BK" title="BK">BK</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li>
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=itype:COL" title="COL">Colecciones</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li>
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=itype:CON" title="CON">Conferencias</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li>
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=itype:DIC" title="DIC">Diccionarios</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li>
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=itype:LIB" title="LIB">Libros</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=itype:MON" title="MON">Monografías</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=itype:REV" title="REV">Revistas y Artículos</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=itype:TES" title="TES">Tesis</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ <li class="moretoggle">
+ <a href="#"><strong>Mostrar más</strong></a>
+ </li>
+ <li class="moretoggle" style="display:none">
+ <a href="#"><strong>Mostrar menos</strong></a>
+ </li>
+ 
+ </ul>
+ </li>
+ 
+ 
+ 
+ <li id="se_id">
+ 
+ 
+ 
+ 
+ <h3 id="facet-series">Series</h3>
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ <ul>
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ <li>
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=se:Econom%C3%ADa" title="Economía">Economía</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li>
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=se:La%20caja%20de%20herramientas" title="La caja de herramientas">La caja de herramien...</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li>
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=se:Serie%20Ingenier%C3%ADa%20Ambiental" title="Serie Ingeniería Ambiental">Serie Ingeniería Amb...</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ </ul>
+ </li>
+ 
+ 
+ 
+ <li id="su-geo_id">
+ 
+ 
+ 
+ <h3 id="facet-places">Lugares</h3>
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ <ul>
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ <li>
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=su-geo:PER%C3%9A" title="PERÚ">PERÚ</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ </ul>
+ </li>
+ 
+ 
+ 
+ <li id="su-to_id">
+ 
+ 
+ <h3 id="facet-topics">Temas</h3>
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ <ul>
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ <li>
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=su-to:ADMINISTRACI%C3%93N" title="ADMINISTRACIÓN">ADMINISTRACIÓN</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li>
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=su-to:AGRICULTURA" title="AGRICULTURA">AGRICULTURA</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li>
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=su-to:CONTABILIDAD" title="CONTABILIDAD">CONTABILIDAD</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li>
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=su-to:CULTURA" title="CULTURA">CULTURA</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li>
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=su-to:DATOS%20ESTAD%C3%8DSTICOS" title="DATOS ESTADÍSTICOS">DATOS ESTADÍSTICOS</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=su-to:DESARROLLO" title="DESARROLLO">DESARROLLO</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=su-to:ECONOMIA" title="ECONOMIA">ECONOMIA</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=su-to:ECONOM%C3%8DA" title="ECONOMÍA">ECONOMÍA</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=su-to:ECONOM%C3%8DA%20DEL%20BIENESTAR" title="ECONOMÍA DEL BIENESTAR">ECONOMÍA DEL BIENEST...</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=su-to:ECONOM%C3%8DA%20INTERNACIONAL" title="ECONOMÍA INTERNACIONAL">ECONOMÍA INTERNACION...</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=su-to:HISTORIA" title="HISTORIA">HISTORIA</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=su-to:INVERSIONES" title="INVERSIONES">INVERSIONES</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=su-to:LEGISLACI%C3%93N" title="LEGISLACIÓN">LEGISLACIÓN</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=su-to:MERCADO" title="MERCADO">MERCADO</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=su-to:MICROECONOM%C3%8DA" title="MICROECONOMÍA">MICROECONOMÍA</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=su-to:MONOPOLIOS" title="MONOPOLIOS">MONOPOLIOS</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=su-to:OFERTA%20Y%20DEMANDA" title="OFERTA Y DEMANDA">OFERTA Y DEMANDA</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=su-to:POL%C3%8DTICA" title="POLÍTICA">POLÍTICA</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=su-to:PRODUCCI%C3%93N" title="PRODUCCIÓN">PRODUCCIÓN</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ 
+ 
+ <li class="collapsible-facet" style="display:none">
+ 
+ 
+ 
+ <span class="facet-label"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;sort_by=acqdate_dsc&limit=su-to:RENTA" title="RENTA">RENTA</a></span>
+ 
+ 
+ </li>
+ 
+ 
+ <li class="moretoggle">
+ <a href="#"><strong>Mostrar más</strong></a>
+ </li>
+ <li class="moretoggle" style="display:none">
+ <a href="#"><strong>Mostrar menos</strong></a>
+ </li>
+ 
+ </ul>
+ </li>
+ 
+ 
+ </ul>
+ </div> <!-- / #search-facets -->
+
+ 
+
+
+ <!-- FACETS END -->
+ </div>
+ </div>
+ 
+
+ 
+ 
+ <div class="span10 maincontent">
+ 
+ 
+
+ 
+ 
+ <h2 id="numresults">
+ Su búsqueda retornó 3772 resultados. <a aria-label="Suscribirse a esta búsqueda" class="btn btn-link rsssearchlink noprint" href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&format=rss">
+ <i aria-hidden="true" class="fa fa-rss rsssearchicon" title="Suscribirse a esta búsqueda"></i>
+ </a>
+ </h2>
+ 
+ 
+ 
+
+ <div id="userresults">
+  
+ 
+ 
+ 
+ 
+
+ <!-- Search Results Table -->
+ 
+
+ <div class="searchresults">
+ <form action="/cgi-bin/koha/opac-search.pl" method="get" name="bookbag_form" id="bookbag_form" class="checkboxed">
+ 
+ 
+ <input type="hidden" name="idx" value="kw"/>
+ 
+ <input type="hidden" name="q" value="economia"/>
+ 
+ 
+ 
+
+ <div id="floating">
+ <div id="toolbar" class="toolbar clearfix">
+ <div id="top-pages" class="pull-left">
+ <div class="pagination pagination-small noprint">
+ 
+ <ul>
+ 
+ 
+ 
+ <li class="active"><a clas="page-num current" href="#">1</a></li>
+ 
+ 
+ 
+ <li class="page-num"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;offset=20&amp;sort_by=acqdate_dsc">2</a></li>
+ 
+ 
+ 
+ <li class="page-num"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;offset=40&amp;sort_by=acqdate_dsc">3</a></li>
+ 
+ 
+ 
+ <li class="page-num"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;offset=60&amp;sort_by=acqdate_dsc">4</a></li>
+ 
+ 
+ 
+ <li class="page-num"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;offset=80&amp;sort_by=acqdate_dsc">5</a></li>
+ 
+ 
+ 
+ <li class="page-num"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;offset=100&amp;sort_by=acqdate_dsc">6</a></li>
+ 
+ 
+ 
+ <li class="page-num"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;offset=120&amp;sort_by=acqdate_dsc">7</a></li>
+ 
+ 
+ 
+ <li class="page-num"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;offset=140&amp;sort_by=acqdate_dsc">8</a></li>
+ 
+ 
+ 
+ <li class="page-num"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;offset=160&amp;sort_by=acqdate_dsc">9</a></li>
+ 
+ 
+ 
+ <li class="page-num"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;offset=180&amp;sort_by=acqdate_dsc">10</a></li>
+ 
+ 
+ 
+ <li class="page-next"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;offset=20&amp;sort_by=acqdate_dsc">Siguiente <i class="fa fa-fw fa-angle-double-right"></i></a></li>
+ <li class="page-last"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;offset=3760&amp;sort_by=acqdate_dsc">Último <i class="fa fa-fw fa-angle-double-right"></i></a></li>
+ 
+ </ul>
+ </div>
+
+</div>
+ 
+ <div class="sort_by pull-right">
+ <select id="sort_by" class="resort" name="sort_by"> <option value="relevance">Relevancia</option>
+<optgroup label="Popularidad">
+ 
+ <option value="popularity_dsc">Popularidad (mayor a menor)</option>
+ 
+ 
+ <option value="popularity_asc">Popularidad (menor a mayor)</option>
+ 
+</optgroup>
+<optgroup label="Autor">
+ 
+ <option value="author_az">Autor (A-Z)</option>
+ 
+ 
+ <option value="author_za">Autor (Z-A)</option>
+ 
+</optgroup>
+<optgroup label="Signatura">
+ 
+ <option value="call_number_asc">Signatura topográfica (0-9 a A-Z)</option>
+ 
+ 
+ <option value="call_number_dsc">Signatura topográfica (Z-A a 9-0)</option>
+ 
+</optgroup>
+<optgroup label="Fechas">
+ 
+ <option value="pubdate_dsc">Publicación/Fecha de Copyright: Nuevos a viejos</option>
+ 
+ 
+ <option value="pubdate_asc">Publicación/Fecha de Copyright: Viejos a nuevos</option>
+ 
+ 
+ <option value="acqdate_dsc" selected="selected">Fecha de adquisición: Nuevos a viejos</option>
+ 
+ 
+ <option value="acqdate_asc">Fecha de adquisición: Viejos a nuevos</option>
+ 
+</optgroup>
+<optgroup label="Título">
+ 
+ <option value="title_az">Título (A-Z)</option>
+ 
+ 
+ <option value="title_za">Título (Z-A)</option>
+ 
+</optgroup>
+ </select>
+ <input class="btn btn-sm clearfix" id="sortsubmit" type="submit" value="Ir" />
+ </div>
+ 
+ </div> <!-- / #toolbar -->
+
+ <div id="selections-toolbar" class="toolbar noprint">
+ 
+ <div class="highlight_controls noprint">
+ <a href="#" class="btn btn-link highlight_toggle" id="highlight_toggle_off"><i class="fa fa-fw fa-pencil"></i> Quitar resaltado</a>
+ <a href="#" class="btn btn-link highlight_toggle" id="highlight_toggle_on"><i class="fa fa-fw fa-pencil"></i> Resaltar</a>
+ </div>
+ <span class="sep">|</span>
+ 
+ <!-- checkall, clearall are now needed for placehold -->
+ <span class="checkall"></span>
+ <span class="clearall"></span> <span class="sep">|</span>
+
+ <span class="links">
+ 
+ <span class="addto"></span>
+ 
+ <span id="placehold"></span>
+
+ 
+ </span> <!-- / .links -->
+ </div> <!-- / #selections-toolbar -->
+ </div> <!-- /#floating -->
+
+ <!-- TABLE RESULTS START -->
+ <table class="table table-striped">
+
+ <!-- Actual Search Results -->
+ 
+ <tr>
+ 
+ 
+ 
+ 
+ <td class="select selectcol">
+ 
+ <input aria-label="Seleccionar resultado de búsqueda: Valuación inmobiliaria" class="cb" id="bib1151808" name="biblionumber" type="checkbox" value="1151808" /> <label for="bib1151808"></label>
+ 
+ </td>
+ 
+ <td class="select selectcol">
+ 
+ 1.
+ 
+ </td>
+
+ 
+
+ 
+ <td class="bibliocol">
+ <div class="coverimages itemtype_LIB">
+ <a class="p1" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151808">
+ 
+ 
+ 
+ 
+ <span title="Valuación inmobiliaria" class="1151808" id="local-thumbnail1"></span>
+ 
+
+ 
+ 
+ 
+ <span title="Valuación inmobiliaria" id="amazon-thumbnail1"><img src="https://images-na.ssl-images-amazon.com/images/P/607174590X.01.TZZZZZZZ.jpg" alt="" class="item-thumbnail" /></span>
+ 
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ </a>
+
+ 
+
+ 
+
+
+ 
+ </div>
+ 
+ <!-- COinS / Openurl -->
+ <span class="Z3988" title="ctx_ver=Z39.88-2004&amp;amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;amp;rft.genre=book&amp;amp;rft.btitle=Valuaci%C3%B3n%20inmobiliaria&amp;amp;rft.isbn=9786071745903&amp;amp;rft.au=Hern%C3%A1ndez-Ruiz%2C%20Enrique%20Augusto&amp;amp;rft.pub=Trillas&amp;amp;rft.date=2023"></span>
+ 
+ <div id="title_summary_1151808" class="title_summary">
+ 
+ 
+
+<a xmlns:str="http://exslt.org/strings" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151808" class="title">Valuación inmobiliaria </a><p xmlns:str="http://exslt.org/strings"><span class="byAuthor">por </span><span class="author">Hernández-Ruiz, Enrique Augusto.</span></p><span class="results_summary edition"><span class="label">Edición: </span>3a edición</span><span class="results_summary languages"><span class="language"><span class="label">Idioma: </span><span class="lang_code-spa">Español</span><span class="separator"> </span></span></span><span class="results_summary publisher"><span class="label">Editor: </span>México Trillas 2023</span><span xmlns:str="http://exslt.org/strings" class="results_summary availability"><span class="label">Disponibilidad: </span><span class="available reallyavailable"><span class="AvailabilityLabel"><strong>Ítems disponibles para préstamo: </strong></span><span class="ItemSummary"><span class="ItemBranch">Bibl. Central de Ingenierías</span><span class="CallNumberAndLabel"><span class="LabelCallNumber">Signatura topográfica: </span><span class="CallNumber">346.0437/H43</span></span> (1). </span></span></span>
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ <div class="results_summary ratings">
+ 
+ 
+ <div class="br-wrapper br-theme-fontawesome-stars">
+ <div class="br-widget br-readonly">
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ </div>
+ </div>
+
+ 
+ <br />
+ 
+ </div> <!-- / .results_summary -->
+ 
+
+ <div class="actions-menu noprint">
+ 
+ 
+ 
+ <span class="actions"><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=1151808" class="btn btn-link"><i class="fa fa-bookmark"></i> Hacer reserva</a></span><!-- add back when available 0 holds in queue-->
+ 
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+
+ 
+
+ 
+ 
+ <span class="actions"><a data-biblionumber="1151808" class="btn btn-link addtocart cart cart1151808" href="#"><i class="fa fa-shopping-cart"></i> Agregar al carrito</a> <a style="display:none;" data-biblionumber="1151808" class="btn btn-link remove cartRemove cartR1151808" href="#">(remover)</a></span>
+ 
+ 
+ </div>
+ </div>
+ 
+
+
+
+ </td>
+ </tr>
+ 
+ <tr>
+ 
+ 
+ 
+ 
+ <td class="select selectcol">
+ 
+ <input aria-label="Seleccionar resultado de búsqueda: Sistemas de gestión de calidad:" class="cb" id="bib1151787" name="biblionumber" type="checkbox" value="1151787" /> <label for="bib1151787"></label>
+ 
+ </td>
+ 
+ <td class="select selectcol">
+ 
+ 2.
+ 
+ </td>
+
+ 
+
+ 
+ <td class="bibliocol">
+ <div class="coverimages itemtype_LIB">
+ <a class="p1" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151787">
+ 
+ 
+ 
+ 
+ <span title="Sistemas de gestión de calidad:" class="1151787" id="local-thumbnail2"></span>
+ 
+
+ 
+ 
+ 
+ <span title="Sistemas de gestión de calidad:" id="amazon-thumbnail2"><img src="https://images-na.ssl-images-amazon.com/images/P/9587719158.01.TZZZZZZZ.jpg" alt="" class="item-thumbnail" /></span>
+ 
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ </a>
+
+ 
+
+ 
+
+
+ 
+ </div>
+ 
+ <!-- COinS / Openurl -->
+ <span class="Z3988" title="ctx_ver=Z39.88-2004&amp;amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;amp;rft.genre=book&amp;amp;rft.btitle=Sistemas%20de%20gesti%C3%B3n%20de%20calidad%3A%20Teor%C3%ADa%20y%20pr%C3%A1ctica%20bajo%20la%20norma%20ISO&amp;amp;rft.isbn=9789587719154&amp;amp;rft.au=Gonz%C3%A1lez%20Ortiz%2C%20Oscar%20Claret&amp;amp;rft.au=Arciniegas%20Ortiz%2C%20Jaime%20Alonso&amp;amp;rft.pub=ECOE%20ediciones&amp;amp;rft.date=2020"></span>
+ 
+ <div id="title_summary_1151787" class="title_summary">
+ 
+ 
+
+<a xmlns:str="http://exslt.org/strings" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151787" class="title">Sistemas de gestión de calidad: Teoría y práctica bajo la norma ISO </a><p xmlns:str="http://exslt.org/strings"><span class="byAuthor">por </span><span class="author">González Ortiz, Oscar Claret<span class="separator"> | </span>Arciniegas Ortiz, Jaime Alonso.</span></p><span class="results_summary edition"><span class="label">Edición: </span>2a edición</span><span class="results_summary languages"><span class="language"><span class="label">Idioma: </span><span class="lang_code-spa">Español</span><span class="separator"> </span></span></span><span class="results_summary publisher"><span class="label">Editor: </span>Bogotá - Colombia ECOE ediciones 2020</span><span xmlns:str="http://exslt.org/strings" class="results_summary availability"><span class="label">Disponibilidad: </span><span class="available reallyavailable"><span class="AvailabilityLabel"><strong>Ítems disponibles para préstamo: </strong></span><span class="ItemSummary"><span class="ItemBranch">Bibl. Central de Ingenierías</span><span class="CallNumberAndLabel"><span class="LabelCallNumber">Signatura topográfica: </span><span class="CallNumber">658.5/G71</span></span> (2). </span></span></span>
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ <div class="results_summary ratings">
+ 
+ 
+ <div class="br-wrapper br-theme-fontawesome-stars">
+ <div class="br-widget br-readonly">
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ </div>
+ </div>
+
+ 
+ <br />
+ 
+ </div> <!-- / .results_summary -->
+ 
+
+ <div class="actions-menu noprint">
+ 
+ 
+ 
+ <span class="actions"><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=1151787" class="btn btn-link"><i class="fa fa-bookmark"></i> Hacer reserva</a></span><!-- add back when available 0 holds in queue-->
+ 
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+
+ 
+
+ 
+ 
+ <span class="actions"><a data-biblionumber="1151787" class="btn btn-link addtocart cart cart1151787" href="#"><i class="fa fa-shopping-cart"></i> Agregar al carrito</a> <a style="display:none;" data-biblionumber="1151787" class="btn btn-link remove cartRemove cartR1151787" href="#">(remover)</a></span>
+ 
+ 
+ </div>
+ </div>
+ 
+
+
+
+ </td>
+ </tr>
+ 
+ <tr>
+ 
+ 
+ 
+ 
+ <td class="select selectcol">
+ 
+ <input aria-label="Seleccionar resultado de búsqueda: Teoría de la decisión aplicada: " class="cb" id="bib1151797" name="biblionumber" type="checkbox" value="1151797" /> <label for="bib1151797"></label>
+ 
+ </td>
+ 
+ <td class="select selectcol">
+ 
+ 3.
+ 
+ </td>
+
+ 
+
+ 
+ <td class="bibliocol">
+ <div class="coverimages itemtype_LIB">
+ <a class="p1" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151797">
+ 
+ 
+ 
+ 
+ <span title="Teoría de la decisión aplicada: " class="1151797" id="local-thumbnail3"></span>
+ 
+
+ 
+ 
+ 
+ <span title="Teoría de la decisión aplicada: " id="amazon-thumbnail3"><img src="https://images-na.ssl-images-amazon.com/images/P/9585037890.01.TZZZZZZZ.jpg" alt="" class="item-thumbnail" /></span>
+ 
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ </a>
+
+ 
+
+ 
+
+
+ 
+ </div>
+ 
+ <!-- COinS / Openurl -->
+ <span class="Z3988" title="ctx_ver=Z39.88-2004&amp;amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;amp;rft.genre=book&amp;amp;rft.btitle=Teor%C3%ADa%20de%20la%20decisi%C3%B3n%20aplicada%3A%20%20An%C3%A1lisis%20de%20decisiones%20bajo%20incertidumbre%2C%20riesgo%2C%20teor%C3%ADa%20de%20juegos%20y%20cadenas%20de%20Markov&amp;amp;rft.isbn=9789585037892&amp;amp;rft.au=Guerrero%20Salas%2C%20Humberto&amp;amp;rft.au=Mayorga%20Morato%2C%20Manuel%20Alfonso&amp;amp;rft.pub=ECOE%20ediciones&amp;amp;rft.date=2024"></span>
+ 
+ <div id="title_summary_1151797" class="title_summary">
+ 
+ 
+
+<a xmlns:str="http://exslt.org/strings" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151797" class="title">Teoría de la decisión aplicada:  Análisis de decisiones bajo incertidumbre, riesgo, teoría de juegos y cadenas de Markov </a><p xmlns:str="http://exslt.org/strings"><span class="byAuthor">por </span><span class="author">Guerrero Salas, Humberto<span class="separator"> | </span>Mayorga Morato, Manuel Alfonso Suárez, Orlando de Antonio.</span></p><span class="results_summary edition"><span class="label">Edición: </span>2a edición</span><span class="results_summary languages"><span class="language"><span class="label">Idioma: </span><span class="lang_code-spa">Español</span><span class="separator"> </span></span></span><span class="results_summary publisher"><span class="label">Editor: </span>Bogotá - Colombia ECOE ediciones 2024</span><span xmlns:str="http://exslt.org/strings" class="results_summary availability"><span class="label">Disponibilidad: </span><span class="available reallyavailable"><span class="AvailabilityLabel"><strong>Ítems disponibles para préstamo: </strong></span><span class="ItemSummary"><span class="ItemBranch">Bibl. Central de Ingenierías</span><span class="CallNumberAndLabel"><span class="LabelCallNumber">Signatura topográfica: </span><span class="CallNumber">658.4/G88</span></span> (2). </span></span></span>
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ <div class="results_summary ratings">
+ 
+ 
+ <div class="br-wrapper br-theme-fontawesome-stars">
+ <div class="br-widget br-readonly">
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ </div>
+ </div>
+
+ 
+ <br />
+ 
+ </div> <!-- / .results_summary -->
+ 
+
+ <div class="actions-menu noprint">
+ 
+ 
+ 
+ <span class="actions"><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=1151797" class="btn btn-link"><i class="fa fa-bookmark"></i> Hacer reserva</a></span><!-- add back when available 0 holds in queue-->
+ 
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+
+ 
+
+ 
+ 
+ <span class="actions"><a data-biblionumber="1151797" class="btn btn-link addtocart cart cart1151797" href="#"><i class="fa fa-shopping-cart"></i> Agregar al carrito</a> <a style="display:none;" data-biblionumber="1151797" class="btn btn-link remove cartRemove cartR1151797" href="#">(remover)</a></span>
+ 
+ 
+ </div>
+ </div>
+ 
+
+
+
+ </td>
+ </tr>
+ 
+ <tr>
+ 
+ 
+ 
+ 
+ <td class="select selectcol">
+ 
+ <input aria-label="Seleccionar resultado de búsqueda: Modelos de negocio dinámicos:" class="cb" id="bib1151723" name="biblionumber" type="checkbox" value="1151723" /> <label for="bib1151723"></label>
+ 
+ </td>
+ 
+ <td class="select selectcol">
+ 
+ 4.
+ 
+ </td>
+
+ 
+
+ 
+ <td class="bibliocol">
+ <div class="coverimages itemtype_LIB">
+ <a class="p1" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151723">
+ 
+ 
+ 
+ 
+ <span title="Modelos de negocio dinámicos:" class="1151723" id="local-thumbnail4"></span>
+ 
+
+ 
+ 
+ 
+ <span title="Modelos de negocio dinámicos:" id="amazon-thumbnail4"><img src="https://images-na.ssl-images-amazon.com/images/P/9587719301.01.TZZZZZZZ.jpg" alt="" class="item-thumbnail" /></span>
+ 
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ </a>
+
+ 
+
+ 
+
+
+ 
+ </div>
+ 
+ <!-- COinS / Openurl -->
+ <span class="Z3988" title="ctx_ver=Z39.88-2004&amp;amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;amp;rft.genre=book&amp;amp;rft.btitle=Modelos%20de%20negocio%20din%C3%A1micos%3A%20Din%C3%A1micas%20para%20generar%20id%C3%A9as%20de%20inversi%C3%B3n%20empresarial%2C%20respaldadas%20con%20un%20sistema%20interactivo%20para%20construir%20modelos%20de%20negocio&amp;amp;rft.isbn=9789587719307&amp;amp;rft.au=Ram%C3%ADrez%2C%20Elbar&amp;amp;rft.au=Cajigas%20Romero%2C%20Margot&amp;amp;rft.pub=ECOE%20ediciones&amp;amp;rft.date=2020"></span>
+ 
+ <div id="title_summary_1151723" class="title_summary">
+ 
+ 
+
+<a xmlns:str="http://exslt.org/strings" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151723" class="title">Modelos de negocio dinámicos: Dinámicas para generar idéas de inversión empresarial, respaldadas con un sistema interactivo para construir modelos de negocio </a><p xmlns:str="http://exslt.org/strings"><span class="byAuthor">por </span><span class="author">Ramírez, Elbar<span class="separator"> | </span>Cajigas Romero, Margot Ramírez Cajigas, David Alejandro.</span></p><span class="results_summary languages"><span class="language"><span class="label">Idioma: </span><span class="lang_code-spa">Español</span><span class="separator"> </span></span></span><span class="results_summary publisher"><span class="label">Editor: </span>Bogotá - Colombia ECOE ediciones 2020</span><span xmlns:str="http://exslt.org/strings" class="results_summary availability"><span class="label">Disponibilidad: </span><span class="available reallyavailable"><span class="AvailabilityLabel"><strong>Ítems disponibles para préstamo: </strong></span><span class="ItemSummary"><span class="ItemBranch">Bibl. Central de Ingenierías</span><span class="CallNumberAndLabel"><span class="LabelCallNumber">Signatura topográfica: </span><span class="CallNumber">658.4/R21</span></span> (1). </span></span></span>
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ <div class="results_summary ratings">
+ 
+ 
+ <div class="br-wrapper br-theme-fontawesome-stars">
+ <div class="br-widget br-readonly">
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ </div>
+ </div>
+
+ 
+ <br />
+ 
+ </div> <!-- / .results_summary -->
+ 
+
+ <div class="actions-menu noprint">
+ 
+ 
+ 
+ <span class="actions"><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=1151723" class="btn btn-link"><i class="fa fa-bookmark"></i> Hacer reserva</a></span><!-- add back when available 0 holds in queue-->
+ 
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+
+ 
+
+ 
+ 
+ <span class="actions"><a data-biblionumber="1151723" class="btn btn-link addtocart cart cart1151723" href="#"><i class="fa fa-shopping-cart"></i> Agregar al carrito</a> <a style="display:none;" data-biblionumber="1151723" class="btn btn-link remove cartRemove cartR1151723" href="#">(remover)</a></span>
+ 
+ 
+ </div>
+ </div>
+ 
+
+
+
+ </td>
+ </tr>
+ 
+ <tr>
+ 
+ 
+ 
+ 
+ <td class="select selectcol">
+ 
+ <input aria-label="Seleccionar resultado de búsqueda: Neuromarketing y neuroeconomía: " class="cb" id="bib1151730" name="biblionumber" type="checkbox" value="1151730" /> <label for="bib1151730"></label>
+ 
+ </td>
+ 
+ <td class="select selectcol">
+ 
+ 5.
+ 
+ </td>
+
+ 
+
+ 
+ <td class="bibliocol">
+ <div class="coverimages itemtype_LIB">
+ <a class="p1" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151730">
+ 
+ 
+ 
+ 
+ <span title="Neuromarketing y neuroeconomía: " class="1151730" id="local-thumbnail5"></span>
+ 
+
+ 
+ 
+ 
+ <span title="Neuromarketing y neuroeconomía: " id="amazon-thumbnail5"><img src="https://images-na.ssl-images-amazon.com/images/P/9585036312.01.TZZZZZZZ.jpg" alt="" class="item-thumbnail" /></span>
+ 
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ </a>
+
+ 
+
+ 
+
+
+ 
+ </div>
+ 
+ <!-- COinS / Openurl -->
+ <span class="Z3988" title="ctx_ver=Z39.88-2004&amp;amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;amp;rft.genre=book&amp;amp;rft.btitle=Neuromarketing%20y%20neuroeconom%C3%ADa%3A%20%20Codigo%20emocional%20del%20consumidor&amp;amp;rft.isbn=9789585036314&amp;amp;rft.au=Cisneros%20Enriquez%2C%20Andres&amp;amp;rft.pub=ECOE%20ediciones&amp;amp;rft.date=2023"></span>
+ 
+ <div id="title_summary_1151730" class="title_summary">
+ 
+ 
+
+<a xmlns:str="http://exslt.org/strings" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151730" class="title">Neuromarketing y neuroeconomía:  Codigo emocional del consumidor </a><p xmlns:str="http://exslt.org/strings"><span class="byAuthor">por </span><span class="author">Cisneros Enriquez, Andres.</span></p><span class="results_summary edition"><span class="label">Edición: </span>4a edición</span><span class="results_summary languages"><span class="language"><span class="label">Idioma: </span><span class="lang_code-spa">Español</span><span class="separator"> </span></span></span><span class="results_summary publisher"><span class="label">Editor: </span>Bogotá - Colombia ECOE ediciones 2023</span><span xmlns:str="http://exslt.org/strings" class="results_summary availability"><span class="label">Disponibilidad: </span><span class="available reallyavailable"><span class="AvailabilityLabel"><strong>Ítems disponibles para préstamo: </strong></span><span class="ItemSummary"><span class="ItemBranch">Bibl. Central de Ingenierías</span><span class="CallNumberAndLabel"><span class="LabelCallNumber">Signatura topográfica: </span><span class="CallNumber">658.83/C55</span></span> (2). </span></span></span>
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ <div class="results_summary ratings">
+ 
+ 
+ <div class="br-wrapper br-theme-fontawesome-stars">
+ <div class="br-widget br-readonly">
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ </div>
+ </div>
+
+ 
+ <br />
+ 
+ </div> <!-- / .results_summary -->
+ 
+
+ <div class="actions-menu noprint">
+ 
+ 
+ 
+ <span class="actions"><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=1151730" class="btn btn-link"><i class="fa fa-bookmark"></i> Hacer reserva</a></span><!-- add back when available 0 holds in queue-->
+ 
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+
+ 
+
+ 
+ 
+ <span class="actions"><a data-biblionumber="1151730" class="btn btn-link addtocart cart cart1151730" href="#"><i class="fa fa-shopping-cart"></i> Agregar al carrito</a> <a style="display:none;" data-biblionumber="1151730" class="btn btn-link remove cartRemove cartR1151730" href="#">(remover)</a></span>
+ 
+ 
+ </div>
+ </div>
+ 
+
+
+
+ </td>
+ </tr>
+ 
+ <tr>
+ 
+ 
+ 
+ 
+ <td class="select selectcol">
+ 
+ <input aria-label="Seleccionar resultado de búsqueda: Organizaciones ágiles:" class="cb" id="bib1151738" name="biblionumber" type="checkbox" value="1151738" /> <label for="bib1151738"></label>
+ 
+ </td>
+ 
+ <td class="select selectcol">
+ 
+ 6.
+ 
+ </td>
+
+ 
+
+ 
+ <td class="bibliocol">
+ <div class="coverimages itemtype_LIB">
+ <a class="p1" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151738">
+ 
+ 
+ 
+ 
+ <span title="Organizaciones ágiles:" class="1151738" id="local-thumbnail6"></span>
+ 
+
+ 
+ 
+ 
+ <span title="Organizaciones ágiles:" id="amazon-thumbnail6"><img src="https://images-na.ssl-images-amazon.com/images/P/9587719514.01.TZZZZZZZ.jpg" alt="" class="item-thumbnail" /></span>
+ 
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ </a>
+
+ 
+
+ 
+
+
+ 
+ </div>
+ 
+ <!-- COinS / Openurl -->
+ <span class="Z3988" title="ctx_ver=Z39.88-2004&amp;amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;amp;rft.genre=book&amp;amp;rft.btitle=Organizaciones%20%C3%A1giles%3A%20Responde%20a%20las%20necesidades%20de%20tus%20clientes%20con%20equipos%20implicados%20y%20autogestionados&amp;amp;rft.isbn=9789587719512&amp;amp;rft.au=Mussons%2C%20Sergi&amp;amp;rft.pub=ECOE%20ediciones&amp;amp;rft.date=2020"></span>
+ 
+ <div id="title_summary_1151738" class="title_summary">
+ 
+ 
+
+<a xmlns:str="http://exslt.org/strings" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151738" class="title">Organizaciones ágiles: Responde a las necesidades de tus clientes con equipos implicados y autogestionados </a><p xmlns:str="http://exslt.org/strings"><span class="byAuthor">por </span><span class="author">Mussons, Sergi.</span></p><span class="results_summary languages"><span class="language"><span class="label">Idioma: </span><span class="lang_code-spa">Español</span><span class="separator"> </span></span></span><span class="results_summary publisher"><span class="label">Editor: </span>Bogotá - Colombia ECOE ediciones 2020</span><span xmlns:str="http://exslt.org/strings" class="results_summary availability"><span class="label">Disponibilidad: </span><span class="available reallyavailable"><span class="AvailabilityLabel"><strong>Ítems disponibles para préstamo: </strong></span><span class="ItemSummary"><span class="ItemBranch">Bibl. Central de Ingenierías</span><span class="CallNumberAndLabel"><span class="LabelCallNumber">Signatura topográfica: </span><span class="CallNumber">658.4/M96</span></span> (1). </span></span></span>
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ <div class="results_summary ratings">
+ 
+ 
+ <div class="br-wrapper br-theme-fontawesome-stars">
+ <div class="br-widget br-readonly">
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ </div>
+ </div>
+
+ 
+ <br />
+ 
+ </div> <!-- / .results_summary -->
+ 
+
+ <div class="actions-menu noprint">
+ 
+ 
+ 
+ <span class="actions"><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=1151738" class="btn btn-link"><i class="fa fa-bookmark"></i> Hacer reserva</a></span><!-- add back when available 0 holds in queue-->
+ 
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+
+ 
+
+ 
+ 
+ <span class="actions"><a data-biblionumber="1151738" class="btn btn-link addtocart cart cart1151738" href="#"><i class="fa fa-shopping-cart"></i> Agregar al carrito</a> <a style="display:none;" data-biblionumber="1151738" class="btn btn-link remove cartRemove cartR1151738" href="#">(remover)</a></span>
+ 
+ 
+ </div>
+ </div>
+ 
+
+
+
+ </td>
+ </tr>
+ 
+ <tr>
+ 
+ 
+ 
+ 
+ <td class="select selectcol">
+ 
+ <input aria-label="Seleccionar resultado de búsqueda: Planes de negocios:" class="cb" id="bib1151739" name="biblionumber" type="checkbox" value="1151739" /> <label for="bib1151739"></label>
+ 
+ </td>
+ 
+ <td class="select selectcol">
+ 
+ 7.
+ 
+ </td>
+
+ 
+
+ 
+ <td class="bibliocol">
+ <div class="coverimages itemtype_LIB">
+ <a class="p1" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151739">
+ 
+ 
+ 
+ 
+ <span title="Planes de negocios:" class="1151739" id="local-thumbnail7"></span>
+ 
+
+ 
+ 
+ 
+ <span title="Planes de negocios:" id="amazon-thumbnail7"><img src="https://images-na.ssl-images-amazon.com/images/P/9587718763.01.TZZZZZZZ.jpg" alt="" class="item-thumbnail" /></span>
+ 
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ </a>
+
+ 
+
+ 
+
+
+ 
+ </div>
+ 
+ <!-- COinS / Openurl -->
+ <span class="Z3988" title="ctx_ver=Z39.88-2004&amp;amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;amp;rft.genre=book&amp;amp;rft.btitle=Planes%20de%20negocios%3A%20Gu%C3%ADa%20para%20elaborar%20un%20plan%20de%20negocio%20iterativo%20a%20trav%C3%A9s%20de%20la%20escucha%20activa%20del%20mercado&amp;amp;rft.isbn=9789587718768&amp;amp;rft.au=Mir%20Juli%C3%A1%2C%20Joan&amp;amp;rft.pub=ECOE%20ediciones&amp;amp;rft.date=2020"></span>
+ 
+ <div id="title_summary_1151739" class="title_summary">
+ 
+ 
+
+<a xmlns:str="http://exslt.org/strings" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151739" class="title">Planes de negocios: Guía para elaborar un plan de negocio iterativo a través de la escucha activa del mercado </a><p xmlns:str="http://exslt.org/strings"><span class="byAuthor">por </span><span class="author">Mir Juliá, Joan.</span></p><span class="results_summary languages"><span class="language"><span class="label">Idioma: </span><span class="lang_code-spa">Español</span><span class="separator"> </span></span></span><span class="results_summary publisher"><span class="label">Editor: </span>Bogotá - Colombia ECOE ediciones 2020</span><span xmlns:str="http://exslt.org/strings" class="results_summary availability"><span class="label">Disponibilidad: </span><span class="available reallyavailable"><span class="AvailabilityLabel"><strong>Ítems disponibles para préstamo: </strong></span><span class="ItemSummary"><span class="ItemBranch">Bibl. Central de Ingenierías</span><span class="CallNumberAndLabel"><span class="LabelCallNumber">Signatura topográfica: </span><span class="CallNumber">658.4/M63</span></span> (2). </span></span></span>
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ <div class="results_summary ratings">
+ 
+ 
+ <div class="br-wrapper br-theme-fontawesome-stars">
+ <div class="br-widget br-readonly">
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ </div>
+ </div>
+
+ 
+ <br />
+ 
+ </div> <!-- / .results_summary -->
+ 
+
+ <div class="actions-menu noprint">
+ 
+ 
+ 
+ <span class="actions"><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=1151739" class="btn btn-link"><i class="fa fa-bookmark"></i> Hacer reserva</a></span><!-- add back when available 0 holds in queue-->
+ 
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+
+ 
+
+ 
+ 
+ <span class="actions"><a data-biblionumber="1151739" class="btn btn-link addtocart cart cart1151739" href="#"><i class="fa fa-shopping-cart"></i> Agregar al carrito</a> <a style="display:none;" data-biblionumber="1151739" class="btn btn-link remove cartRemove cartR1151739" href="#">(remover)</a></span>
+ 
+ 
+ </div>
+ </div>
+ 
+
+
+
+ </td>
+ </tr>
+ 
+ <tr>
+ 
+ 
+ 
+ 
+ <td class="select selectcol">
+ 
+ <input aria-label="Seleccionar resultado de búsqueda: Proyectos de inversión" class="cb" id="bib1151759" name="biblionumber" type="checkbox" value="1151759" /> <label for="bib1151759"></label>
+ 
+ </td>
+ 
+ <td class="select selectcol">
+ 
+ 8.
+ 
+ </td>
+
+ 
+
+ 
+ <td class="bibliocol">
+ <div class="coverimages itemtype_LIB">
+ <a class="p1" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151759">
+ 
+ 
+ 
+ 
+ <span title="Proyectos de inversión" class="1151759" id="local-thumbnail8"></span>
+ 
+
+ 
+ 
+ 
+ <span title="Proyectos de inversión" id="amazon-thumbnail8"><img src="https://images-na.ssl-images-amazon.com/images/P/6124726149.01.TZZZZZZZ.jpg" alt="" class="item-thumbnail" /></span>
+ 
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ </a>
+
+ 
+
+ 
+
+
+ 
+ </div>
+ 
+ <!-- COinS / Openurl -->
+ <span class="Z3988" title="ctx_ver=Z39.88-2004&amp;amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;amp;rft.genre=book&amp;amp;rft.btitle=Proyectos%20de%20inversi%C3%B3n%20Gu%C3%ADa%20para%20su%20formulaci%C3%B3n%20y%20evaluaci%C3%B3n%20estrat%C3%A9gica&amp;amp;rft.isbn=9786124726149&amp;amp;rft.au=And%C3%ADa%20Valencia%2C%20Walter&amp;amp;rft.pub=Ediciones%20Arte%20%26%20Pluma&amp;amp;rft.date=2018"></span>
+ 
+ <div id="title_summary_1151759" class="title_summary">
+ 
+ 
+
+<a xmlns:str="http://exslt.org/strings" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151759" class="title">Proyectos de inversión Guía para su formulación y evaluación estratégica </a><p xmlns:str="http://exslt.org/strings"><span class="byAuthor">por </span><span class="author">Andía Valencia, Walter.</span></p><span class="results_summary edition"><span class="label">Edición: </span>5 a edición</span><span class="results_summary languages"><span class="language"><span class="label">Idioma: </span><span class="lang_code-spa">Español</span><span class="separator"> </span></span></span><span class="results_summary publisher"><span class="label">Editor: </span>Lima - Perú Ediciones Arte &amp; Pluma 2018</span><span xmlns:str="http://exslt.org/strings" class="results_summary availability"><span class="label">Disponibilidad: </span><span class="available reallyavailable"><span class="AvailabilityLabel"><strong>Ítems disponibles para préstamo: </strong></span><span class="ItemSummary"><span class="ItemBranch">Bibl. Central de Ingenierías</span><span class="CallNumberAndLabel"><span class="LabelCallNumber">Signatura topográfica: </span><span class="CallNumber">332/A57</span></span> (1). </span></span></span>
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ <div class="results_summary ratings">
+ 
+ 
+ <div class="br-wrapper br-theme-fontawesome-stars">
+ <div class="br-widget br-readonly">
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ </div>
+ </div>
+
+ 
+ <br />
+ 
+ </div> <!-- / .results_summary -->
+ 
+
+ <div class="actions-menu noprint">
+ 
+ 
+ 
+ <span class="actions"><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=1151759" class="btn btn-link"><i class="fa fa-bookmark"></i> Hacer reserva</a></span><!-- add back when available 0 holds in queue-->
+ 
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+
+ 
+
+ 
+ 
+ <span class="actions"><a data-biblionumber="1151759" class="btn btn-link addtocart cart cart1151759" href="#"><i class="fa fa-shopping-cart"></i> Agregar al carrito</a> <a style="display:none;" data-biblionumber="1151759" class="btn btn-link remove cartRemove cartR1151759" href="#">(remover)</a></span>
+ 
+ 
+ </div>
+ </div>
+ 
+
+
+
+ </td>
+ </tr>
+ 
+ <tr>
+ 
+ 
+ 
+ 
+ <td class="select selectcol">
+ 
+ <input aria-label="Seleccionar resultado de búsqueda: Metodolgía de la investigación total:" class="cb" id="bib1151708" name="biblionumber" type="checkbox" value="1151708" /> <label for="bib1151708"></label>
+ 
+ </td>
+ 
+ <td class="select selectcol">
+ 
+ 9.
+ 
+ </td>
+
+ 
+
+ 
+ <td class="bibliocol">
+ <div class="coverimages itemtype_LIB">
+ <a class="p1" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151708">
+ 
+ 
+ 
+ 
+ <span title="Metodolgía de la investigación total:" class="1151708" id="local-thumbnail9"></span>
+ 
+
+ 
+ 
+ 
+ <span title="Metodolgía de la investigación total:" id="amazon-thumbnail9"><img src="https://images-na.ssl-images-amazon.com/images/P/9587924657.01.TZZZZZZZ.jpg" alt="" class="item-thumbnail" /></span>
+ 
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ </a>
+
+ 
+
+ 
+
+
+ 
+ </div>
+ 
+ <!-- COinS / Openurl -->
+ <span class="Z3988" title="ctx_ver=Z39.88-2004&amp;amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;amp;rft.genre=book&amp;amp;rft.btitle=Metodolg%C3%ADa%20de%20la%20investigaci%C3%B3n%20total%3A%20Cuantitativa-cuaalitativa%20y%20redacci%C3%B3n%20de%20tesis&amp;amp;rft.isbn=9789587924657&amp;amp;rft.au=%C3%91aupas%20Pait%C3%A1n%2C%20Humberto&amp;amp;rft.au=Mej%C3%ADa%20Mej%C3%ADa%2C%20El%C3%ADas&amp;amp;rft.pub=Ediciones%20de%20la%20U&amp;amp;rft.date=2023"></span>
+ 
+ <div id="title_summary_1151708" class="title_summary">
+ 
+ 
+
+<a xmlns:str="http://exslt.org/strings" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151708" class="title">Metodolgía de la investigación total: Cuantitativa-cuaalitativa y redacción de tesis </a><p xmlns:str="http://exslt.org/strings"><span class="byAuthor">por </span><span class="author">Ñaupas Paitán, Humberto<span class="separator"> | </span>Mejía Mejía, Elías  Trujillo Román, Ismael Ramiro Romero Delgado, Hugo Eusebio Medina Barcena, Wilfredo Novoa Ramírez, .Eliana.</span></p><span class="results_summary edition"><span class="label">Edición: </span>6a edición</span><span class="results_summary languages"><span class="language"><span class="label">Idioma: </span><span class="lang_code-spa">Español</span><span class="separator"> </span></span></span><span class="results_summary publisher"><span class="label">Editor: </span>Bogotá - Colombia Ediciones de la U 2023</span><span xmlns:str="http://exslt.org/strings" class="results_summary availability"><span class="label">Disponibilidad: </span><span class="available reallyavailable"><span class="AvailabilityLabel"><strong>Ítems disponibles para préstamo: </strong></span><span class="ItemSummary"><span class="ItemBranch">Bibl. Central de Ingenierías</span><span class="CallNumberAndLabel"><span class="LabelCallNumber">Signatura topográfica: </span><span class="CallNumber">001.42/Ña1</span></span> (1). </span></span></span>
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ <div class="results_summary ratings">
+ 
+ 
+ <div class="br-wrapper br-theme-fontawesome-stars">
+ <div class="br-widget br-readonly">
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ </div>
+ </div>
+
+ 
+ <br />
+ 
+ </div> <!-- / .results_summary -->
+ 
+
+ <div class="actions-menu noprint">
+ 
+ 
+ 
+ <span class="actions"><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=1151708" class="btn btn-link"><i class="fa fa-bookmark"></i> Hacer reserva</a></span><!-- add back when available 0 holds in queue-->
+ 
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+
+ 
+
+ 
+ 
+ <span class="actions"><a data-biblionumber="1151708" class="btn btn-link addtocart cart cart1151708" href="#"><i class="fa fa-shopping-cart"></i> Agregar al carrito</a> <a style="display:none;" data-biblionumber="1151708" class="btn btn-link remove cartRemove cartR1151708" href="#">(remover)</a></span>
+ 
+ 
+ </div>
+ </div>
+ 
+
+
+
+ </td>
+ </tr>
+ 
+ <tr>
+ 
+ 
+ 
+ 
+ <td class="select selectcol">
+ 
+ <input aria-label="Seleccionar resultado de búsqueda: Métodos numéricos con aplicación a la ingeniería" class="cb" id="bib1151717" name="biblionumber" type="checkbox" value="1151717" /> <label for="bib1151717"></label>
+ 
+ </td>
+ 
+ <td class="select selectcol">
+ 
+ 10.
+ 
+ </td>
+
+ 
+
+ 
+ <td class="bibliocol">
+ <div class="coverimages itemtype_LIB">
+ <a class="p1" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151717">
+ 
+ 
+ 
+ 
+ <span title="Métodos numéricos con aplicación a la ingeniería" class="1151717" id="local-thumbnail10"></span>
+ 
+
+ 
+ 
+ 
+ <span title="Métodos numéricos con aplicación a la ingeniería" id="amazon-thumbnail10"><img src="https://images-na.ssl-images-amazon.com/images/P/9585035235.01.TZZZZZZZ.jpg" alt="" class="item-thumbnail" /></span>
+ 
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ </a>
+
+ 
+
+ 
+
+
+ 
+ </div>
+ 
+ <!-- COinS / Openurl -->
+ <span class="Z3988" title="ctx_ver=Z39.88-2004&amp;amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;amp;rft.genre=book&amp;amp;rft.btitle=M%C3%A9todos%20num%C3%A9ricos%20con%20aplicaci%C3%B3n%20a%20la%20ingenier%C3%ADa&amp;amp;rft.isbn=9789585035232&amp;amp;rft.au=Lozada%20H.%2C%20Sol%C3%B3n%20Efren&amp;amp;rft.au=Forero%2C%20N%C3%A9stor%20Orlando&amp;amp;rft.pub=ECOE%20ediciones&amp;amp;rft.date=2023"></span>
+ 
+ <div id="title_summary_1151717" class="title_summary">
+ 
+ 
+
+<a xmlns:str="http://exslt.org/strings" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151717" class="title">Métodos numéricos con aplicación a la ingeniería </a><p xmlns:str="http://exslt.org/strings"><span class="byAuthor">por </span><span class="author">Lozada H., Solón Efren<span class="separator"> | </span>Forero, Néstor Orlando Tole Lozano, Juan David.</span></p><span class="results_summary edition"><span class="label">Edición: </span>2a edición</span><span class="results_summary languages"><span class="language"><span class="label">Idioma: </span><span class="lang_code-spa">Español</span><span class="separator"> </span></span></span><span class="results_summary publisher"><span class="label">Editor: </span>Bogotá - Colombia ECOE ediciones 2023</span><span xmlns:str="http://exslt.org/strings" class="results_summary availability"><span class="label">Disponibilidad: </span><span class="available reallyavailable"><span class="AvailabilityLabel"><strong>Ítems disponibles para préstamo: </strong></span><span class="ItemSummary"><span class="ItemBranch">Bibl. Central de Ingenierías</span><span class="CallNumberAndLabel"><span class="LabelCallNumber">Signatura topográfica: </span><span class="CallNumber">620/L91</span></span> (2). </span></span></span>
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ <div class="results_summary ratings">
+ 
+ 
+ <div class="br-wrapper br-theme-fontawesome-stars">
+ <div class="br-widget br-readonly">
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ </div>
+ </div>
+
+ 
+ <br />
+ 
+ </div> <!-- / .results_summary -->
+ 
+
+ <div class="actions-menu noprint">
+ 
+ 
+ 
+ <span class="actions"><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=1151717" class="btn btn-link"><i class="fa fa-bookmark"></i> Hacer reserva</a></span><!-- add back when available 0 holds in queue-->
+ 
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+
+ 
+
+ 
+ 
+ <span class="actions"><a data-biblionumber="1151717" class="btn btn-link addtocart cart cart1151717" href="#"><i class="fa fa-shopping-cart"></i> Agregar al carrito</a> <a style="display:none;" data-biblionumber="1151717" class="btn btn-link remove cartRemove cartR1151717" href="#">(remover)</a></span>
+ 
+ 
+ </div>
+ </div>
+ 
+
+
+
+ </td>
+ </tr>
+ 
+ <tr>
+ 
+ 
+ 
+ 
+ <td class="select selectcol">
+ 
+ <input aria-label="Seleccionar resultado de búsqueda: Marketing internacional para principiantes" class="cb" id="bib1151689" name="biblionumber" type="checkbox" value="1151689" /> <label for="bib1151689"></label>
+ 
+ </td>
+ 
+ <td class="select selectcol">
+ 
+ 11.
+ 
+ </td>
+
+ 
+
+ 
+ <td class="bibliocol">
+ <div class="coverimages itemtype_LIB">
+ <a class="p1" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151689">
+ 
+ 
+ 
+ 
+ <span title="Marketing internacional para principiantes" class="1151689" id="local-thumbnail11"></span>
+ 
+
+ 
+ 
+ 
+ <span title="Marketing internacional para principiantes" id="amazon-thumbnail11"><img src="https://images-na.ssl-images-amazon.com/images/P/958771945X.01.TZZZZZZZ.jpg" alt="" class="item-thumbnail" /></span>
+ 
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ </a>
+
+ 
+
+ 
+
+
+ 
+ </div>
+ 
+ <!-- COinS / Openurl -->
+ <span class="Z3988" title="ctx_ver=Z39.88-2004&amp;amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;amp;rft.genre=book&amp;amp;rft.btitle=Marketing%20internacional%20para%20principiantes&amp;amp;rft.isbn=9789587719451&amp;amp;rft.au=Redondo%20Ram%C3%ADrez%2C%20Marlen%20Isabel&amp;amp;rft.au=D%C3%ADaz%20Restrepo%2C%20Carlos%20Andr%C3%A9s&amp;amp;rft.pub=ECOE%20ediciones&amp;amp;rft.date=2020"></span>
+ 
+ <div id="title_summary_1151689" class="title_summary">
+ 
+ 
+
+<a xmlns:str="http://exslt.org/strings" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151689" class="title">Marketing internacional para principiantes </a><p xmlns:str="http://exslt.org/strings"><span class="byAuthor">por </span><span class="author">Redondo Ramírez, Marlen Isabel<span class="separator"> | </span>Díaz Restrepo, Carlos Andrés Ramírez Osorio, Jorge Humberto.</span></p><span class="results_summary languages"><span class="language"><span class="label">Idioma: </span><span class="lang_code-spa">Español</span><span class="separator"> </span></span></span><span class="results_summary publisher"><span class="label">Editor: </span>Bogotá - Colombia ECOE ediciones 2020</span><span xmlns:str="http://exslt.org/strings" class="results_summary availability"><span class="label">Disponibilidad: </span><span class="available reallyavailable"><span class="AvailabilityLabel"><strong>Ítems disponibles para préstamo: </strong></span><span class="ItemSummary"><span class="ItemBranch">Bibl. Central de Ingenierías</span><span class="CallNumberAndLabel"><span class="LabelCallNumber">Signatura topográfica: </span><span class="CallNumber">658.84/R34</span></span> (2). </span></span></span>
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ <div class="results_summary ratings">
+ 
+ 
+ <div class="br-wrapper br-theme-fontawesome-stars">
+ <div class="br-widget br-readonly">
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ </div>
+ </div>
+
+ 
+ <br />
+ 
+ </div> <!-- / .results_summary -->
+ 
+
+ <div class="actions-menu noprint">
+ 
+ 
+ 
+ <span class="actions"><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=1151689" class="btn btn-link"><i class="fa fa-bookmark"></i> Hacer reserva</a></span><!-- add back when available 0 holds in queue-->
+ 
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+
+ 
+
+ 
+ 
+ <span class="actions"><a data-biblionumber="1151689" class="btn btn-link addtocart cart cart1151689" href="#"><i class="fa fa-shopping-cart"></i> Agregar al carrito</a> <a style="display:none;" data-biblionumber="1151689" class="btn btn-link remove cartRemove cartR1151689" href="#">(remover)</a></span>
+ 
+ 
+ </div>
+ </div>
+ 
+
+
+
+ </td>
+ </tr>
+ 
+ <tr>
+ 
+ 
+ 
+ 
+ <td class="select selectcol">
+ 
+ <input aria-label="Seleccionar resultado de búsqueda: Marketing turistico:" class="cb" id="bib1151694" name="biblionumber" type="checkbox" value="1151694" /> <label for="bib1151694"></label>
+ 
+ </td>
+ 
+ <td class="select selectcol">
+ 
+ 12.
+ 
+ </td>
+
+ 
+
+ 
+ <td class="bibliocol">
+ <div class="coverimages itemtype_LIB">
+ <a class="p1" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151694">
+ 
+ 
+ 
+ 
+ <span title="Marketing turistico:" class="1151694" id="local-thumbnail12"></span>
+ 
+
+ 
+ 
+ 
+ <span title="Marketing turistico:" id="amazon-thumbnail12"><img src="https://images-na.ssl-images-amazon.com/images/P/8436842081.01.TZZZZZZZ.jpg" alt="" class="item-thumbnail" /></span>
+ 
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ </a>
+
+ 
+
+ 
+
+
+ 
+ </div>
+ 
+ <!-- COinS / Openurl -->
+ <span class="Z3988" title="ctx_ver=Z39.88-2004&amp;amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;amp;rft.genre=book&amp;amp;rft.btitle=Marketing%20turistico%3A%20Fundamentos%20y%20direcci%C3%B3n&amp;amp;rft.isbn=9788436842081&amp;amp;rft.au=Rey%20Moreno%2C%20Manuel%20%20%28coord%29&amp;amp;rft.pub=Pir%C3%A1mide&amp;amp;rft.date=2024"></span>
+ 
+ <div id="title_summary_1151694" class="title_summary">
+ 
+ 
+
+<a xmlns:str="http://exslt.org/strings" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151694" class="title">Marketing turistico: Fundamentos y dirección </a><p xmlns:str="http://exslt.org/strings"><span class="byAuthor">por </span><span class="author">Rey Moreno, Manuel  (coord).</span></p><span class="results_summary edition"><span class="label">Edición: </span>2a edición</span><span class="results_summary languages"><span class="language"><span class="label">Idioma: </span><span class="lang_code-spa">Español</span><span class="separator"> </span></span></span><span class="results_summary publisher"><span class="label">Editor: </span>Madrid - España Pirámide 2024</span><span xmlns:str="http://exslt.org/strings" class="results_summary availability"><span class="label">Disponibilidad: </span><span class="available reallyavailable"><span class="AvailabilityLabel"><strong>Ítems disponibles para préstamo: </strong></span><span class="ItemSummary"><span class="ItemBranch">Bibl. Central de Ingenierías</span><span class="CallNumberAndLabel"><span class="LabelCallNumber">Signatura topográfica: </span><span class="CallNumber">658.8/R47</span></span> (2). </span></span></span>
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ <div class="results_summary ratings">
+ 
+ 
+ <div class="br-wrapper br-theme-fontawesome-stars">
+ <div class="br-widget br-readonly">
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ </div>
+ </div>
+
+ 
+ <br />
+ 
+ </div> <!-- / .results_summary -->
+ 
+
+ <div class="actions-menu noprint">
+ 
+ 
+ 
+ <span class="actions"><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=1151694" class="btn btn-link"><i class="fa fa-bookmark"></i> Hacer reserva</a></span><!-- add back when available 0 holds in queue-->
+ 
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+
+ 
+
+ 
+ 
+ <span class="actions"><a data-biblionumber="1151694" class="btn btn-link addtocart cart cart1151694" href="#"><i class="fa fa-shopping-cart"></i> Agregar al carrito</a> <a style="display:none;" data-biblionumber="1151694" class="btn btn-link remove cartRemove cartR1151694" href="#">(remover)</a></span>
+ 
+ 
+ </div>
+ </div>
+ 
+
+
+
+ </td>
+ </tr>
+ 
+ <tr>
+ 
+ 
+ 
+ 
+ <td class="select selectcol">
+ 
+ <input aria-label="Seleccionar resultado de búsqueda: Marketing y comunicación:" class="cb" id="bib1151697" name="biblionumber" type="checkbox" value="1151697" /> <label for="bib1151697"></label>
+ 
+ </td>
+ 
+ <td class="select selectcol">
+ 
+ 13.
+ 
+ </td>
+
+ 
+
+ 
+ <td class="bibliocol">
+ <div class="coverimages itemtype_LIB">
+ <a class="p1" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151697">
+ 
+ 
+ 
+ 
+ <span title="Marketing y comunicación:" class="1151697" id="local-thumbnail13"></span>
+ 
+
+ 
+ 
+ 
+ <span title="Marketing y comunicación:" id="amazon-thumbnail13"><img src="https://images-na.ssl-images-amazon.com/images/P/9587718771.01.TZZZZZZZ.jpg" alt="" class="item-thumbnail" /></span>
+ 
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ </a>
+
+ 
+
+ 
+
+
+ 
+ </div>
+ 
+ <!-- COinS / Openurl -->
+ <span class="Z3988" title="ctx_ver=Z39.88-2004&amp;amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;amp;rft.genre=book&amp;amp;rft.btitle=Marketing%20y%20comunicaci%C3%B3n%3A%20En%20la%20nueva%20econom%C3%ADa&amp;amp;rft.isbn=9789587718775&amp;amp;rft.au=Coll%2C%20Ptricia&amp;amp;rft.au=Llu%C3%ADs%20Mic%C3%B3%2C%20Josep&amp;amp;rft.pub=ECOE%20ediciones&amp;amp;rft.date=2020"></span>
+ 
+ <div id="title_summary_1151697" class="title_summary">
+ 
+ 
+
+<a xmlns:str="http://exslt.org/strings" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151697" class="title">Marketing y comunicación: En la nueva economía </a><p xmlns:str="http://exslt.org/strings"><span class="byAuthor">por </span><span class="author">Coll, Ptricia<span class="separator"> | </span>Lluís Micó, Josep.</span></p><span class="results_summary languages"><span class="language"><span class="label">Idioma: </span><span class="lang_code-spa">Español</span><span class="separator"> </span></span></span><span class="results_summary publisher"><span class="label">Editor: </span>Bogotá - Colombia ECOE ediciones 2020</span><span xmlns:str="http://exslt.org/strings" class="results_summary availability"><span class="label">Disponibilidad: </span><span class="available reallyavailable"><span class="AvailabilityLabel"><strong>Ítems disponibles para préstamo: </strong></span><span class="ItemSummary"><span class="ItemBranch">Bibl. Central de Ingenierías</span><span class="CallNumberAndLabel"><span class="LabelCallNumber">Signatura topográfica: </span><span class="CallNumber">658.85/C72</span></span> (2). </span></span></span>
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ <div class="results_summary ratings">
+ 
+ 
+ <div class="br-wrapper br-theme-fontawesome-stars">
+ <div class="br-widget br-readonly">
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ </div>
+ </div>
+
+ 
+ <br />
+ 
+ </div> <!-- / .results_summary -->
+ 
+
+ <div class="actions-menu noprint">
+ 
+ 
+ 
+ <span class="actions"><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=1151697" class="btn btn-link"><i class="fa fa-bookmark"></i> Hacer reserva</a></span><!-- add back when available 0 holds in queue-->
+ 
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+
+ 
+
+ 
+ 
+ <span class="actions"><a data-biblionumber="1151697" class="btn btn-link addtocart cart cart1151697" href="#"><i class="fa fa-shopping-cart"></i> Agregar al carrito</a> <a style="display:none;" data-biblionumber="1151697" class="btn btn-link remove cartRemove cartR1151697" href="#">(remover)</a></span>
+ 
+ 
+ </div>
+ </div>
+ 
+
+
+
+ </td>
+ </tr>
+ 
+ <tr>
+ 
+ 
+ 
+ 
+ <td class="select selectcol">
+ 
+ <input aria-label="Seleccionar resultado de búsqueda: Logística estadística:" class="cb" id="bib1151651" name="biblionumber" type="checkbox" value="1151651" /> <label for="bib1151651"></label>
+ 
+ </td>
+ 
+ <td class="select selectcol">
+ 
+ 14.
+ 
+ </td>
+
+ 
+
+ 
+ <td class="bibliocol">
+ <div class="coverimages itemtype_LIB">
+ <a class="p1" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151651">
+ 
+ 
+ 
+ 
+ <span title="Logística estadística:" class="1151651" id="local-thumbnail14"></span>
+ 
+
+ 
+ 
+ 
+ <span title="Logística estadística:" id="amazon-thumbnail14"><img src="https://images-na.ssl-images-amazon.com/images/P/9585032376.01.TZZZZZZZ.jpg" alt="" class="item-thumbnail" /></span>
+ 
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ </a>
+
+ 
+
+ 
+
+
+ 
+ </div>
+ 
+ <!-- COinS / Openurl -->
+ <span class="Z3988" title="ctx_ver=Z39.88-2004&amp;amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;amp;rft.genre=book&amp;amp;rft.btitle=Log%C3%ADstica%20estad%C3%ADstica%3A%20Gesti%C3%B3n%20e%20indicadores%20en%20la%20cadena%20de%20suministro&amp;amp;rft.isbn=9789585032378&amp;amp;rft.au=Silvera%20Escudero%2C%20Rodolfo%20Enrique&amp;amp;rft.pub=ECOE%20ediciones&amp;amp;rft.date=2022"></span>
+ 
+ <div id="title_summary_1151651" class="title_summary">
+ 
+ 
+
+<a xmlns:str="http://exslt.org/strings" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151651" class="title">Logística estadística: Gestión e indicadores en la cadena de suministro </a><p xmlns:str="http://exslt.org/strings"><span class="byAuthor">por </span><span class="author">Silvera Escudero, Rodolfo Enrique.</span></p><span class="results_summary languages"><span class="language"><span class="label">Idioma: </span><span class="lang_code-spa">Español</span><span class="separator"> </span></span></span><span class="results_summary publisher"><span class="label">Editor: </span>Bogotá - Colombia ECOE ediciones 2022</span><span xmlns:str="http://exslt.org/strings" class="results_summary availability"><span class="label">Disponibilidad: </span><span class="available reallyavailable"><span class="AvailabilityLabel"><strong>Ítems disponibles para préstamo: </strong></span><span class="ItemSummary"><span class="ItemBranch">Bibl. Central de Ingenierías</span><span class="CallNumberAndLabel"><span class="LabelCallNumber">Signatura topográfica: </span><span class="CallNumber">658.5/S55</span></span> (2). </span></span></span>
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ <div class="results_summary ratings">
+ 
+ 
+ <div class="br-wrapper br-theme-fontawesome-stars">
+ <div class="br-widget br-readonly">
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ </div>
+ </div>
+
+ 
+ <br />
+ 
+ </div> <!-- / .results_summary -->
+ 
+
+ <div class="actions-menu noprint">
+ 
+ 
+ 
+ <span class="actions"><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=1151651" class="btn btn-link"><i class="fa fa-bookmark"></i> Hacer reserva</a></span><!-- add back when available 0 holds in queue-->
+ 
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+
+ 
+
+ 
+ 
+ <span class="actions"><a data-biblionumber="1151651" class="btn btn-link addtocart cart cart1151651" href="#"><i class="fa fa-shopping-cart"></i> Agregar al carrito</a> <a style="display:none;" data-biblionumber="1151651" class="btn btn-link remove cartRemove cartR1151651" href="#">(remover)</a></span>
+ 
+ 
+ </div>
+ </div>
+ 
+
+
+
+ </td>
+ </tr>
+ 
+ <tr>
+ 
+ 
+ 
+ 
+ <td class="select selectcol">
+ 
+ <input aria-label="Seleccionar resultado de búsqueda: Logistica intermodal" class="cb" id="bib1151653" name="biblionumber" type="checkbox" value="1151653" /> <label for="bib1151653"></label>
+ 
+ </td>
+ 
+ <td class="select selectcol">
+ 
+ 15.
+ 
+ </td>
+
+ 
+
+ 
+ <td class="bibliocol">
+ <div class="coverimages itemtype_LIB">
+ <a class="p1" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151653">
+ 
+ 
+ 
+ 
+ <span title="Logistica intermodal" class="1151653" id="local-thumbnail15"></span>
+ 
+
+ 
+ 
+ 
+ <span title="Logistica intermodal" id="amazon-thumbnail15"><img src="https://images-na.ssl-images-amazon.com/images/P/9587922905.01.TZZZZZZZ.jpg" alt="" class="item-thumbnail" /></span>
+ 
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ </a>
+
+ 
+
+ 
+
+
+ 
+ </div>
+ 
+ <!-- COinS / Openurl -->
+ <span class="Z3988" title="ctx_ver=Z39.88-2004&amp;amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;amp;rft.genre=book&amp;amp;rft.btitle=Logistica%20intermodal&amp;amp;rft.isbn=9789587922905&amp;amp;rft.au=Eslava%20Sarmiento%2C%20Alexander&amp;amp;rft.pub=Ediciones%20de%20la%20U&amp;amp;rft.date=2021"></span>
+ 
+ <div id="title_summary_1151653" class="title_summary">
+ 
+ 
+
+<a xmlns:str="http://exslt.org/strings" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151653" class="title">Logistica intermodal </a><p xmlns:str="http://exslt.org/strings"><span class="byAuthor">por </span><span class="author">Eslava Sarmiento, Alexander.</span></p><span class="results_summary languages"><span class="language"><span class="label">Idioma: </span><span class="lang_code-spa">Español</span><span class="separator"> </span></span></span><span class="results_summary publisher"><span class="label">Editor: </span>Bogotá - Colombia Ediciones de la U 2021</span><span xmlns:str="http://exslt.org/strings" class="results_summary availability"><span class="label">Disponibilidad: </span><span class="available reallyavailable"><span class="AvailabilityLabel"><strong>Ítems disponibles para préstamo: </strong></span><span class="ItemSummary"><span class="ItemBranch">Bibl. Central de Ingenierías</span><span class="CallNumberAndLabel"><span class="LabelCallNumber">Signatura topográfica: </span><span class="CallNumber">658.7/E83</span></span> (1). </span></span></span>
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ <div class="results_summary ratings">
+ 
+ 
+ <div class="br-wrapper br-theme-fontawesome-stars">
+ <div class="br-widget br-readonly">
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ </div>
+ </div>
+
+ 
+ <br />
+ 
+ </div> <!-- / .results_summary -->
+ 
+
+ <div class="actions-menu noprint">
+ 
+ 
+ 
+ <span class="actions"><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=1151653" class="btn btn-link"><i class="fa fa-bookmark"></i> Hacer reserva</a></span><!-- add back when available 0 holds in queue-->
+ 
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+
+ 
+
+ 
+ 
+ <span class="actions"><a data-biblionumber="1151653" class="btn btn-link addtocart cart cart1151653" href="#"><i class="fa fa-shopping-cart"></i> Agregar al carrito</a> <a style="display:none;" data-biblionumber="1151653" class="btn btn-link remove cartRemove cartR1151653" href="#">(remover)</a></span>
+ 
+ 
+ </div>
+ </div>
+ 
+
+
+
+ </td>
+ </tr>
+ 
+ <tr>
+ 
+ 
+ 
+ 
+ <td class="select selectcol">
+ 
+ <input aria-label="Seleccionar resultado de búsqueda: Logística XY Plus:" class="cb" id="bib1151654" name="biblionumber" type="checkbox" value="1151654" /> <label for="bib1151654"></label>
+ 
+ </td>
+ 
+ <td class="select selectcol">
+ 
+ 16.
+ 
+ </td>
+
+ 
+
+ 
+ <td class="bibliocol">
+ <div class="coverimages itemtype_LIB">
+ <a class="p1" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151654">
+ 
+ 
+ 
+ 
+ <span title="Logística XY Plus:" class="1151654" id="local-thumbnail16"></span>
+ 
+
+ 
+ 
+ 
+ <span title="Logística XY Plus:" id="amazon-thumbnail16"><img src="https://images-na.ssl-images-amazon.com/images/P/9585037858.01.TZZZZZZZ.jpg" alt="" class="item-thumbnail" /></span>
+ 
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ </a>
+
+ 
+
+ 
+
+
+ 
+ </div>
+ 
+ <!-- COinS / Openurl -->
+ <span class="Z3988" title="ctx_ver=Z39.88-2004&amp;amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;amp;rft.genre=book&amp;amp;rft.btitle=Log%C3%ADstica%20XY%20Plus%3A%20Gesti%C3%B3n%20y%20sostenibilidad%20de%20la%20cadena%20de%20suministro&amp;amp;rft.isbn=9789585037854&amp;amp;rft.au=Silvera%20Escudero%2C%20Rodolfo%20Enrique&amp;amp;rft.pub=ECOE%20ediciones&amp;amp;rft.date=2024"></span>
+ 
+ <div id="title_summary_1151654" class="title_summary">
+ 
+ 
+
+<a xmlns:str="http://exslt.org/strings" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151654" class="title">Logística XY Plus: Gestión y sostenibilidad de la cadena de suministro </a><p xmlns:str="http://exslt.org/strings"><span class="byAuthor">por </span><span class="author">Silvera Escudero, Rodolfo Enrique.</span></p><span class="results_summary languages"><span class="language"><span class="label">Idioma: </span><span class="lang_code-spa">Español</span><span class="separator"> </span></span></span><span class="results_summary publisher"><span class="label">Editor: </span>Bogotá - Colombia ECOE ediciones 2024</span><span xmlns:str="http://exslt.org/strings" class="results_summary availability"><span class="label">Disponibilidad: </span><span class="available reallyavailable"><span class="AvailabilityLabel"><strong>Ítems disponibles para préstamo: </strong></span><span class="ItemSummary"><span class="ItemBranch">Bibl. Central de Ingenierías</span><span class="CallNumberAndLabel"><span class="LabelCallNumber">Signatura topográfica: </span><span class="CallNumber">658.7/S55</span></span> (1). </span></span></span>
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ <div class="results_summary ratings">
+ 
+ 
+ <div class="br-wrapper br-theme-fontawesome-stars">
+ <div class="br-widget br-readonly">
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ </div>
+ </div>
+
+ 
+ <br />
+ 
+ </div> <!-- / .results_summary -->
+ 
+
+ <div class="actions-menu noprint">
+ 
+ 
+ 
+ <span class="actions"><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=1151654" class="btn btn-link"><i class="fa fa-bookmark"></i> Hacer reserva</a></span><!-- add back when available 0 holds in queue-->
+ 
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+
+ 
+
+ 
+ 
+ <span class="actions"><a data-biblionumber="1151654" class="btn btn-link addtocart cart cart1151654" href="#"><i class="fa fa-shopping-cart"></i> Agregar al carrito</a> <a style="display:none;" data-biblionumber="1151654" class="btn btn-link remove cartRemove cartR1151654" href="#">(remover)</a></span>
+ 
+ 
+ </div>
+ </div>
+ 
+
+
+
+ </td>
+ </tr>
+ 
+ <tr>
+ 
+ 
+ 
+ 
+ <td class="select selectcol">
+ 
+ <input aria-label="Seleccionar resultado de búsqueda: Macro ecomomía" class="cb" id="bib1151655" name="biblionumber" type="checkbox" value="1151655" /> <label for="bib1151655"></label>
+ 
+ </td>
+ 
+ <td class="select selectcol">
+ 
+ 17.
+ 
+ </td>
+
+ 
+
+ 
+ <td class="bibliocol">
+ <div class="coverimages itemtype_LIB">
+ <a class="p1" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151655">
+ 
+ 
+ 
+ 
+ <span title="Macro ecomomía" class="1151655" id="local-thumbnail17"></span>
+ 
+
+ 
+ 
+ 
+ <span title="Macro ecomomía" id="amazon-thumbnail17"><img src="https://images-na.ssl-images-amazon.com/images/P/9587926021.01.TZZZZZZZ.jpg" alt="" class="item-thumbnail" /></span>
+ 
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ </a>
+
+ 
+
+ 
+
+
+ 
+ </div>
+ 
+ <!-- COinS / Openurl -->
+ <span class="Z3988" title="ctx_ver=Z39.88-2004&amp;amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;amp;rft.genre=book&amp;amp;rft.btitle=Macro%20ecomom%C3%ADa&amp;amp;rft.isbn=9789587926026&amp;amp;rft.au=Villamizar%20Jaimes%2C%20Mauricio&amp;amp;rft.pub=Ediciones%20de%20la%20U&amp;amp;rft.date=2023"></span>
+ 
+ <div id="title_summary_1151655" class="title_summary">
+ 
+ 
+
+<a xmlns:str="http://exslt.org/strings" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151655" class="title">Macro ecomomía </a><p xmlns:str="http://exslt.org/strings"><span class="byAuthor">por </span><span class="author">Villamizar Jaimes, Mauricio.</span></p><span class="results_summary edition"><span class="label">Edición: </span>2a edición</span><span class="results_summary languages"><span class="language"><span class="label">Idioma: </span><span class="lang_code-spa">Español</span><span class="separator"> </span></span></span><span class="results_summary publisher"><span class="label">Editor: </span>Bogotá - Colombia Ediciones de la U 2023</span><span xmlns:str="http://exslt.org/strings" class="results_summary availability"><span class="label">Disponibilidad: </span><span class="available reallyavailable"><span class="AvailabilityLabel"><strong>Ítems disponibles para préstamo: </strong></span><span class="ItemSummary"><span class="ItemBranch">Bibl. Central de Ingenierías</span><span class="CallNumberAndLabel"><span class="LabelCallNumber">Signatura topográfica: </span><span class="CallNumber">339/V65</span></span> (1). </span></span></span>
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ <div class="results_summary ratings">
+ 
+ 
+ <div class="br-wrapper br-theme-fontawesome-stars">
+ <div class="br-widget br-readonly">
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ </div>
+ </div>
+
+ 
+ <br />
+ 
+ </div> <!-- / .results_summary -->
+ 
+
+ <div class="actions-menu noprint">
+ 
+ 
+ 
+ <span class="actions"><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=1151655" class="btn btn-link"><i class="fa fa-bookmark"></i> Hacer reserva</a></span><!-- add back when available 0 holds in queue-->
+ 
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+
+ 
+
+ 
+ 
+ <span class="actions"><a data-biblionumber="1151655" class="btn btn-link addtocart cart cart1151655" href="#"><i class="fa fa-shopping-cart"></i> Agregar al carrito</a> <a style="display:none;" data-biblionumber="1151655" class="btn btn-link remove cartRemove cartR1151655" href="#">(remover)</a></span>
+ 
+ 
+ </div>
+ </div>
+ 
+
+
+
+ </td>
+ </tr>
+ 
+ <tr>
+ 
+ 
+ 
+ 
+ <td class="select selectcol">
+ 
+ <input aria-label="Seleccionar resultado de búsqueda: Macroeconomia:" class="cb" id="bib1151656" name="biblionumber" type="checkbox" value="1151656" /> <label for="bib1151656"></label>
+ 
+ </td>
+ 
+ <td class="select selectcol">
+ 
+ 18.
+ 
+ </td>
+
+ 
+
+ 
+ <td class="bibliocol">
+ <div class="coverimages itemtype_LIB">
+ <a class="p1" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151656">
+ 
+ 
+ 
+ 
+ <span title="Macroeconomia:" class="1151656" id="local-thumbnail18"></span>
+ 
+
+ 
+ 
+ 
+ <span title="Macroeconomia:" id="amazon-thumbnail18"><img src="https://images-na.ssl-images-amazon.com/images/P/6075700137.01.TZZZZZZZ.jpg" alt="" class="item-thumbnail" /></span>
+ 
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ </a>
+
+ 
+
+ 
+
+
+ 
+ </div>
+ 
+ <!-- COinS / Openurl -->
+ <span class="Z3988" title="ctx_ver=Z39.88-2004&amp;amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;amp;rft.genre=book&amp;amp;rft.btitle=Macroeconomia%3A%20Version%20para%20America%20Latina&amp;amp;rft.isbn=9786075700137&amp;amp;rft.au=Mankiw%2C%20N.%20Gregory&amp;amp;rft.pub=Cengage&amp;amp;rft.date=2021"></span>
+ 
+ <div id="title_summary_1151656" class="title_summary">
+ 
+ 
+
+<a xmlns:str="http://exslt.org/strings" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151656" class="title">Macroeconomia: Version para America Latina </a><p xmlns:str="http://exslt.org/strings"><span class="byAuthor">por </span><span class="author">Mankiw, N. Gregory.</span></p><span class="results_summary edition"><span class="label">Edición: </span>7a edición</span><span class="results_summary languages"><span class="language"><span class="label">Idioma: </span><span class="lang_code-spa">Español</span><span class="separator"> </span></span></span><span class="results_summary publisher"><span class="label">Editor: </span>México Cengage 2021</span><span xmlns:str="http://exslt.org/strings" class="results_summary availability"><span class="label">Disponibilidad: </span><span class="available reallyavailable"><span class="AvailabilityLabel"><strong>Ítems disponibles para préstamo: </strong></span><span class="ItemSummary"><span class="ItemBranch">Bibl. Central de Ingenierías</span><span class="CallNumberAndLabel"><span class="LabelCallNumber">Signatura topográfica: </span><span class="CallNumber">339/M22</span></span> (1). </span></span></span>
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ <div class="results_summary ratings">
+ 
+ 
+ <div class="br-wrapper br-theme-fontawesome-stars">
+ <div class="br-widget br-readonly">
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ </div>
+ </div>
+
+ 
+ <br />
+ 
+ </div> <!-- / .results_summary -->
+ 
+
+ <div class="actions-menu noprint">
+ 
+ 
+ 
+ <span class="actions"><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=1151656" class="btn btn-link"><i class="fa fa-bookmark"></i> Hacer reserva</a></span><!-- add back when available 0 holds in queue-->
+ 
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+
+ 
+
+ 
+ 
+ <span class="actions"><a data-biblionumber="1151656" class="btn btn-link addtocart cart cart1151656" href="#"><i class="fa fa-shopping-cart"></i> Agregar al carrito</a> <a style="display:none;" data-biblionumber="1151656" class="btn btn-link remove cartRemove cartR1151656" href="#">(remover)</a></span>
+ 
+ 
+ </div>
+ </div>
+ 
+
+
+
+ </td>
+ </tr>
+ 
+ <tr>
+ 
+ 
+ 
+ 
+ <td class="select selectcol">
+ 
+ <input aria-label="Seleccionar resultado de búsqueda: Macroeconomía básica:" class="cb" id="bib1151657" name="biblionumber" type="checkbox" value="1151657" /> <label for="bib1151657"></label>
+ 
+ </td>
+ 
+ <td class="select selectcol">
+ 
+ 19.
+ 
+ </td>
+
+ 
+
+ 
+ <td class="bibliocol">
+ <div class="coverimages itemtype_LIB">
+ <a class="p1" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151657">
+ 
+ 
+ 
+ 
+ <span title="Macroeconomía básica:" class="1151657" id="local-thumbnail19"></span>
+ 
+
+ 
+ 
+ 
+ <span title="Macroeconomía básica:" id="amazon-thumbnail19"><img src="https://images-na.ssl-images-amazon.com/images/P/9587925491.01.TZZZZZZZ.jpg" alt="" class="item-thumbnail" /></span>
+ 
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ </a>
+
+ 
+
+ 
+
+
+ 
+ </div>
+ 
+ <!-- COinS / Openurl -->
+ <span class="Z3988" title="ctx_ver=Z39.88-2004&amp;amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;amp;rft.genre=book&amp;amp;rft.btitle=Macroeconom%C3%ADa%20b%C3%A1sica%3A%20Con%20indicadores%20econ%C3%B3micos&amp;amp;rft.isbn=9789587925494&amp;amp;rft.au=Vargas%20Valbuena%2C%20Marthe%20Alicia&amp;amp;rft.pub=Ediciones%20de%20la%20U&amp;amp;rft.date=2023"></span>
+ 
+ <div id="title_summary_1151657" class="title_summary">
+ 
+ 
+
+<a xmlns:str="http://exslt.org/strings" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151657" class="title">Macroeconomía básica: Con indicadores económicos </a><p xmlns:str="http://exslt.org/strings"><span class="byAuthor">por </span><span class="author">Vargas Valbuena, Marthe Alicia.</span></p><span class="results_summary edition"><span class="label">Edición: </span>2a edición</span><span class="results_summary languages"><span class="language"><span class="label">Idioma: </span><span class="lang_code-spa">Español</span><span class="separator"> </span></span></span><span class="results_summary publisher"><span class="label">Editor: </span>Bogotá - Colombia Ediciones de la U 2023</span><span xmlns:str="http://exslt.org/strings" class="results_summary availability"><span class="label">Disponibilidad: </span><span class="available reallyavailable"><span class="AvailabilityLabel"><strong>Ítems disponibles para préstamo: </strong></span><span class="ItemSummary"><span class="ItemBranch">Bibl. Central de Ingenierías</span><span class="CallNumberAndLabel"><span class="LabelCallNumber">Signatura topográfica: </span><span class="CallNumber">339/V28</span></span> (2). </span></span></span>
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ <div class="results_summary ratings">
+ 
+ 
+ <div class="br-wrapper br-theme-fontawesome-stars">
+ <div class="br-widget br-readonly">
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ </div>
+ </div>
+
+ 
+ <br />
+ 
+ </div> <!-- / .results_summary -->
+ 
+
+ <div class="actions-menu noprint">
+ 
+ 
+ 
+ <span class="actions"><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=1151657" class="btn btn-link"><i class="fa fa-bookmark"></i> Hacer reserva</a></span><!-- add back when available 0 holds in queue-->
+ 
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+
+ 
+
+ 
+ 
+ <span class="actions"><a data-biblionumber="1151657" class="btn btn-link addtocart cart cart1151657" href="#"><i class="fa fa-shopping-cart"></i> Agregar al carrito</a> <a style="display:none;" data-biblionumber="1151657" class="btn btn-link remove cartRemove cartR1151657" href="#">(remover)</a></span>
+ 
+ 
+ </div>
+ </div>
+ 
+
+
+
+ </td>
+ </tr>
+ 
+ <tr>
+ 
+ 
+ 
+ 
+ <td class="select selectcol">
+ 
+ <input aria-label="Seleccionar resultado de búsqueda: Macroeconomía para la gerencia latinoamericana" class="cb" id="bib1151658" name="biblionumber" type="checkbox" value="1151658" /> <label for="bib1151658"></label>
+ 
+ </td>
+ 
+ <td class="select selectcol">
+ 
+ 20.
+ 
+ </td>
+
+ 
+
+ 
+ <td class="bibliocol">
+ <div class="coverimages itemtype_LIB">
+ <a class="p1" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151658">
+ 
+ 
+ 
+ 
+ <span title="Macroeconomía para la gerencia latinoamericana" class="1151658" id="local-thumbnail20"></span>
+ 
+
+ 
+ 
+ 
+ <span title="Macroeconomía para la gerencia latinoamericana" id="amazon-thumbnail20"><img src="https://images-na.ssl-images-amazon.com/images/P/958503364X.01.TZZZZZZZ.jpg" alt="" class="item-thumbnail" /></span>
+ 
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ </a>
+
+ 
+
+ 
+
+
+ 
+ </div>
+ 
+ <!-- COinS / Openurl -->
+ <span class="Z3988" title="ctx_ver=Z39.88-2004&amp;amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;amp;rft.genre=book&amp;amp;rft.btitle=Macroeconom%C3%ADa%20para%20la%20gerencia%20latinoamericana&amp;amp;rft.isbn=9789585033641&amp;amp;rft.au=Ochoa%20D%C3%ADaz%2C%20H%C3%A9ctor&amp;amp;rft.au=Gonz%C3%A1lez%20%20Espitia%2C%20Carlos%20Giovanni&amp;amp;rft.pub=ECOE%20ediciones&amp;amp;rft.date=2022"></span>
+ 
+ <div id="title_summary_1151658" class="title_summary">
+ 
+ 
+
+<a xmlns:str="http://exslt.org/strings" href="/cgi-bin/koha/opac-detail.pl?biblionumber=1151658" class="title">Macroeconomía para la gerencia latinoamericana </a><p xmlns:str="http://exslt.org/strings"><span class="byAuthor">por </span><span class="author">Ochoa Díaz, Héctor<span class="separator"> | </span>González  Espitia, Carlos Giovanni.</span></p><span class="results_summary edition"><span class="label">Edición: </span>2a edición</span><span class="results_summary languages"><span class="language"><span class="label">Idioma: </span><span class="lang_code-spa">Español</span><span class="separator"> </span></span></span><span class="results_summary publisher"><span class="label">Editor: </span>Bogotá - Colombia ECOE ediciones 2022</span><span xmlns:str="http://exslt.org/strings" class="results_summary availability"><span class="label">Disponibilidad: </span><span class="available reallyavailable"><span class="AvailabilityLabel"><strong>Ítems disponibles para préstamo: </strong></span><span class="ItemSummary"><span class="ItemBranch">Bibl. Central de Ingenierías</span><span class="CallNumberAndLabel"><span class="LabelCallNumber">Signatura topográfica: </span><span class="CallNumber">339/O32</span></span> (1). </span></span></span>
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ <div class="results_summary ratings">
+ 
+ 
+ <div class="br-wrapper br-theme-fontawesome-stars">
+ <div class="br-widget br-readonly">
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ 
+ <a href="#"></a>
+ 
+ 
+ </div>
+ </div>
+
+ 
+ <br />
+ 
+ </div> <!-- / .results_summary -->
+ 
+
+ <div class="actions-menu noprint">
+ 
+ 
+ 
+ <span class="actions"><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=1151658" class="btn btn-link"><i class="fa fa-bookmark"></i> Hacer reserva</a></span><!-- add back when available 0 holds in queue-->
+ 
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+
+ 
+
+ 
+ 
+ <span class="actions"><a data-biblionumber="1151658" class="btn btn-link addtocart cart cart1151658" href="#"><i class="fa fa-shopping-cart"></i> Agregar al carrito</a> <a style="display:none;" data-biblionumber="1151658" class="btn btn-link remove cartRemove cartR1151658" href="#">(remover)</a></span>
+ 
+ 
+ </div>
+ </div>
+ 
+
+
+
+ </td>
+ </tr>
+ 
+ </table>
+ </form> <!-- / #bookbag_form -->
+
+ <form id="hold_form" name="hold_form" method="get" action="/cgi-bin/koha/opac-reserve.pl">
+ <!-- The value will be set by holdBiblioNums() in basket.js -->
+ <input id="hold_form_biblios" type="hidden" name="biblionumbers" value=""/>
+ </form>
+ </div> <!-- / .searchresults -->
+
+ <div id="bottom-pages">
+ <div class="pagination pagination-small noprint">
+ 
+ <ul>
+ 
+ 
+ 
+ <li class="active"><a clas="page-num current" href="#">1</a></li>
+ 
+ 
+ 
+ <li class="page-num"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;offset=20&amp;sort_by=acqdate_dsc">2</a></li>
+ 
+ 
+ 
+ <li class="page-num"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;offset=40&amp;sort_by=acqdate_dsc">3</a></li>
+ 
+ 
+ 
+ <li class="page-num"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;offset=60&amp;sort_by=acqdate_dsc">4</a></li>
+ 
+ 
+ 
+ <li class="page-num"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;offset=80&amp;sort_by=acqdate_dsc">5</a></li>
+ 
+ 
+ 
+ <li class="page-num"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;offset=100&amp;sort_by=acqdate_dsc">6</a></li>
+ 
+ 
+ 
+ <li class="page-num"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;offset=120&amp;sort_by=acqdate_dsc">7</a></li>
+ 
+ 
+ 
+ <li class="page-num"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;offset=140&amp;sort_by=acqdate_dsc">8</a></li>
+ 
+ 
+ 
+ <li class="page-num"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;offset=160&amp;sort_by=acqdate_dsc">9</a></li>
+ 
+ 
+ 
+ <li class="page-num"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;offset=180&amp;sort_by=acqdate_dsc">10</a></li>
+ 
+ 
+ 
+ <li class="page-next"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;offset=20&amp;sort_by=acqdate_dsc">Siguiente <i class="fa fa-fw fa-angle-double-right"></i></a></li>
+ <li class="page-last"><a href="/cgi-bin/koha/opac-search.pl?idx=kw&q=economia&amp;offset=3760&amp;sort_by=acqdate_dsc">Último <i class="fa fa-fw fa-angle-double-right"></i></a></li>
+ 
+ </ul>
+ </div>
+
+</div>
+
+ 
+
+ 
+ 
+ </div> <!-- / #userresults -->
+ </div> <!-- /.span10/12 -->
+ </div> <!-- / .row-fluid -->
+ </div> <!-- / .container-fluid -->
+ </div><!-- / .main -->
+
+
+
+
+ 
+ 
+ <div class="container-fluid">
+ <div class="row-fluid">
+ <div class="span12">
+ <div id="opaccredits" class="noprint">
+ <center><marquee width=100% behavior=alternate>
+
+<div class="wrapper"> 
+
+<a href="https://www.sunedu.gob.pe/" target="_blank" style="width: 130px; height: 70px; margin-right: 25px;"><img src="https://www.sunedu.gob.pe/wp-content/uploads/2016/01/logo_02_retina.png" width="130" height="70" alt=""></a>
+
+
+<a href="http://www.webofscience.com" target="_blank" style="width: 130px; height: 70px; margin-right: 25px;"><img src="http://www.unsa.edu.pe/wp-content/uploads/2018/11/webofsciencie.jpg" width="130" height="70" alt=""></a>
+
+<a href="https://academicimpact.un.org/es" target="_blank" style="width: 130px; height: 70px; margin-right: 25px;"><img src="http://www.unsa.edu.pe/wp-content/uploads/2018/10/impact.png" width="130" height="70" alt=""></a>
+
+<a href="http://www.redidi.org.pe/" target="_blank" style="width: 130px; height: 70px; margin-right: 25px;"><img src="http://www.unsa.edu.pe/wp-content/uploads/2018/01/redidi-130x63.png" width="130" height="70" alt=""></a>
+
+<a href="https://grupolarabida.org/" target="_blank" style="width: 130px; height: 70px; margin-right: 25px;"><img src="http://www.unsa.edu.pe/wp-content/uploads/2018/10/rabida.png" width="130" height="70" alt=""></a>
+
+<a href="http://www.peru.gob.pe/" target="_blank" style="width: 130px; height: 70px; margin-right: 25px;"><img src="http://www.unsa.edu.pe/wp-content/uploads/2017/10/estado-peruano.png" width="130" height="70" alt=""></a>
+
+<a href="https://www.sineace.gob.pe/" target="_blank" style="width: 130px; height: 70px; margin-right: 25px;"><img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Logo_Sineace_%282%29.png" width="130" height="70" alt=""></a>
+
+
+</div>
+</marquee>
+<td width="40%"><br>
+<center>
+<td width="40%">
+
+Horario de atención:<br>
+de lunes a viernes de 8:00 a 20:30 horas</center>
+<tr>
+<tr>
+<table>
+<p></b>
+<hr width=50%>
+<hr>
+Contacto: lalvarezr@unsa.edu.pe - Biblioteca Virtual 
+<p>
+<hr>
+
+
+<p><strong>Universidad Nacional de San Agustín © 2020</a> │ Biblioteca Virtual │
+Arequipa - Perú</strong>
+
+ </div>
+ </div>
+ </div>
+ </div>
+ 
+
+ 
+
+</div> <!-- / #wrap in masthead.inc -->
+
+
+
+
+<!-- JavaScript includes -->
+<script src="/opac-tmpl/bootstrap/lib/jquery/jquery-3.4.1.min_19.1129000.js"></script>
+<script src="/opac-tmpl/bootstrap/lib/jquery/jquery-migrate-3.1.0.min_19.1129000.js"></script>
+<script src="/opac-tmpl/bootstrap/lib/jquery/jquery-ui-1.12.1.min_19.1129000.js"></script>
+<script>
+// Resolve name collision between jQuery UI and Twitter Bootstrap
+$.widget.bridge('uitooltip', $.ui.tooltip);
+</script>
+<script src="/opac-tmpl/bootstrap/lib/bootstrap/js/bootstrap.min_19.1129000.js"></script>
+<script src="/opac-tmpl/bootstrap/lib/fontfaceobserver.min_19.1129000.js"></script>
+<script src="/opac-tmpl/bootstrap/js/global_19.1129000.js"></script>
+<script>
+    Modernizr.load([
+        // Test need for polyfill
+        {
+            test: window.matchMedia,
+            nope: "/opac-tmpl/bootstrap/lib/media.match.min_19.1129000.js"
+        },
+        // and then load enquire
+        "/opac-tmpl/bootstrap/lib/enquire.min_19.1129000.js",
+        "/opac-tmpl/bootstrap/js/script_19.1129000.js",
+    ]);
+
+    // Fix for datepicker in a modal
+    $.fn.modal.Constructor.prototype.enforceFocus = function () {};
+</script>
+
+<script>//<![CDATA[
+        var NO_AMAZON_IMAGE = _("No hay imagen de cubierta disponible");
+    //]]>
+</script>
+<script src="/opac-tmpl/bootstrap/js/amazonimages_19.1129000.js"></script>
+
+
+<script src="/opac-tmpl/lib/emoji-picker/js/config_19.1129000.js"></script>
+<script src="/opac-tmpl/lib/emoji-picker/js/util_19.1129000.js"></script>
+<script src="/opac-tmpl/lib/emoji-picker/js/jquery.emojiarea_19.1129000.js"></script>
+<script src="/opac-tmpl/lib/emoji-picker/js/emoji-picker_19.1129000.js"></script>
+
+<script>
+    //<![CDATA[
+    var MSG_CONFIRM_AGAIN = _("Advertencia: No puede deshacerse. Por favor confirmar nuevamente")
+    var MSG_DELETE_SEARCH_HISTORY = _("¿Está seguro que desea eliminar su historial de búsqueda?");
+    var MSG_NO_SUGGESTION_SELECTED = _("No se seleccionó ninguna sugerencia");
+    var MSG_SEARCHING = _("Buscando %s...");
+    var MSG_ERROR_SEARCHING_COLLECTION = _("Error de la búsqueda en la colección %s");
+    var MSG_NO_RESULTS_FOUND_IN_COLLECTION = _("No se han encontrado resultados en la colección de la biblioteca %s");
+    var MSG_RESULTS_FOUND_IN_COLLECTION = _("Se encontraron %s resultados en la colección de la biblioteca %s");
+    var MSG_BY = _("por");
+    var MSG_TYPE = _("Tipo");
+    var MSG_NEXT = _("Siguiente");
+    var MSG_PREVIOUS = _("Previo");
+    var MSG_CHECKOUTS = _("Préstamos");
+    var MSG_NO_CHECKOUTS = _("Sin préstamos");
+    var MSG_CHECK_OUT = _("Préstamo");
+    var MSG_CHECK_OUT_CONFIRM = _("¿Está seguro de querer prestar esta éste ítem?");
+    var MSG_CHECKED_OUT_UNTIL = _("Prestado hasta %s");
+    var MSG_CHECK_IN = _("Devolución");
+    var MSG_CHECK_IN_CONFIRM = _("¿Está seguro de querer devolver éste ítem?");
+    var MSG_NO_CHECKOUTS = _("Sin préstamos");
+    var MSG_DOWNLOAD = _("Bajar");
+    var MSG_HOLDS = _("Reservas");
+    var MSG_NO_HOLDS = _("Sin reservas");
+    var MSG_PLACE_HOLD = _("Hacer reserva");
+    var MSG_CANCEL_HOLD = _("Cancelar");
+    var MSG_CANCEL_HOLD_CONFIRM = _("¿Está seguro que desea cancelar esta reserva?");
+    var MSG_ON_HOLD = _("Reservado");
+
+    
+    
+    
+        $(window).load(function() {
+            verify_images();
+         });
+    
+    $(".print-large").on("click",function(){
+        window.print();
+        return false;
+    });
+    $("#ulactioncontainer > ul > li > a.addtoshelf").on("click",function(){
+        Dopop('opac-addbybiblionumber.pl?biblionumber=');
+        return false;
+    });
+    $("body").on("click", ".addtocart", function(e){
+        e.preventDefault();
+        var biblionumber = $(this).data("biblionumber");
+        addRecord( biblionumber );
+    });
+    $("body").on("click", ".cartRemove", function(e){
+        e.preventDefault();
+        var biblionumber = $(this).data("biblionumber");
+        delSingleRecord( biblionumber );
+    });
+    $(".clearsh").on("click", function(){
+        return confirmDelete(MSG_DELETE_SEARCH_HISTORY);
+    });
+    //]]>
+</script>
+
+
+ <script src="/opac-tmpl/bootstrap/js/basket_19.1129000.js"></script>
+
+
+
+
+
+
+
+
+
+ <script src="/opac-tmpl/bootstrap/js/localcovers_19.1129000.js"></script>
+ <script>
+    //<![CDATA[
+    var NO_LOCAL_JACKET = _("No hay imagen de cubierta disponible");
+    //]]>
+    </script>
+
+
+
+
+
+
+
+
+<script src="/opac-tmpl/bootstrap/lib/jquery/plugins/jquery.cookie.min_19.1129000.js"></script>
+<script>
+$(document).ready(function() {
+    if($('#searchsubmit').length) {
+        $(document).on("click", '#searchsubmit', function(e) {
+            jQuery.removeCookie("form_serialized", { path: '/'});
+            jQuery.removeCookie("form_serialized_limits", { path: '/'});
+            jQuery.removeCookie("search_path_code", { path: '/'});
+        });
+    }
+
+    window.emojiPicker = new EmojiPicker({
+      emojiable_selector: '[data-emojiable=true]',
+      assetsPath: '/opac-tmpl/lib/emoji-picker/img/',
+      popupButtonClasses: 'fa fa-smile-o'
+    });
+    window.emojiPicker.discover();
+});
+</script>
+
+
+
+
+<script src="/opac-tmpl/bootstrap/lib/jquery/plugins/jquery.checkboxes.min_19.1129000.js"></script>
+<script src="/opac-tmpl/bootstrap/js/authtoresults_19.1129000.js"></script>
+<script src="/opac-tmpl/lib/hc-sticky_19.1129000.js"></script>
+<script src="/opac-tmpl/bootstrap/lib/jquery/plugins/jquery.highlight-3_19.1129000.js"></script>
+<script>
+
+function holdMultiple() {
+    var checkedBiblioNums = ""; // Separated by "/"
+    var checkedCount = 0;
+    if(document.bookbag_form.biblionumber.length > 0) {
+        for (var i=0; i < document.bookbag_form.biblionumber.length; i++) {
+            if (document.bookbag_form.biblionumber[i].checked) {
+                checkedBiblioNums += (document.bookbag_form.biblionumber[i].value + "/");
+                checkedCount++;
+            }
+        }
+    }
+
+    if (checkedCount > 0) {
+        holdBiblioNums(checkedBiblioNums);
+    } else {
+        alert(MSG_NO_RECORD_SELECTED);
+    }
+}
+
+function holdBiblioNums(numList) {
+    // numList: biblio numbers separated by "/"
+    $("#hold_form_biblios").attr("value", numList);
+    $("#hold_form").submit();
+}
+
+
+
+
+function enableCheckboxActions(){
+    // Enable/disable controls if checkboxes are checked
+    var checkedBoxes = $(".checkboxed input:checkbox:checked");
+    var controls = $("#selections-toolbar .links a, #selections-toolbar .links input, #selections-toolbar .links select, #selections-toolbar .links label, #selections-toolbar .links button");
+    if ($(checkedBoxes).size()) {
+      $("#selections").html(_("Con los títulos seleccionados: "));
+      $(controls).removeClass("disabled");
+    } else {
+      $("#selections").html(_("Seleccionar títulos para: "));
+      $(controls).addClass("disabled");
+    }
+}
+
+
+var q_array = new Array();  // holds search terms if available
+
+function highlightOff() {
+    $("td").removeHighlight();
+    $(".highlight_toggle").toggle();
+}
+function highlightOn() {
+    var x;
+    for (x in q_array) {
+        q_array[x] = q_array[x].replace(/\w*:([\w])/, "$1");
+        q_array[x] = q_array[x].toLowerCase();
+        var myStopwords = "and|or|not".toLowerCase().split('|');
+        if ( (q_array[x].length > 0) && ($.inArray(q_array[x], myStopwords) == -1) ) {
+            $(".title").highlight(q_array[x]);
+            $(".author").highlight(q_array[x]);
+            $(".results_summary").highlight(q_array[x]);
+        }
+    }
+    $(".highlight_toggle").toggle();
+}
+
+$(document).ready(function(){
+
+    $(".moretoggle").click(function(e){
+        e.preventDefault();
+        $(this).siblings(".collapsible-facet").toggle();
+        $(this).siblings(".moretoggle").toggle();
+        $(this).toggle();
+    });
+
+    
+        $('a.title').each(function() {
+            $(this).attr("href", $(this).attr("href") + "&query_desc=kw%2Cwrdl%3A%20economia");
+        });
+    
+
+    $(".cb").click(function(){
+      enableCheckboxActions();
+    });
+    enableCheckboxActions();
+
+    $(".br-readonly a").on("click", function(e){
+        e.preventDefault();
+    });
+
+    
+
+    var param1 = "";
+    
+    param1 += "<span id=\"selections\">"+_("Seleccionar títulos para: ")+"</span>";
+    
+
+
+    param1 += "<select class=\"disabled\" name=\"addto\" id=\"addto\"><option>"+_("Agregar a...")+"</option>";
+
+    
+        param1 += "<option value=\"addtocart\">"+_("Carrito")+"<\/option>";
+    
+    
+        
+        
+            param1 += "<optgroup label=\""+_("Listas públicas:")+"\">";
+            
+            
+                
+                    param1 += "<option id=\"s14\" value=\"addtolist\">Pavimentos<\/option>";
+                    
+                    
+                
+            
+            param1 += "<\/optgroup>";
+        
+        
+        param1 +="<option value=\"newlist\">"+_("[ Nueva lista ]")+"<\/option>"
+    
+    param1 += "<\/select> <input type=\"submit\" class=\"btn btn-small\" value=\""+_("Guardar")+"\" />";
+
+
+    $('.resort').change(function() {
+        $('#bookbag_form').submit();
+    });
+    $("span.clearall").html("<a id=\"CheckNone\" href=\"#\">"+_("Limpiar todo")+"<\/a>");
+    $("span.checkall").html("<a id=\"CheckAll\" href=\"#\">"+_("Seleccionar todo")+"<\/a>");
+
+
+    $("span.addto").html(param1);
+
+
+
+    
+        $("#addto").on("change",function(){
+            cartList();
+        });
+        $(".addto").find("input:submit").click(function(){
+            cartList();
+            return false;
+        });
+    
+
+
+    function cartList(){
+        addtoOption = $("#addto").find("option:selected");
+        addtoval = addtoOption.val();
+        if(addtoval == "addtolist"){
+            var shelfnumber = addtoOption.attr("id").replace("s","");
+            if (vShelfAdd()) {
+                Dopop('/cgi-bin/koha/opac-addbybiblionumber.pl?selectedshelf='+shelfnumber+'&' + vShelfAdd());
+            }
+            return false;
+        } else if(addtoval == "newlist"){
+            
+                alert(_("Debe ingresar a su cuenta para crear o agregar a listas"));
+            
+            return false;
+        } else if(addtoval == "morelists"){
+            
+                alert(_("Debe ingresar a su cuenta para crear o agregar a listas"));
+            
+            return false;
+        }
+        if(addtoval == "addtocart" || $("#addto").attr("class") == "addtocart"){
+            addMultiple();
+            return false;
+         }
+    }
+    $("#CheckAll").click(function(){
+        $("#bookbag_form").checkCheckboxes();
+        enableCheckboxActions();
+        return false;
+    });
+    $("#CheckNone").click(function(){
+        $("#bookbag_form").unCheckCheckboxes();
+        enableCheckboxActions();
+        return false;
+    });
+
+
+    $("#placehold").html("<button class=\"btn btn-link hold disabled\" type=\"submit\"><i class=\"fa fa-fw fa-bookmark\"></i>" + _("Hacer reserva") + "</button>");
+    $("#placehold").find("button.hold").click(function(){
+        holdMultiple();
+        return false;
+    });
+
+
+
+    var query_desc = "kw,wrdl: economia";
+    var querystring = "economia";
+    
+        q_array = query_desc.split(" ");
+        // ensure that we don't have "" at the end of the array, which can
+        // break the highlighter
+        while (q_array.length > 0 && q_array[q_array.length-1] == "") {
+            q_array = q_array.splice(0,-1);
+        }
+        highlightOn();
+        $("#highlight_toggle_on" ).hide().click(function() {highlightOn() ;});
+        $("#highlight_toggle_off").show().click(function() {highlightOff();});
+    
+    
+    
+    
+
+
+
+
+
+KOHA.LocalCover.GetCoverFromBibnumber(false);
+
+
+
+
+
+$("input.newtag").on('keydown', function(e){
+    if (e.keyCode == 13) { e.preventDefault(); }
+});
+
+    Sticky = $("#floating");
+    Sticky.hcSticky({
+        stickTo: ".searchresults",
+        stickyClass: "floating"
+    });
+
+});
+</script>
+
+
+ <script>
+        $(document).ready(function(){
+
+ $("#item_callnumber").text("Ubicación Física");
+
+});
+    </script>
+
+
+
+</body>
+</html>
+
+
