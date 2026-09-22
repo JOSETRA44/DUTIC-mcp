@@ -1,6 +1,7 @@
 import type { Command } from "commander";
 import { humanizeAgo } from "../core/dates.js";
-import { libraryService } from "../biblioteca/composition.js";
+import { catalogHarvester, ingestKey, libraryService } from "../biblioteca/composition.js";
+import { HARVEST_BLOCK_SIZE, type HarvestResult } from "../biblioteca/application/harvestCatalog.js";
 import type { Availability, BiblioRecord, Fetched, SearchField, SearchPage } from "../biblioteca/domain/entities.js";
 import { DEFAULT_LIMIT, MAX_LIMIT } from "../biblioteca/domain/query.js";
 import { banner, c, mark, rule, statusLine, table } from "./ui.js";
@@ -119,6 +120,32 @@ function renderRecord(f: Fetched<BiblioRecord | null>, id: string, elapsedMs: nu
   out(provenance(f, elapsedMs));
 }
 
+const STOP_REASON: Record<string, string> = {
+  complete: "catálogo completo",
+  budget: "se agotó el presupuesto de la tanda",
+  window: "fuera de la ventana horaria",
+  failures: "demasiados bloques fallidos seguidos",
+  error: "el OPAC respondió algo inesperado",
+};
+
+function renderHarvest(r: HarvestResult): void {
+  const icon = r.status === "done" ? mark.ok() : r.status === "paused" ? mark.info() : mark.err();
+  out(`${icon} run #${r.runId} · ${r.status} — ${STOP_REASON[r.stoppedBy] ?? r.stoppedBy}`);
+  out(
+    table(
+      [{ header: "métrica" }, { header: "valor", align: "right" }],
+      [
+        ["filas escritas", String(r.recordsUpserted)],
+        ["bloques ok / fallidos", `${r.blocksOk} / ${r.blocksFailed}`],
+        ["cursor", `${r.cursorOffset}${r.total ? ` de ${r.total}` : ""}`],
+        ["duración", `${(r.elapsedMs / 60000).toFixed(1)} min`],
+      ],
+    ),
+  );
+  if (r.error) out(`${mark.warn()} ${c.yellow(r.error)}`);
+  if (r.status === "paused") out(c.dim("Repite el comando para continuar desde el cursor."));
+}
+
 export function registerBibliotecaCommands(program: Command): void {
   const lib = program
     .command("lib")
@@ -196,6 +223,62 @@ export function registerBibliotecaCommands(program: Command): void {
         if (opts.json) out(JSON.stringify(res, null, 2));
         else renderRecord(res, id, Date.now() - t0);
       } catch (err) {
+        out(`${mark.err()} ${(err as Error).message}`);
+        process.exitCode = 1;
+      }
+    });
+
+  lib
+    .command("harvest")
+    .alias("cosechar")
+    .description(
+      "[operador] Copia el catálogo completo a la base de datos, por tandas reanudables. " +
+        "Requiere DUTIC_LIBRARY_INGEST_KEY.",
+    )
+    .option("--minutos <n>", "Presupuesto de la tanda; al agotarse queda en pausa con su cursor.", "30")
+    .option("--incremental", "Sólo los registros nuevos (2-3 peticiones). Para el cron diario.")
+    .option("--desde <offset>", "Fuerza el punto de partida, ignorando el cursor guardado.")
+    .option("--bloque <n>", `Registros por petición (por defecto ${HARVEST_BLOCK_SIZE}).`)
+    .option("--sin-ventana", "Permite correr fuera de la ventana 00:00-06:00.")
+    .option("--json", "Salida en JSON.")
+    .action(async (opts) => {
+      const harvester = catalogHarvester();
+      if (!harvester) {
+        out(`${mark.err()} Falta DUTIC_LIBRARY_INGEST_KEY: este comando es sólo para el operador del barrido.`);
+        out(c.dim("  La clave nunca se guarda en disco; se exporta en el entorno al correr la tanda."));
+        process.exitCode = 1;
+        return;
+      }
+      const minutos = Math.max(1, Number(opts.minutos) || 30);
+      const mode = opts.incremental ? "incremental" : "full";
+      out(banner("Barrido del catálogo", `${mode} · presupuesto ${minutos} min`));
+      if (!opts.sinVentana && mode === "full") {
+        out(c.dim("Ventana 00:00-06:00 (usa --sin-ventana para ignorarla).") + "\n");
+      }
+
+      const status = statusLine();
+      const t0 = Date.now();
+      try {
+        const res = await harvester.run({
+          mode,
+          budgetMs: minutos * 60_000,
+          blockSize: opts.bloque ? Number(opts.bloque) : undefined,
+          startOffset: opts.desde ? Number(opts.desde) : undefined,
+          // El incremental son 2-3 peticiones: no necesita ventana nocturna.
+          window: opts.sinVentana || mode === "incremental" ? null : { fromHour: 0, toHour: 6 },
+          onProgress: (p) => {
+            const pct = p.total ? ((p.offset / p.total) * 100).toFixed(1) : "?";
+            status.set(
+              `${p.offset}/${p.total ?? "?"} (${pct}%) · ${p.recordsUpserted} filas · ` +
+                `último bloque ${(p.lastBlockMs / 1000).toFixed(1)}s · ${((Date.now() - t0) / 60000).toFixed(1)} min`,
+            );
+          },
+        });
+        status.done();
+        if (opts.json) out(JSON.stringify(res, null, 2));
+        else renderHarvest(res);
+      } catch (err) {
+        status.done();
         out(`${mark.err()} ${(err as Error).message}`);
         process.exitCode = 1;
       }

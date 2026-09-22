@@ -1,8 +1,10 @@
 import { join } from "node:path";
 import { DATA_DIR } from "../core/paths.js";
+import { CatalogHarvester } from "./application/harvestCatalog.js";
 import { LibraryService } from "./application/libraryService.js";
 import { FileCache, MemoryCache, NullCache, TieredCache } from "./infrastructure/cache/caches.js";
 import { KohaGateway } from "./infrastructure/koha/kohaGateway.js";
+import { SupabaseCatalogRepository } from "./infrastructure/supabase/catalogRepository.js";
 import { KOHA_BASE_URL } from "./infrastructure/koha/kohaUrls.js";
 
 /**
@@ -18,6 +20,28 @@ export const LIBRARY_CACHE_DIR = join(DATA_DIR, "biblioteca", "cache");
 export interface LibraryOptions {
   /** false desactiva toda caché (DUTIC_NO_CACHE=1 / --no-cache). */
   cache?: boolean;
+}
+
+/**
+ * Clave de ingesta del catálogo: SÓLO en el entorno del operador que corre el barrido.
+ * Si no está, el harvester no se arma (y `dutic lib harvest` lo dice en vez de fallar raro).
+ */
+export function ingestKey(): string | null {
+  return process.env.DUTIC_LIBRARY_INGEST_KEY?.trim() || null;
+}
+
+/**
+ * Orquestador del barrido. null si este equipo no tiene clave de ingesta, que es el caso
+ * normal: los usuarios del CLI y del MCP sólo leen.
+ */
+export function catalogHarvester(): CatalogHarvester | null {
+  const key = ingestKey();
+  if (!key) return null;
+  const baseUrl = process.env.DUTIC_LIBRARY_URL?.trim().replace(/\/+$/, "") || KOHA_BASE_URL;
+  return new CatalogHarvester({
+    source: new KohaGateway(baseUrl),
+    repository: new SupabaseCatalogRepository(key),
+  });
 }
 
 let instance: LibraryService | null = null;
