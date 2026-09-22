@@ -303,6 +303,11 @@ dutic lib search econometria --fichas 5           # además precarga 5 fichas (~
 dutic lib show 823127                             # ficha: temas y cada ejemplar con su estado
 ```
 
+Para el operador del piloto existe además `dutic lib harvest`, que copia el catálogo completo
+(199 270 registros) al esquema `library` de Supabase en tandas nocturnas reanudables, y
+`--incremental` para el refresco diario. Requiere `DUTIC_LIBRARY_INGEST_KEY` y no se usa en un
+equipo normal.
+
 El portal tarda ~10 s en cada consulta nueva. La causa y cómo la mitigamos están en
 [docs/biblioteca-diagnostico.md](docs/biblioteca-diagnostico.md): caché en dos niveles, ráfagas
 secuenciales por la conexión caliente y precarga de fichas. Una búsqueda repetida (aunque cambien

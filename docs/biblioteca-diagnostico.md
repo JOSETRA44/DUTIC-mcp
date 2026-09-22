@@ -243,6 +243,80 @@ src/biblioteca/
    corregir la resolución del nombre del backend. Cualquiera de las tres eliminaría los ~10 s.
    Vale la pena proponérselo a la biblioteca junto con el hallazgo del puerto 8080.
 
+## 6.bis Barrido del catálogo a Postgres (implementado)
+
+Medido el 2026-09-22, sobre el mismo OPAC:
+
+| Prueba | Resultado |
+|---|---|
+| `q=Any,alwaysmatches=''` | **199 270 registros**: la consulta canónica de "todo el catálogo" |
+| `offset` 1k / 10k / 50k / 150k | 7.7 / 7.9 / 9.9 / 8.8 s — la paginación profunda **no se degrada** |
+| `offset=199269` | devuelve 1 registro: el barrido llega al final y el total es exacto |
+| Mismo `offset` dos veces | listas idénticas: **orden estable** |
+| Bloques contiguos | **0 solapes** |
+| Orden por defecto | ≈ `biblionumber` ascendente (lo nuevo entra al final) |
+| `count=500` / `count=900` | 22 s (44 ms/registro) / 46 s (51 ms/registro) |
+| `local-number=823127` | 302 al registro, ~250 ms en caliente (sirve para verificar cobertura) |
+| Rangos `local-number,st-numeric>=…` | 0 resultados: no hay enumeración por rangos de id |
+
+**Estrategia: `Any,alwaysmatches=''` + paginación profunda con bloques de 500.**
+399 peticiones · ~2.4 h · ~720 MB, en tandas nocturnas reanudables. Descartadas: barrer por
+vocales o comodines (cobertura indemostrable, `q=a` da 199 270 pero `q=o` sólo 52 958), iterar
+`biblionumber` 1…1 151 808 (~1.15 M peticiones para 199 270 registros) y bajar las 199 270 fichas
+de detalle (~14 h).
+
+El destino es el esquema `library` de Supabase
+(`saas/supabase/migrations/20260922031500_library_catalog.sql`): tablas aisladas sin acceso de
+`anon`, lectura por `public.library_search` y escritura sólo por `service_role`. El MCP de
+Supabase se usa para el DDL y para verificar, nunca para mover las filas: 199 270 registros son
+~98 MB que no tienen por qué pasar por el contexto de un agente.
+
+Orquestador (`src/biblioteca/application/harvestCatalog.ts`): cursor por desplazamiento guardado
+en `library.harvest_runs`, presupuesto de tanda, ventana 00:00-06:00, una sola conexión
+secuencial sin pausas (mantiene caliente el socket), 2 reintentos por bloque, corte a los 3
+fallos seguidos y aborto inmediato ante HTML inesperado. Todo upsert por `biblionumber`, así que
+reprocesar un bloque nunca duplica.
+
+## 6.ter ¿Hace falta abrir la ficha de cada libro? (medido sobre 1 500 registros reales)
+
+Tras el primer ensayo del barrido se auditó la base. Cobertura de cada campo en el listado:
+
+| Campo | Cobertura | Lectura |
+|---|---:|---|
+| `availability` | 1 499 / 1 500 | el dato que más se usa, prácticamente siempre presente |
+| `publisher` | 1 482 / 1 500 | |
+| `year` | 1 477 / 1 500 | |
+| `isbn` | 1 434 / 1 500 | |
+| **`edition`** | **745 / 1 500** | escaso, pero **no por culpa del parser** (ver abajo) |
+| `language` | 441 / 1 500 | escaso: los registros viejos no lo tienen catalogado |
+
+**La edición no se pierde: falta en el origen.** Se reportó como "columna vacía"; en realidad
+está en la mitad de las filas. Para los registros donde es nula se comprobó el DOM crudo de la
+vista de resultados: el `span.results_summary.edition` **no existe** (sólo están `publisher` y
+`availability`), y la ficha de detalle de esos mismos registros **tampoco** la trae: 0 de 10
+recuperadas. En esos casos la catalogación metió la edición dentro del propio título
+("…Bs As, Ed. Ateneo, 1943, 758 p."). El OPAC llega incluso a servir literalmente
+`Edición: a edición`, sin número: es un dato mal escrito en el catálogo, y el parser lo refleja
+tal cual en vez de inventarlo.
+
+**Qué sí aporta la ficha de detalle** (muestra de 15 registros):
+
+| Dato | Sólo en la ficha | Cobertura |
+|---|---|---|
+| Descripción física | sí | 15 / 15 |
+| Temas (materias) | sí | 5 / 15 |
+| Clasificación CDD | sí | 5 / 15 |
+| Ejemplar por ejemplar (código de barras, copia, estado, vencimiento) | sí | 22 ejemplares |
+| Edición | **no** | 0 recuperadas |
+
+**Conclusión: no se abren las fichas en el barrido.** A ~0.9-1.5 s por ficha en caliente, las
+199 270 serían **más de 50 horas** de peticiones, para ganar temas y descripción en una fracción
+de los registros. La búsqueda funciona sin eso: el listado ya trae título, autores, editorial,
+año, ISBN y disponibilidad. Las fichas se abren **bajo demanda** (`LibraryService.getRecord`, ya
+implementado), que es cuando el usuario de verdad quiere saber si hay un ejemplar libre. Si más
+adelante la app quiere buscar por materia, lo razonable es enriquecer sólo los registros que se
+consultan, no los 199 270.
+
 ## 7. Resultados de la implementación
 
 | Operación | Antes (navegador / cliente ingenuo) | Ahora |
