@@ -58,6 +58,7 @@ import { registerAutoCommands } from "./auto.js";
 import { registerEncuestaCommands } from "./encuesta.js";
 import { registerHorarioCommands } from "./horario.js";
 import { registerAulaCommands } from "./aula.js";
+import { registerBibliotecaCommands } from "./biblioteca.js";
 import { registerSemesterCommands } from "./semester.js";
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -1234,6 +1235,7 @@ registerEncuestaCommands(program);
 registerSemesterCommands(program);
 registerAulaCommands(program);
 registerHorarioCommands(program);
+registerBibliotecaCommands(program);
 
 // Telemetría al final a propósito: su `preAction` corre DESPUÉS del que fija el semestre, así
 // cada comando queda registrado con el aula y el semestre en los que realmente trabajó.
