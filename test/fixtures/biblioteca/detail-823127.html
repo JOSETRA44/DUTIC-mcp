@@ -1,0 +1,1703 @@
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<!-- TEMPLATE FILE: opac-detail.tt -->
+
+
+
+
+
+<html lang="es-ES" class="no-js">
+<head>
+
+<title>Universidad Nacional de San Agustín Koha &rsaquo; Detalles de:  Matemáticas para economistas       </title>
+
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Koha 19.1129000" /> <!-- leave this for stats -->
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="shortcut icon" href="http://vri.unsa.edu.pe/ogcv/wp-content/themes/observatorio/img/unsa-logo.png" type="image/x-icon" />
+
+ <link type="text/css" href="/opac-tmpl/bootstrap/lib/bootstrap/css/bootstrap.min_19.1129000.css" rel="stylesheet">
+ <link type="text/css" href="/opac-tmpl/bootstrap/lib/jquery/jquery-ui-1.12.1.min_19.1129000.css" rel="stylesheet">
+
+
+ 
+
+
+ <link rel="stylesheet" href="/opac-tmpl/bootstrap/css/opac_19.1129000.css" type="text/css">
+
+
+
+<link media="print" href="/opac-tmpl/bootstrap/css/print_19.1129000.css" rel="stylesheet" type="text/css">
+
+ <style><style type="text/css">
+  body{
+    color: purple;
+    background-color: #d8da3d }
+</style>
+
+</style>
+
+
+
+
+<!-- Respond.js brings responsive layout behavior to IE < v.9 -->
+<!--[if lt IE 9]>
+ <script src="/opac-tmpl/bootstrap/lib/respond.min.js"></script>
+<![endif]-->
+
+<script>
+    var Koha = {};
+    function _(s) { return s } // dummy function for gettext
+</script>
+
+ <script src="/opac-tmpl/bootstrap/es-ES/js/locale_data_19.1129000.js"></script>
+
+<script src="/opac-tmpl/bootstrap/js/Gettext_19.1129000.js"></script>
+<script src="/opac-tmpl/bootstrap/js/i18n_19.1129000.js"></script>
+
+<script src="/opac-tmpl/bootstrap/lib/modernizr.min_19.1129000.js"></script>
+<link href="/opac-tmpl/bootstrap/lib/font-awesome/css/font-awesome.min_19.1129000.css" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+ <link type="text/css" rel="stylesheet" href="/opac-tmpl/lib/emoji-picker/css/emoji_19.1129000.css">
+ 
+</head>
+
+
+
+
+ 
+
+
+ 
+
+
+
+
+ 
+
+<body ID="opac-detail" class="branch-default scrollto" >
+
+
+
+
+
+
+<div id="wrap">
+ <div id="header-region" class="noprint">
+ <div class="navbar navbar-inverse navbar-static-top">
+ <div class="navbar-inner">
+ <div class="container-fluid">
+ <button id="scrolltocontent">Saltar al contenido principal</button>
+ <h1 id="logo">
+ <a class="brand" href="/cgi-bin/koha/opac-main.pl">
+  Universidad Nacional de San Agustín  </a>
+ </h1>
+ 
+ <div id="cartDetails" class="cart-message">Su carrito está vacío.</div>
+ 
+ <ul class="nav">
+ 
+ <li>
+ <a href="#" id="cartmenulink" role="button" title="Reunir ítems en los que esta interesado">
+ <i id="carticon" class="fa fa-shopping-cart fa-icon-white"></i> <span class="cartlabel">Carrito</span> <span id="basketcount"></span>
+ </a>
+ </li>
+ 
+ 
+ <li class="divider-vertical"></li>
+ 
+ 
+ <li class="dropdown">
+ <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="listsmenu" role="button" title="Mostrar listas"><i class="fa fa-list fa-icon-white"></i> <span class="listslabel">Listas</span> <b class="caret"></b></a>
+ <ul aria-labelledby="listsmenu" role="menu" class="dropdown-menu">
+ 
+ <li role="presentation"><a href="/cgi-bin/koha/opac-shelves.pl?op=list&amp;category=2" tabindex="-1" role="menuitem"><strong>Listas públicas</strong></a></li>
+ 
+ 
+ <li role="presentation"><a href="/cgi-bin/koha/opac-shelves.pl?op=view&amp;shelfnumber=14&amp;sortfield=author" tabindex="-1" role="menuitem">Pavimentos</a></li>
+ 
+ 
+ 
+ <li role="presentation"><a href="/cgi-bin/koha/opac-shelves.pl?op=view&amp;shelfnumber=4&amp;sortfield=title" tabindex="-1" role="menuitem">Sociología</a></li>
+ 
+ 
+ 
+ 
+ <li role="presentation"><a href="/cgi-bin/koha/opac-shelves.pl?op=list&amp;category=2" tabindex="-1" role="menuitem" class="listmenulink">Ver todo</a></li>
+ 
+ 
+ 
+ <li class="divider" role="presentation"></li>
+ 
+ 
+ <li role="presentation"><a href="/cgi-bin/koha/opac-shelves.pl?op=list&amp;category=1" tabindex="-1" role="menuitem"><strong>Sus listas</strong></a></li>
+ 
+ 
+ <li role="presentation"><a href="/cgi-bin/koha/opac-user.pl" tabindex="-1" class="menu-inactive loginModal-trigger" role="menuitem">Ingrese para crear sus propias listas</a></li>
+ 
+ 
+ 
+ </ul> <!-- / .dropdown-menu -->
+ </li> <!-- / .dropdown -->
+ 
+ </ul> <!-- / .nav -->
+
+ 
+
+ <div id="members" class="pull-right">
+ 
+ <ul class="nav">
+ <li class="dropdown">
+ 
+ 
+ 
+ <a href="/cgi-bin/koha/opac-user.pl" class="login-link loginModal-trigger"><i class="fa fa-user fa-icon-white fa-fw"></i> <span class="userlabel">Ingresar a su cuenta</span></a>
+ 
+ 
+ 
+
+ 
+ </li>
+ 
+ 
+ <li class="search_history">
+ <a href="/cgi-bin/koha/opac-search-history.pl" title="Ver su historial de búsqueda">Historial de búsqueda</a>
+ <span class="divider-vertical"></span>
+ <a class="logout clearsh" href="/cgi-bin/koha/opac-search-history.pl?action=delete" title="Eliminar historial de búsqueda"><i class="fa fa-trash"></i> Limpiar</a>
+ </li>
+ 
+ 
+ </ul>
+ </div> <!-- /members -->
+ 
+
+ </div> <!-- /container-fluid -->
+ </div> <!-- /navbar-inner -->
+ </div> <!-- /navbar -->
+
+ 
+ </div> <!-- / header-region -->
+
+ <div class="container-fluid">
+ <div class="row-fluid">
+ <div id="opac-main-search">
+ <div class="span12">
+ 
+ 
+ 
+ <div class="mastheadsearch librarypulldown">
+ 
+ 
+ <form name="searchform" method="get" action="/cgi-bin/koha/opac-search.pl" id="searchform" class="form-inline">
+ <label for="masthead_search"> Buscar  </label>
+
+ <select name="idx" id="masthead_search">
+ 
+ <option value="">Catálogo de biblioteca</option>
+ 
+ 
+ <option value="ti">Título</option>
+ 
+ 
+ <option value="au">Autor</option>
+ 
+ 
+ <option value="su">Tema</option>
+ 
+ 
+ <option value="nb">ISBN</option>
+ 
+ 
+ <option value="ns">ISSN</option>
+ 
+ 
+ <option value="se">Series</option>
+ 
+ 
+ 
+ <option value="callnum">Signatura</option>
+ 
+ 
+ </select>
+
+ 
+ 
+ <input class="transl1" id="translControl1" name="q" title="Escriba el término de búsqueda" type="text" /><span id="translControl"></span>
+ 
+
+ 
+
+ 
+ <div class="input-append">
+ <select name="branch_group_limit" id="select_library">
+ <option value="">Todas las bibliotecas</option>
+
+ <optgroup label="Bibliotecas">
+
+ 
+ 
+ <option value="branch:UNSA">B. Universidad Nacional de San Agustín</option>
+ 
+ 
+ 
+ <option value="branch:BPB">Bibl. Central de Biomédicas</option>
+ 
+ 
+ 
+ <option value="branch:BPI">Bibl. Central de Ingenierías</option>
+ 
+ 
+ 
+ <option value="branch:BPS">Bibl. Central de Sociales</option>
+ 
+ 
+ 
+ <option value="branch:BPF">Bibl. Filosofía y Humanidades</option>
+ 
+ 
+ 
+ <option value="branch:BESCAAD">Bibl. Sede Camaná (Administración)</option>
+ 
+ 
+ 
+ <option value="branch:BESMAAG">Bibl. Sede Majes (Agronomía)</option>
+ 
+ 
+ 
+ <option value="branch:BESMOAD">Bibl. Sede Mollendo (Administración)</option>
+ 
+ 
+ 
+ <option value="branch:BESPEAD">Bibl. Sede Pedregal (Administración)</option>
+ 
+ 
+ 
+ <option value="branch:BESAQ">Cendoc de Arquitectura</option>
+ 
+ 
+ 
+ <option value="branch:BESBI">Cendoc de Biología</option>
+ 
+ 
+ 
+ <option value="branch:BESCO">Cendoc de Ciencias Contables y Financieras</option>
+ 
+ 
+ 
+ <option value="branch:BESART">Cendoc de Escuela de Artes</option>
+ 
+ 
+ 
+ <option value="branch:BEIAM">Cendoc de Escuela de Ing. Ambiental</option>
+ 
+ 
+ 
+ <option value="branch:BESLIT">Cendoc de Escuela de Literatura  -  Filosofía</option>
+ 
+ 
+ 
+ <option value="branch:BESMT">Cendoc de Escuela de Matemáticas</option>
+ 
+ 
+ 
+ <option value="branch:BESAD">Cendoc de Facultad de Administración</option>
+ 
+ 
+ 
+ <option value="branch:BESAG">Cendoc de Facultad de Agronomía</option>
+ 
+ 
+ 
+ <option value="branch:BESDE">Cendoc de Facultad de Derecho</option>
+ 
+ 
+ 
+ <option value="branch:BESED">Cendoc de Facultad de Educación</option>
+ 
+ 
+ 
+ <option value="branch:BESAL">Cendoc de Industrias Alimentarias</option>
+ 
+ 
+ 
+ <option value="branch:BESIC">Cendoc de Ing. Civil - Ing, Sanitaria</option>
+ 
+ 
+ 
+ <option value="branch:BESMAT">Cendoc de Ing. de Materiales</option>
+ 
+ 
+ 
+ <option value="branch:BESIS">Cendoc de Ing. de Sistemas</option>
+ 
+ 
+ 
+ <option value="branch:BESELE">Cendoc de Ing. Eléctrica</option>
+ 
+ 
+ 
+ <option value="branch:BESIE">Cendoc de Ing. electrónica</option>
+ 
+ 
+ 
+ <option value="branch:BESII">Cendoc de Ing. Industrial</option>
+ 
+ 
+ 
+ <option value="branch:BESMEC">Cendoc de Ing. Mecánica</option>
+ 
+ 
+ 
+ <option value="branch:BESMET">Cendoc de Ing. Metalurgica</option>
+ 
+ 
+ 
+ <option value="branch:BESIP">Cendoc de Ing. Pesquera</option>
+ 
+ 
+ 
+ <option value="branch:BESIQ">Cendoc de Ing. Química</option>
+ 
+ 
+ 
+ <option value="branch:BESEN">Cendoc de la Facultad de Enfermería</option>
+ 
+ 
+ 
+ <option value="branch:BESPSRI">Cendoc de Piscología y Relaciones industriales</option>
+ 
+ 
+ 
+ <option value="branch:BESQU">Cendoc de Química</option>
+ 
+ 
+ 
+ <option value="branch:LEA">LEAR</option>
+ 
+ 
+
+ 
+ </optgroup>
+ <optgroup label="Grupos">
+ 
+ 
+ <option value="multibranchlimit-1">Bibliotecas Centrales</option>
+ 
+ 
+ 
+ <option value="multibranchlimit-5">Bibliotecas Sedes</option>
+ 
+ 
+ 
+ <option value="multibranchlimit-6">Bibliotecas Especializadas</option>
+ 
+ 
+ </optgroup>
+ 
+ </select>
+ <button type="submit" id="searchsubmit" class="btn btn-primary">Ir</button>
+ </div>
+ 
+
+ </form>
+ 
+ </div> <!-- / .mastheadsearch -->
+ 
+
+ <div class="row-fluid">
+ <div id="moresearches">
+ <ul>
+ <li><a href="/cgi-bin/koha/opac-search.pl">Búsqueda avanzada</a></li>
+ 
+ 
+ <li><a href="/cgi-bin/koha/opac-authorities-home.pl">Búsqueda de autoridad</a></li>
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ </ul>
+ </div> <!-- /#moresearches -->
+ </div> <!-- /.row-fluid -->
+
+ 
+ </div> <!-- /.span10 -->
+ </div> <!-- /.opac-main-search -->
+ </div> <!-- / .row-fluid -->
+ </div> <!-- /.container-fluid -->
+
+ <!-- Login form hidden by default, used for modal window -->
+ <div id="loginModal" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="modalLoginLabel" aria-hidden="true">
+ <div class="modal-header">
+ <button type="button" class="closebtn" data-dismiss="modal" aria-hidden="true">×</button>
+ <h2 id="modalLoginLabel">Ingresar a su cuenta</h2>
+ </div>
+ <form action="/cgi-bin/koha/opac-user.pl" method="post" name="auth" id="modalAuth">
+ <input type="hidden" name="has-search-query" id="has-search-query" value="" />
+ <div class="modal-body">
+ 
+ <input type="hidden" name="koha_login_context" value="opac" />
+ <fieldset class="brief">
+ <label for="muserid">Usuario:</label><input type="text" id="muserid" name="userid" />
+ <label for="mpassword">Contraseña:</label><input type="password" id="mpassword" name="password" />
+ 
+ <div id="nologininstructions-modal" class="nologininstructions">
+ <center>Estimado usuario ingrese su usuario y contraseña en la parte superior para poder realizar reservas de libros en formato impreso.</center>
+<hr>
+
+ </div>
+ 
+ 
+ <div id="forgotpassword-modal" class="forgotpassword">
+ <a href="/cgi-bin/koha/opac-password-recovery.pl">¿Olvidó su contraseña?</a>
+ </div>
+ 
+ 
+ </fieldset>
+ </div>
+ <div class="modal-footer">
+ <input class="btn btn-primary" type="submit" value="Ingresar" />
+ </div>
+ </form> <!-- /#auth -->
+ </div> <!-- /#modalAuth -->
+
+
+<div class="main">
+ <ul class="breadcrumb">
+ <li><a href="/cgi-bin/koha/opac-main.pl">Inicio</a> <span class="divider">&rsaquo;</span></li>
+ <li><a href="#"><span>Detalles para: </span>
+ <span class="biblio-title">Matemáticas para economistas</span>
+ 
+
+
+
+
+</a></li>
+ </ul>
+
+ <div class="container-fluid">
+ <div class="row-fluid">
+ <div class="span9">
+ <div id="catalogue_detail_biblio" class="maincontent">
+
+ <div id="bookcover">
+ 
+ 
+ 
+
+ 
+ <div title="Matemáticas para economistas" class="823127" id="local-thumbnail-preview"></div>
+ 
+
+ 
+
+ 
+ 
+ <a href="http://www.amazon.com/dp/9684512805">
+ 
+ <img alt="Imagen de cubierta" border="0" src="https://images-na.ssl-images-amazon.com/images/P/9684512805.01.MZZZZZZZ.jpg" /></a>
+ 
+
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ </div><!-- / #bookcover -->
+
+ <abbr class="unapi-id" title="koha:biblionumber:823127"><!-- unAPI --></abbr>
+ 
+ <span class="Z3988" title="ctx_ver=Z39.88-2004&amp;amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;amp;rft.genre=book&amp;amp;rft.btitle=Matem%C3%A1ticas%20para%20economistas&amp;amp;rft.isbn=B9684512805&amp;amp;rft.au=Dowling%2C%20Edward&amp;amp;rft.pub=Mcgraw-Hill&amp;amp;rft.date=1982"></span>
+ 
+
+ <div id="views">
+ <span class="view current-view"><span id="Normalview"><i class="fa fa-file-text-o"></i> Vista normal</span></span>
+ <span class="view">
+ <a id="MARCview" class="btn btn-link" href="/cgi-bin/koha/opac-MARCdetail.pl?biblionumber=823127"><i class="fa fa-list-alt"></i> Vista MARC</a>
+ </span>
+ <span class="view"><a id="ISBDview" class="btn btn-link" href="/cgi-bin/koha/opac-ISBDdetail.pl?biblionumber=823127"><i class="fa fa-list-ul"></i> Vista ISBD</a></span>
+ </div>
+ 
+ 
+
+<div class="record" vocab="http://schema.org/" typeof="CreativeWork Producto" resource="#registro">
+<h2 class="title" property="name">Matemáticas para economistas </h2>
+<span class="results_summary author h3"><span class="byAuthor">Por: </span><a href="/cgi-bin/koha/opac-search.pl?q=au:%22Dowling%2C%20Edward%22"><span resource="#record"><span property="autor" typeof="Persona"><span property="name">Dowling, Edward</span></span></span></a></span><span class="results_summary publisher"><span class="label">Editor: </span><span property="publisher" typeof="Organization"><span property="location">México D.F. - México</span> <span property="name"><a href="/cgi-bin/koha/opac-search.pl?q=Provider:Mcgraw-Hill">Mcgraw-Hill</a></span></span> <span property="datePublished">1982</span></span><span class="results_summary edition"><span class="label">Edición: </span><span property="bookEdition">1ra. ed</span></span><span class="results_summary description"><span class="label">Descripción: </span><span property="description">411 Páginas 27x20x30 ctms</span></span><span class="results_summary isbn"><span class="label">ISBN: </span><span property="isbn">B9684512805</span></span><span class="results_summary subjects"><span class="label">Tema(s): </span><span property="keywords"><a href="/cgi-bin/koha/opac-search.pl?q=su:%22C%C3%81LCULO%20DIFERENCIAL%22">CÁLCULO DIFERENCIAL</a></span> | <span property="keywords"><a href="/cgi-bin/koha/opac-search.pl?q=su:%22HIP%C3%93TESIS%22">HIPÓTESIS</a></span> | <span property="keywords"><a href="/cgi-bin/koha/opac-search.pl?q=su:%22OPTIMIZACI%C3%93N%22">OPTIMIZACIÓN</a></span> | <span property="keywords"><a href="/cgi-bin/koha/opac-search.pl?q=su:%22TERMINOLOG%C3%8DA%22">TERMINOLOGÍA</a></span> | <span property="keywords"><a href="/cgi-bin/koha/opac-search.pl?q=su:%22VARIABLES%22">VARIABLES</a></span></span><span class="results_summary ddc"><span class="label">Clasificación CDD: </span>M09380 </span>
+</div>
+
+
+
+ 
+
+ <!-- This puts the LTFL reviews in, and if TabbedView is not set, puts the remaining content above the Tabs instead of in them -->
+ 
+
+ <!--This grabs all of the lists a bib record appears in -->
+ 
+
+ 
+
+ 
+
+ 
+ <form method="post" action="/cgi-bin/koha/opac-ratings.pl">
+ <div class="results_summary ratings">
+
+ 
+ 
+
+ 
+ <select id="star_rating" name="rating" data-rating-enabled="0" disabled="disabled" autocomplete="off">
+ 
+ 
+ <option value="" selected="selected"></option>
+ 
+ 
+ 
+ <option value="1">1</option>
+ 
+ 
+ 
+ <option value="2">2</option>
+ 
+ 
+ 
+ <option value="3">3</option>
+ 
+ 
+ 
+ <option value="4">4</option>
+ 
+ 
+ 
+ <option value="5">5</option>
+ 
+ 
+ </select>
+ <img id="rating-loading" style="display:none" src="/opac-tmpl/bootstrap/images/spinner-small.gif" alt="" />
+
+ <!-- define some hidden vars for ratings -->
+
+ <input  type="hidden" name='biblionumber'  value="823127" />
+ <input  type="hidden" name='rating_value' id='rating_value' value="" />
+
+ &nbsp; <input name="rate_button" type="submit" value="Valóreme" />&nbsp;
+
+ 
+ <span id="rating_value_text"></span>
+ <span id="cancel_rating_text" style="display:none;"><a href="#"><i class="fa fa-remove"></i> Cancelar calificación</a>.</span>
+ 
+
+ <span id="rating_text">Valoración media: 0.0 (0 votos)</span>
+ </div>
+ </form>
+ 
+
+ 
+
+ 
+
+ 
+
+ </div> <!-- / #catalogue_detail_biblio -->
+
+ <div id="bibliodescriptions" class="toptabs">
+ <ul>
+ 
+ <li id="tab_holdings">
+ 
+ 
+ <a href="#holdings"><span>Existencias</span>  ( 3 )</a>
+ </li>
+ 
+ 
+ 
+ 
+
+ 
+
+ 
+
+ 
+ <li id="tab_comments"><a href="#comments">Comentarios ( 0 )</a></li>
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ </ul>
+
+ 
+
+
+ <div id="holdings">
+ 
+ 
+ <table class="table table-bordered table-striped" id="holdingst">
+ <thead>
+ <tr>
+ 
+ <th id="item_itemtype" data-colname="item_itemtype" class="itype">Tipo de ítem</th>
+ 
+ <th id="item_current_location" data-colname="item_current_location" class="item_location">Ubicación actual</th>
+ 
+ 
+ 
+ <th id="item_callnumber" data-colname="item_callnumber" class="call_no">Signatura</th>
+ 
+ 
+ 
+ <th id="item_copy" data-colname="item_copy" class="copynumber">Copia número</th>
+ <th id="item_status" data-colname="item_status" class="status">Estado</th>
+ 
+ <th id="item_datedue" data-colname="item_datedue" class="date_due">Fecha de vencimiento</th>
+ <th id="item_barcode" data-colname="item_barcode" class="barcode">Código de barras</th>
+ 
+ 
+ </tr>
+ </thead>
+ <tbody>
+ 
+ 
+ <tr vocab="http://schema.org/" typeof="Offer">
+ 
+ 
+ <td class="itype">
+ 
+ 
+ <img src="/opac-tmpl/bootstrap/itemtypeimg/vokal/Reference.png" title="Libros" alt="Libros" />
+ 
+ 
+ Libros
+ </td>
+ 
+ 
+ <td class="location" property="seller">
+ <link property="itemOffered" href="#record" />
+ <link property="businessFunction" href="http://purl.org/goodrelations/v1#LeaseOut">
+ <span class="" title="">
+ 
+ <span>Bibl. Central de Sociales</span>
+ 
+ </span>
+ <div class="branch-info-tooltip"></div>
+
+ 
+ <span class="shelvingloc"></span>
+ 
+
+ </td>
+ 
+
+ 
+
+ 
+
+ 
+
+ <td class="call_no" property="sku">
+ 
+ E01-21-023
+ 
+ 
+ (<a href="/cgi-bin/koha/opac-detail.pl?biblionumber=823127&amp;shelfbrowse_itemnumber=959699#holdings">Navegar estantería</a>)
+ 
+ 
+ 
+ </td>
+ 
+ 
+ <td class="copynumber">1</td>
+ <td class="status">
+ <link property="availability" href="http://schema.org/InStock" />
+
+
+
+
+
+
+
+
+
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+ <span class="item-status available">Disponible </span>
+
+</td>
+ 
+ <td class="date_due"><span title=""></span></td>
+ <td class="barcode" property="serialNumber">BCS/M09380-1</td>
+ 
+ 
+ </tr>
+ 
+ 
+ <tr vocab="http://schema.org/" typeof="Offer">
+ 
+ 
+ <td class="itype">
+ 
+ 
+ <img src="/opac-tmpl/bootstrap/itemtypeimg/vokal/Reference.png" title="Libros" alt="Libros" />
+ 
+ 
+ Libros
+ </td>
+ 
+ 
+ <td class="location" property="seller">
+ <link property="itemOffered" href="#record" />
+ <link property="businessFunction" href="http://purl.org/goodrelations/v1#LeaseOut">
+ <span class="" title="">
+ 
+ <span>Bibl. Central de Sociales</span>
+ 
+ </span>
+ <div class="branch-info-tooltip"></div>
+
+ 
+ <span class="shelvingloc"></span>
+ 
+
+ </td>
+ 
+
+ 
+
+ 
+
+ 
+
+ <td class="call_no" property="sku">
+ 
+ E01-21-024
+ 
+ 
+ (<a href="/cgi-bin/koha/opac-detail.pl?biblionumber=823127&amp;shelfbrowse_itemnumber=959700#holdings">Navegar estantería</a>)
+ 
+ 
+ 
+ </td>
+ 
+ 
+ <td class="copynumber">2</td>
+ <td class="status">
+ <link property="availability" href="http://schema.org/InStock" />
+
+
+
+
+
+
+
+
+
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+ <span class="item-status available">Disponible </span>
+
+</td>
+ 
+ <td class="date_due"><span title=""></span></td>
+ <td class="barcode" property="serialNumber">BCS/M09380-2</td>
+ 
+ 
+ </tr>
+ 
+ 
+ <tr vocab="http://schema.org/" typeof="Offer">
+ 
+ 
+ <td class="itype">
+ 
+ 
+ <img src="/opac-tmpl/bootstrap/itemtypeimg/vokal/Reference.png" title="Libros" alt="Libros" />
+ 
+ 
+ Libros
+ </td>
+ 
+ 
+ <td class="location" property="seller">
+ <link property="itemOffered" href="#record" />
+ <link property="businessFunction" href="http://purl.org/goodrelations/v1#LeaseOut">
+ <span class="" title="">
+ 
+ <span>Bibl. Central de Sociales</span>
+ 
+ </span>
+ <div class="branch-info-tooltip"></div>
+
+ 
+ <span class="shelvingloc"></span>
+ 
+
+ </td>
+ 
+
+ 
+
+ 
+
+ 
+
+ <td class="call_no" property="sku">
+ 
+ E01-21-025
+ 
+ 
+ (<a href="/cgi-bin/koha/opac-detail.pl?biblionumber=823127&amp;shelfbrowse_itemnumber=959701#holdings">Navegar estantería</a>)
+ 
+ 
+ 
+ </td>
+ 
+ 
+ <td class="copynumber">3</td>
+ <td class="status">
+ <link property="availability" href="http://schema.org/InStock" />
+
+
+
+
+
+
+
+
+
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+ <span class="item-status available">Disponible </span>
+
+</td>
+ 
+ <td class="date_due"><span title=""></span></td>
+ <td class="barcode" property="serialNumber">BCS/M09380-3</td>
+ 
+ 
+ </tr>
+ 
+ </tbody>
+ </table>
+
+ 
+ 
+ 
+ 
+
+ 
+ 
+
+ <br style="clear:both;" />
+ </div> <!-- / #holdings -->
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ <div id="comments">
+ <div id="newcomment"></div>
+ 
+ <p>No hay comentarios en este titulo.</p>
+ 
+
+ 
+ <div id="addcomment"><a class="login-link loginModal-trigger" role="button" data-toggle="modal" href="/cgi-bin/koha/opac-user.pl">Ingresar a su cuenta</a> para colocar un comentario.</div>
+ 
+ </div> <!-- / #comments -->
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ </div> <!-- / #bibliodescriptions -->
+
+ 
+
+ 
+
+ 
+ 
+
+
+
+ </div> <!-- /.span9 -->
+
+ <div class="span3">
+ <div id="ulactioncontainer">
+
+ 
+
+ 
+
+<ul id="action">
+ 
+ 
+ 
+ 
+ <li><a class="reserve btn btn-link btn-lg" href="/cgi-bin/koha/opac-reserve.pl?biblionumber=823127"><i class="fa fa-fw fa-bookmark"></i> Hacer reserva</a></li>
+ 
+ 
+ 
+ 
+
+ <li><a class="print-large btn btn-link btn-lg" href="#"><i class="fa fa-fw fa-print"></i> Imprimir</a></li>
+
+ 
+ 
+ 
+
+ 
+ 
+ 
+
+ 
+ 
+ <li><a data-biblionumber="823127" class="addtocart cart823127 addrecord btn btn-link btn-lg" href="#"><i class="fa fa-fw fa-shopping-cart"></i> Agregar a su carrito</a> <a style="display:none;" data-biblionumber="823127" class="cartRemove cartR823127" href="#">(remover)</a></li>
+ 
+ 
+
+ 
+
+
+ 
+
+ 
+ 
+ <li>
+ <div id="export">
+ <div class="dropdown">
+ <a id="format" class="btn btn-link btn-lg dropdown-toggle" data-toggle="dropdown" href="#"><i class="fa fa-fw fa-download"></i> Guardar registro <b class="caret"></b></a>
+ <ul class="dropdown-menu pull-left" role="menu" aria-labelledby="format">
+ 
+ 
+ <li>
+ <a role="menuitem" href="/cgi-bin/koha/opac-export.pl?op=export&amp;bib=823127&amp;format=bibtex">
+ BIBTEX  </a>
+ </li>
+ 
+ 
+ 
+ <li><a role="menuitem" href="#" data-toggle="modal" data-target="#exportModal_">Dublin Core</a></li>
+ 
+ 
+ 
+ <li>
+ <a role="menuitem" href="/cgi-bin/koha/opac-export.pl?op=export&amp;bib=823127&amp;format=marcxml">
+ MARCXML  </a>
+ </li>
+ 
+ 
+ 
+ <li>
+ <a role="menuitem" href="/cgi-bin/koha/opac-export.pl?op=export&amp;bib=823127&amp;format=marc8">
+ MARC (no-Unicode/MARC-8)  </a>
+ </li>
+ 
+ 
+ 
+ <li>
+ <a role="menuitem" href="/cgi-bin/koha/opac-export.pl?op=export&amp;bib=823127&amp;format=utf8">
+ MARC (Unicode/UTF-8)  </a>
+ </li>
+ 
+ 
+ 
+ <li>
+ <a role="menuitem" href="/cgi-bin/koha/opac-export.pl?op=export&amp;bib=823127&amp;format=marcstd">
+ MARC (Unicode/UTF-8, estándar)  </a>
+ </li>
+ 
+ 
+ 
+ <li>
+ <a role="menuitem" href="/cgi-bin/koha/opac-export.pl?op=export&amp;bib=823127&amp;format=mods">
+ MODS (XML)  </a>
+ </li>
+ 
+ 
+ 
+ <li>
+ <a role="menuitem" href="/cgi-bin/koha/opac-export.pl?op=export&amp;bib=823127&amp;format=ris">
+ RIS  </a>
+ </li>
+ 
+ 
+ 
+ <li>
+ <a role="menuitem" href="/cgi-bin/koha/opac-export.pl?op=export&amp;bib=823127&amp;format=isbd">
+ ISBD  </a>
+ </li>
+ 
+ 
+ </ul>
+ </div>
+ </div>
+ </li>
+ 
+
+ 
+</ul>
+
+<!-- Dublin Core Modal Form -->
+<div class="modal hide" id="exportModal_" tabindex="-1" role="dialog" aria-labelledby="exportModalLabel" aria-hidden="true">
+ <div class="modal-header">
+ <button type="button" class="closebtn" data-dismiss="modal" aria-hidden="true">&times;</button>
+ <h3 class="modal-title" id="exportModalLabel">Exportando a Dublin Core...</h3>
+ </div>
+ <form method="get" action="/cgi-bin/koha/opac-export.pl">
+ <div class="modal-body">
+ <fieldset id="dc_fieldset">
+ <input id="input-simple" type="radio" name="format" value="rdfdc">
+ <label class="label_dc" for="input-simple">DC-RDF simple</label>
+ <br>
+ <input id="input-oai" type="radio" name="format" value="oaidc" checked>
+ <label class="label_dc" for="input-oai">OAI-DC</label>
+ <br>
+ <input id="input-srw" type="radio" name="format" value="srwdc">
+ <label class="label_dc" for="input-srw">SRW-DC</label>
+ <br>
+ <input type="hidden" name="op" value="export">
+ <input type="hidden" name="bib" value="823127">
+ </fieldset>
+ </div>
+ <div class="modal-footer">
+ <button type="submit" class="btn">Exportar</button>
+ <button class="btn btn-link btn-lg" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+ </div>
+ </form>
+</div>
+
+
+ 
+
+ 
+
+ 
+ </div> <!-- / .ulactioncontainer -->
+ </div> <!-- / .span4 -->
+ </div> <!-- / .row-fluid -->
+ <div class="row-fluid">
+ 
+
+ 
+
+ 
+ </div> <!-- / .row-fluid -->
+</div> <!-- / .container-fluid -->
+</div> <!-- / .main -->
+
+
+
+
+ 
+ 
+ <div class="container-fluid">
+ <div class="row-fluid">
+ <div class="span12">
+ <div id="opaccredits" class="noprint">
+ <center><marquee width=100% behavior=alternate>
+
+<div class="wrapper"> 
+
+<a href="https://www.sunedu.gob.pe/" target="_blank" style="width: 130px; height: 70px; margin-right: 25px;"><img src="https://www.sunedu.gob.pe/wp-content/uploads/2016/01/logo_02_retina.png" width="130" height="70" alt=""></a>
+
+
+<a href="http://www.webofscience.com" target="_blank" style="width: 130px; height: 70px; margin-right: 25px;"><img src="http://www.unsa.edu.pe/wp-content/uploads/2018/11/webofsciencie.jpg" width="130" height="70" alt=""></a>
+
+<a href="https://academicimpact.un.org/es" target="_blank" style="width: 130px; height: 70px; margin-right: 25px;"><img src="http://www.unsa.edu.pe/wp-content/uploads/2018/10/impact.png" width="130" height="70" alt=""></a>
+
+<a href="http://www.redidi.org.pe/" target="_blank" style="width: 130px; height: 70px; margin-right: 25px;"><img src="http://www.unsa.edu.pe/wp-content/uploads/2018/01/redidi-130x63.png" width="130" height="70" alt=""></a>
+
+<a href="https://grupolarabida.org/" target="_blank" style="width: 130px; height: 70px; margin-right: 25px;"><img src="http://www.unsa.edu.pe/wp-content/uploads/2018/10/rabida.png" width="130" height="70" alt=""></a>
+
+<a href="http://www.peru.gob.pe/" target="_blank" style="width: 130px; height: 70px; margin-right: 25px;"><img src="http://www.unsa.edu.pe/wp-content/uploads/2017/10/estado-peruano.png" width="130" height="70" alt=""></a>
+
+<a href="https://www.sineace.gob.pe/" target="_blank" style="width: 130px; height: 70px; margin-right: 25px;"><img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Logo_Sineace_%282%29.png" width="130" height="70" alt=""></a>
+
+
+</div>
+</marquee>
+<td width="40%"><br>
+<center>
+<td width="40%">
+
+Horario de atención:<br>
+de lunes a viernes de 8:00 a 20:30 horas</center>
+<tr>
+<tr>
+<table>
+<p></b>
+<hr width=50%>
+<hr>
+Contacto: lalvarezr@unsa.edu.pe - Biblioteca Virtual 
+<p>
+<hr>
+
+
+<p><strong>Universidad Nacional de San Agustín © 2020</a> │ Biblioteca Virtual │
+Arequipa - Perú</strong>
+
+ </div>
+ </div>
+ </div>
+ </div>
+ 
+
+ 
+
+</div> <!-- / #wrap in masthead.inc -->
+
+
+
+
+<!-- JavaScript includes -->
+<script src="/opac-tmpl/bootstrap/lib/jquery/jquery-3.4.1.min_19.1129000.js"></script>
+<script src="/opac-tmpl/bootstrap/lib/jquery/jquery-migrate-3.1.0.min_19.1129000.js"></script>
+<script src="/opac-tmpl/bootstrap/lib/jquery/jquery-ui-1.12.1.min_19.1129000.js"></script>
+<script>
+// Resolve name collision between jQuery UI and Twitter Bootstrap
+$.widget.bridge('uitooltip', $.ui.tooltip);
+</script>
+<script src="/opac-tmpl/bootstrap/lib/bootstrap/js/bootstrap.min_19.1129000.js"></script>
+<script src="/opac-tmpl/bootstrap/lib/fontfaceobserver.min_19.1129000.js"></script>
+<script src="/opac-tmpl/bootstrap/js/global_19.1129000.js"></script>
+<script>
+    Modernizr.load([
+        // Test need for polyfill
+        {
+            test: window.matchMedia,
+            nope: "/opac-tmpl/bootstrap/lib/media.match.min_19.1129000.js"
+        },
+        // and then load enquire
+        "/opac-tmpl/bootstrap/lib/enquire.min_19.1129000.js",
+        "/opac-tmpl/bootstrap/js/script_19.1129000.js",
+    ]);
+
+    // Fix for datepicker in a modal
+    $.fn.modal.Constructor.prototype.enforceFocus = function () {};
+</script>
+
+<script>//<![CDATA[
+        var NO_AMAZON_IMAGE = _("No hay imagen de cubierta disponible");
+    //]]>
+</script>
+<script src="/opac-tmpl/bootstrap/js/amazonimages_19.1129000.js"></script>
+
+
+<script src="/opac-tmpl/lib/emoji-picker/js/config_19.1129000.js"></script>
+<script src="/opac-tmpl/lib/emoji-picker/js/util_19.1129000.js"></script>
+<script src="/opac-tmpl/lib/emoji-picker/js/jquery.emojiarea_19.1129000.js"></script>
+<script src="/opac-tmpl/lib/emoji-picker/js/emoji-picker_19.1129000.js"></script>
+
+<script>
+    //<![CDATA[
+    var MSG_CONFIRM_AGAIN = _("Advertencia: No puede deshacerse. Por favor confirmar nuevamente")
+    var MSG_DELETE_SEARCH_HISTORY = _("¿Está seguro que desea eliminar su historial de búsqueda?");
+    var MSG_NO_SUGGESTION_SELECTED = _("No se seleccionó ninguna sugerencia");
+    var MSG_SEARCHING = _("Buscando %s...");
+    var MSG_ERROR_SEARCHING_COLLECTION = _("Error de la búsqueda en la colección %s");
+    var MSG_NO_RESULTS_FOUND_IN_COLLECTION = _("No se han encontrado resultados en la colección de la biblioteca %s");
+    var MSG_RESULTS_FOUND_IN_COLLECTION = _("Se encontraron %s resultados en la colección de la biblioteca %s");
+    var MSG_BY = _("por");
+    var MSG_TYPE = _("Tipo");
+    var MSG_NEXT = _("Siguiente");
+    var MSG_PREVIOUS = _("Previo");
+    var MSG_CHECKOUTS = _("Préstamos");
+    var MSG_NO_CHECKOUTS = _("Sin préstamos");
+    var MSG_CHECK_OUT = _("Préstamo");
+    var MSG_CHECK_OUT_CONFIRM = _("¿Está seguro de querer prestar esta éste ítem?");
+    var MSG_CHECKED_OUT_UNTIL = _("Prestado hasta %s");
+    var MSG_CHECK_IN = _("Devolución");
+    var MSG_CHECK_IN_CONFIRM = _("¿Está seguro de querer devolver éste ítem?");
+    var MSG_NO_CHECKOUTS = _("Sin préstamos");
+    var MSG_DOWNLOAD = _("Bajar");
+    var MSG_HOLDS = _("Reservas");
+    var MSG_NO_HOLDS = _("Sin reservas");
+    var MSG_PLACE_HOLD = _("Hacer reserva");
+    var MSG_CANCEL_HOLD = _("Cancelar");
+    var MSG_CANCEL_HOLD_CONFIRM = _("¿Está seguro que desea cancelar esta reserva?");
+    var MSG_ON_HOLD = _("Reservado");
+
+    
+    
+    
+        $(window).load(function() {
+            verify_images();
+         });
+    
+    $(".print-large").on("click",function(){
+        window.print();
+        return false;
+    });
+    $("#ulactioncontainer > ul > li > a.addtoshelf").on("click",function(){
+        Dopop('opac-addbybiblionumber.pl?biblionumber=823127');
+        return false;
+    });
+    $("body").on("click", ".addtocart", function(e){
+        e.preventDefault();
+        var biblionumber = $(this).data("biblionumber");
+        addRecord( biblionumber );
+    });
+    $("body").on("click", ".cartRemove", function(e){
+        e.preventDefault();
+        var biblionumber = $(this).data("biblionumber");
+        delSingleRecord( biblionumber );
+    });
+    $(".clearsh").on("click", function(){
+        return confirmDelete(MSG_DELETE_SEARCH_HISTORY);
+    });
+    //]]>
+</script>
+
+
+ <script src="/opac-tmpl/bootstrap/js/basket_19.1129000.js"></script>
+
+
+
+
+
+
+
+
+
+ <script src="/opac-tmpl/bootstrap/js/localcovers_19.1129000.js"></script>
+ <script>
+    //<![CDATA[
+    var NO_LOCAL_JACKET = _("No hay imagen de cubierta disponible");
+    //]]>
+    </script>
+
+
+
+
+
+
+
+
+<script src="/opac-tmpl/bootstrap/lib/jquery/plugins/jquery.cookie.min_19.1129000.js"></script>
+<script>
+$(document).ready(function() {
+    if($('#searchsubmit').length) {
+        $(document).on("click", '#searchsubmit', function(e) {
+            jQuery.removeCookie("form_serialized", { path: '/'});
+            jQuery.removeCookie("form_serialized_limits", { path: '/'});
+            jQuery.removeCookie("search_path_code", { path: '/'});
+        });
+    }
+
+    window.emojiPicker = new EmojiPicker({
+      emojiable_selector: '[data-emojiable=true]',
+      assetsPath: '/opac-tmpl/lib/emoji-picker/img/',
+      popupButtonClasses: 'fa fa-smile-o'
+    });
+    window.emojiPicker.discover();
+});
+</script>
+
+
+
+<script src="/opac-tmpl/lib/jquery/plugins/jquery.dataTables.min_19.1129000.js"></script>
+<script>
+//<![CDATA[
+    var MSG_DT_FIRST = _("Primero");
+    var MSG_DT_LAST = _("Último");
+    var MSG_DT_NEXT = _("Siguiente");
+    var MSG_DT_PREVIOUS = _("Previo");
+    var MSG_DT_EMPTY_TABLE = _("No hay datos disponibles en tabla");
+    var MSG_DT_INFO = _("Mostrando _START_ a _END_ de _TOTAL_");
+    var MSG_DT_INFO_EMPTY = _("No hay entradas para mostrar");
+    var MSG_DT_INFO_FILTERED = _("(filtrado de _MAX_ entradas totales)");
+    var MSG_DT_LENGTH_MENU = _("Mostrar _MENU_ entradas");
+    var MSG_DT_LOADING_RECORDS = _("Cargando...");
+    var MSG_DT_PROCESSING = _("Procesando...");
+    var MSG_DT_SEARCH = _("Buscar:");
+    var MSG_DT_ZERO_RECORDS = _("No se encontraron registros coincidentes");
+    var CONFIG_EXCLUDE_ARTICLES_FROM_SORT = _("el la los");
+//]]>
+</script>
+<script src="/opac-tmpl/bootstrap/js/datatables_19.1129000.js"></script>
+
+
+
+<script>
+function KohaTable(selector, dt_parameters, columns_settings) {
+    var id = 0;
+    var hidden_ids = [];
+    var included_ids = [];
+    $(columns_settings).each( function() {
+        var named_id = $( 'thead th[data-colname="' + this.columnname + '"]', selector ).index( selector+' th' );
+
+        var used_id = dt_parameters.bKohaColumnsUseNames ? named_id : id;
+        if ( used_id == -1 ) return;
+
+        if ( this['is_hidden'] == "1" ) {
+            hidden_ids.push( used_id );
+        }
+        if ( this['cannot_be_toggled'] == "0" ) {
+            included_ids.push( used_id );
+        }
+        id++;
+    });
+    dt_parameters[ "buttons" ] = [
+        {
+            extend: 'colvis',
+            columns: included_ids,
+            text: _("Visibilidad de la columna"),
+        }
+    ];
+    var table = $(selector).dataTable($.extend(true, {}, dataTablesDefaults, dt_parameters));
+
+    $(hidden_ids).each(function(index, value) {
+        table.fnSetColumnVis( value, false );
+    });
+
+    return table;
+}
+
+</script>
+
+
+
+<script>
+    var GB_ROOT_DIR = "/opac-tmpl/bootstrap/lib/greybox/";
+</script>
+<script src="/opac-tmpl/bootstrap/lib/greybox/AJS_19.1129000.js"></script>
+<script src="/opac-tmpl/bootstrap/lib/greybox/AJS_fx_19.1129000.js"></script>
+<script src="/opac-tmpl/bootstrap/lib/greybox/gb_scripts_19.1129000.js"></script>
+<link rel="stylesheet" href="/opac-tmpl/bootstrap/lib/greybox/gb_styles_19.1129000.css" type="text/css">
+
+<script src="/opac-tmpl/lib/jquery/plugins/jquery.barrating.min_19.1129000.js"></script>
+
+<script src="/opac-tmpl/bootstrap/lib/jquery/plugins/jquery.highlight-3_19.1129000.js"></script>
+
+
+
+
+<script>
+    
+        var q_array = new Array();  // holds search terms if available
+
+        function highlightOff() {
+            $("#catalogue_detail_biblio").removeHighlight();
+            $(".highlight_toggle").toggle();
+        }
+        function highlightOn() {
+            var x;
+            for (x in q_array) {
+                if ( q_array[x].length > 0 ) {
+                    q_array[x] = q_array[x].replace(/\w*:([\w])/, "$1");
+                    q_array[x] = q_array[x].toLowerCase();
+                    var myStopwords = "and|or|not".toLowerCase().split('|');
+                    if( $.inArray(q_array[x], myStopwords) == -1 ) {
+                        $(".title").highlight(q_array[x]);
+                        $(".author").highlight(q_array[x]);
+                        $(".results_summary").highlight(q_array[x]);
+                    }
+                }
+            }
+            $(".highlight_toggle").toggle();
+        }
+    
+
+     $(document).ready(function() {
+
+        
+
+        $('#bibliodescriptions').tabs();
+        $(".branch-info-tooltip-trigger").uitooltip({
+            position: { my: "left+15 center", at: "right center" },
+            show: 50,
+            hide: 50,
+            content: function(){
+                var element = $(this).next("div");
+                return element.html();
+            }
+        });
+
+        
+
+        var columns_settings = [{"is_hidden":0,"cannot_be_modified":0,"columnname":"item_itemtype","cannot_be_toggled":0},{"cannot_be_toggled":0,"columnname":"item_current_location","is_hidden":0,"cannot_be_modified":0},{"cannot_be_toggled":0,"columnname":"item_home_location","is_hidden":0,"cannot_be_modified":0},{"columnname":"item_shelving_location","cannot_be_toggled":0,"cannot_be_modified":0,"is_hidden":1},{"columnname":"item_ccode","cannot_be_toggled":0,"cannot_be_modified":0,"is_hidden":0},{"cannot_be_modified":0,"is_hidden":0,"cannot_be_toggled":0,"columnname":"item_callnumber"},{"is_hidden":0,"cannot_be_modified":0,"cannot_be_toggled":0,"columnname":"item_enumchron"},{"is_hidden":0,"cannot_be_modified":0,"columnname":"item_url","cannot_be_toggled":0},{"is_hidden":0,"cannot_be_modified":0,"columnname":"item_copy","cannot_be_toggled":0},{"columnname":"item_status","cannot_be_toggled":0,"is_hidden":0,"cannot_be_modified":0},{"columnname":"item_notes","cannot_be_toggled":0,"cannot_be_modified":0,"is_hidden":0},{"columnname":"item_datedue","cannot_be_toggled":0,"cannot_be_modified":0,"is_hidden":0},{"cannot_be_modified":0,"is_hidden":0,"columnname":"item_barcode","cannot_be_toggled":0},{"columnname":"item_holds","cannot_be_toggled":0,"is_hidden":0,"cannot_be_modified":0},{"columnname":"item_priority","cannot_be_toggled":0,"is_hidden":0,"cannot_be_modified":0},{"columnname":"item_coursereserves","cannot_be_toggled":0,"cannot_be_modified":0,"is_hidden":0}];
+
+        KohaTable("#holdingst", {
+            dom: '<"clearfix">t',
+            "columnDefs": [
+                { "targets": [ -1 ], "sortable": false, "searchable": false },
+                { "type": "title-string", "targets" : [ "title-string" ] }
+                ],
+            "bKohaColumnsUseNames": true,
+            "autoWidth": false
+        }, columns_settings);
+
+        KohaTable("#otherholdingst", {
+            dom: '<"clearfix">t',
+            "columnDefs": [
+                { "targets": [ -1 ], "sortable": false, "searchable": false },
+                { "type": "title-string", "targets" : [ "title-string" ] }
+                ],
+            "bKohaColumnsUseNames": true,
+            "autoWidth": false
+        }, columns_settings);
+
+        var serial_column_settings = [{"cannot_be_toggled":0,"columnname":"serial_serialseq","cannot_be_modified":0,"is_hidden":0},{"is_hidden":0,"cannot_be_modified":0,"cannot_be_toggled":0,"columnname":"serial_publisheddate"},{"is_hidden":0,"cannot_be_modified":0,"columnname":"serial_planneddate","cannot_be_toggled":0},{"columnname":"serial_status","cannot_be_toggled":0,"cannot_be_modified":0,"is_hidden":0},{"cannot_be_toggled":0,"columnname":"serial_notes","is_hidden":0,"cannot_be_modified":0}];
+
+        KohaTable("#subscriptionst", {
+            dom: '<"clearfix">t',
+            "sorting": [[ 1, "desc" ]],
+            "columnDefs": [
+                { "type": "title-string", "targets" : [ "title-string" ] }
+                ],
+            "autoWidth": false,
+            "bKohaColumnsUseNames": true
+        }, serial_column_settings);
+
+
+
+        
+        
+            var default_order_index = 0;
+        
+
+        
+    
+    
+
+    
+    
+        KOHA.LocalCover.GetCoverFromBibnumber(true);
+    
+    
+
+
+
+    (function prepareShelfBrowser(){
+
+        $(".main").on("click",".close_shelf",function(e){
+            e.preventDefault();
+            $("#shelfbrowser").toggle();
+        });
+        $(".main").on("click", "#browser_previous a", function(e){
+            e.preventDefault();
+            $.ajax({
+                url: "/cgi-bin/koha/svc/shelfbrowser.pl",
+                type: "POST",
+                data: {
+                    "shelfbrowse_itemnumber": $("#browser_previous a").data( "prev-itemnumber" )
+                },
+                success: function(data){
+                    $("#shelfbrowser").replaceWith(data);
+                    
+                    
+                    
+                    
+                      KOHA.LocalCover.GetCoverFromBibnumber(true);
+                    
+                }
+            });
+        });
+
+        $(".main").on("click", "#browser_next a", function(e){
+            e.preventDefault();
+            $.ajax({
+                  url: "/cgi-bin/koha/svc/shelfbrowser.pl",
+                  type: "POST",
+                  data: {
+                    "shelfbrowse_itemnumber": $("#browser_next a").data( "next-itemnumber" )
+                },
+                success: function(data){
+                    $("#shelfbrowser").replaceWith(data);
+                    
+                    
+                    
+                    
+                      KOHA.LocalCover.GetCoverFromBibnumber(true);
+                    
+                }
+            });
+        });
+    }());
+
+
+    // -----------------------------------------------------
+    // star-ratings code
+    // -----------------------------------------------------
+    // hide 'rate' button if javascript enabled
+
+    $('input[name="rate_button"]').remove();
+
+    var rating_enabled = ( $("#star_rating").data("rating-enabled") == "1" ) ? false : true;
+    $('#star_rating').barrating({
+        theme: 'fontawesome-stars',
+        showSelectedRating: false,
+        allowEmpty: true,
+        deselectable: false,
+        readonly: rating_enabled,
+        onSelect: function(value, text) {
+            $("#rating-loading").show();
+            $.post("/cgi-bin/koha/opac-ratings-ajax.pl", {
+                rating_old_value: $("#rating_value").attr("value"),
+                borrowernumber: "",
+                biblionumber: "823127",
+                rating_value: value,
+                auth_error: value
+            }, function (data) {
+                    $("#rating_value").val(data.rating_value);
+                    if (data.rating_value) {
+                        $("#rating_value_text").text(_("Su valoración: %s, ").format(data.rating_value));
+                        $("#cancel_rating_text").show();
+                    } else {
+                        $("#rating_value_text").text('');
+                        $("#cancel_rating_text").hide();
+                    }
+                    $("#rating_text").text(_("Valoración media: %s (%s votos)").format(data.rating_avg, data.rating_total));
+                    $("#rating-loading").hide();
+            }, "json");
+        }
+    });
+
+    $("#cancel_rating_text a").on("click", function(e){
+        e.preventDefault();
+        $("#star_rating").barrating("set", "");
+    });
+
+
+
+
+
+});
+    
+</script>
+
+
+
+
+ <script>
+        $(document).ready(function(){
+
+ $("#item_callnumber").text("Ubicación Física");
+
+});
+    </script>
+
+
+
+</body>
+</html>
+
+
+
+
+
+
+

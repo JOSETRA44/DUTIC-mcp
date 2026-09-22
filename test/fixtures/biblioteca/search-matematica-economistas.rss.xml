@@ -1,0 +1,538 @@
+<?xml version='1.0' encoding='utf-8' ?>
+
+
+
+<rss version="2.0"
+      xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:atom="http://www.w3.org/2005/Atom">
+ <channel>
+ <title><![CDATA[Universidad Nacional de San Agustín Search for 'kw,wrdl: matematica para economistas']]></title>
+ <link>/cgi-bin/koha/opac-search.pl?idx=kw&amp;q=matematica%20para%20economistas&amp;format=rss</link>
+ <atom:link rel="self" type="application/rss+xml" href="/cgi-bin/koha/opac-search.pl?idx=kw&amp;q=matematica%20para%20economistas&amp;sort_by=acqdate_dsc&amp;format=atom"/>
+ <description> Search results for 'kw,wrdl: matematica para economistas' at Universidad Nacional de San Agustín</description>
+ <opensearch:totalResults>16</opensearch:totalResults>
+ <opensearch:startIndex>0</opensearch:startIndex>
+ 
+ <opensearch:itemsPerPage>100</opensearch:itemsPerPage>
+ 
+ 
+ <atom:link rel="search" type="application/opensearchdescription+xml" href="/cgi-bin/koha/opac-search.pl?&amp;sort_by=&amp;format=opensearchdescription"/>
+ <opensearch:Query role="request" searchTerms="" startPage="" />
+ <item>
+ <title> Matemáticas financieras y valoración bajo estándares internacionales       </title>
+ <dc:identifier>ISBN:9789587781625</dc:identifier>
+ 
+ <link>/cgi-bin/koha/opac-detail.pl?biblionumber=1114180</link>
+ 
+ <description>
+
+<img src="https://images-na.ssl-images-amazon.com/images/P/9587781627.01.TZZZZZZZ.jpg" alt="" />
+
+
+
+
+
+
+
+	   <p>By Santana Viloria, Leonardo. 
+	   Colombia Alfaomega 2016
+                        . 260 páginas
+                        
+                         21x29x1.3 cm . 
+                         9789587781625
+       </p>
+
+<p><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=1114180">Place Hold on <em>Matemáticas financieras y valoración bajo estándares internacionales</em></a></p>
+
+						</description>
+ <guid>/cgi-bin/koha/opac-detail.pl?biblionumber=1114180</guid>
+ </item>
+ 
+ <atom:link rel="search" type="application/opensearchdescription+xml" href="/cgi-bin/koha/opac-search.pl?&amp;sort_by=&amp;format=opensearchdescription"/>
+ <opensearch:Query role="request" searchTerms="" startPage="" />
+ <item>
+ <title> Matemáticas para economistas       </title>
+ <dc:identifier>ISBN:B9684512805</dc:identifier>
+ 
+ <link>/cgi-bin/koha/opac-detail.pl?biblionumber=823127</link>
+ 
+ <description>
+
+<img src="https://images-na.ssl-images-amazon.com/images/P/9684512805.01.TZZZZZZZ.jpg" alt="" />
+
+
+
+
+
+
+
+	   <p>By Dowling, Edward. 
+	   México D.F. - México Mcgraw-Hill 1982
+                        . 411 Páginas
+                        
+                         27x20x30 ctms.. 
+                         B9684512805
+       </p>
+
+<p><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=823127">Place Hold on <em>Matemáticas para economistas</em></a></p>
+
+						</description>
+ <guid>/cgi-bin/koha/opac-detail.pl?biblionumber=823127</guid>
+ </item>
+ 
+ <atom:link rel="search" type="application/opensearchdescription+xml" href="/cgi-bin/koha/opac-search.pl?&amp;sort_by=&amp;format=opensearchdescription"/>
+ <opensearch:Query role="request" searchTerms="" startPage="" />
+ <item>
+ <title> Métodos matemáticos para economistas       </title>
+ <dc:identifier>ISBN:</dc:identifier>
+ 
+ <link>/cgi-bin/koha/opac-detail.pl?biblionumber=835141</link>
+ 
+ <description>
+
+
+
+
+
+
+
+
+
+	   <p>By Glass, Colin. 
+	     Colombia Mcgraw-Hill 1982
+                        . 294 Páginas
+                        
+                         27x18x30 ctms.. 
+                        
+       </p>
+
+<p><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=835141">Place Hold on <em>Métodos matemáticos para economistas</em></a></p>
+
+						</description>
+ <guid>/cgi-bin/koha/opac-detail.pl?biblionumber=835141</guid>
+ </item>
+ 
+ <atom:link rel="search" type="application/opensearchdescription+xml" href="/cgi-bin/koha/opac-search.pl?&amp;sort_by=&amp;format=opensearchdescription"/>
+ <opensearch:Query role="request" searchTerms="" startPage="" />
+ <item>
+ <title> Problemas resueltos de análisis matemático para economistas       </title>
+ <dc:identifier>ISBN:</dc:identifier>
+ 
+ <link>/cgi-bin/koha/opac-detail.pl?biblionumber=823026</link>
+ 
+ <description>
+
+
+
+
+
+
+
+
+
+	   <p>By Allen R., G. D. . 
+	   Trujillo - Perú U.N.T. 1978
+                        . 218 Páginas
+                        
+                         28x21x11 ctms.. 
+                        
+       </p>
+
+<p><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=823026">Place Hold on <em>Problemas resueltos de análisis matemático para economistas</em></a></p>
+
+						</description>
+ <guid>/cgi-bin/koha/opac-detail.pl?biblionumber=823026</guid>
+ </item>
+ 
+ <atom:link rel="search" type="application/opensearchdescription+xml" href="/cgi-bin/koha/opac-search.pl?&amp;sort_by=&amp;format=opensearchdescription"/>
+ <opensearch:Query role="request" searchTerms="" startPage="" />
+ <item>
+ <title> Matemáticas finitas para economistas y  administradores       </title>
+ <dc:identifier>ISBN:9684260121</dc:identifier>
+ 
+ <link>/cgi-bin/koha/opac-detail.pl?biblionumber=1101390</link>
+ 
+ <description>
+
+<img src="https://images-na.ssl-images-amazon.com/images/P/9684260121.01.TZZZZZZZ.jpg" alt="" />
+
+
+
+
+
+
+
+	   <p>By Hadley, D. 
+	   Mexico El Manual Moderno 1978
+                        . 503 Páginas
+                        
+                         25x17x06 cm. 
+                         9684260121
+       </p>
+
+<p><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=1101390">Place Hold on <em>Matemáticas finitas para economistas y  administradores</em></a></p>
+
+						</description>
+ <guid>/cgi-bin/koha/opac-detail.pl?biblionumber=1101390</guid>
+ </item>
+ 
+ <atom:link rel="search" type="application/opensearchdescription+xml" href="/cgi-bin/koha/opac-search.pl?&amp;sort_by=&amp;format=opensearchdescription"/>
+ <opensearch:Query role="request" searchTerms="" startPage="" />
+ <item>
+ <title> Matemáticas para economistas       </title>
+ <dc:identifier>ISBN:</dc:identifier>
+ 
+ <link>/cgi-bin/koha/opac-detail.pl?biblionumber=823308</link>
+ 
+ <description>
+
+
+
+
+
+
+
+
+
+	   <p>By Sáenz Q., Eladio. 
+	   México Fondo De Cultura Economica 1977
+                        . 322 Páginas
+                        
+                         23x16x20 ctms.. 
+                        
+       </p>
+
+<p><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=823308">Place Hold on <em>Matemáticas para economistas</em></a></p>
+
+						</description>
+ <guid>/cgi-bin/koha/opac-detail.pl?biblionumber=823308</guid>
+ </item>
+ 
+ <atom:link rel="search" type="application/opensearchdescription+xml" href="/cgi-bin/koha/opac-search.pl?&amp;sort_by=&amp;format=opensearchdescription"/>
+ <opensearch:Query role="request" searchTerms="" startPage="" />
+ <item>
+ <title> Problemas de matemáticas para economistas       </title>
+ <dc:identifier>ISBN:B8436800524</dc:identifier>
+ 
+ <link>/cgi-bin/koha/opac-detail.pl?biblionumber=823310</link>
+ 
+ <description>
+
+<img src="https://images-na.ssl-images-amazon.com/images/P/8436800524.01.TZZZZZZZ.jpg" alt="" />
+
+
+
+
+
+
+
+	   <p>By Costa R., Emilio. 
+	   España Piramide 1977
+                        . 311 Páginas
+                        
+                         22x17x20 ctms.. 
+                         B8436800524
+       </p>
+
+<p><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=823310">Place Hold on <em>Problemas de matemáticas para economistas</em></a></p>
+
+						</description>
+ <guid>/cgi-bin/koha/opac-detail.pl?biblionumber=823310</guid>
+ </item>
+ 
+ <atom:link rel="search" type="application/opensearchdescription+xml" href="/cgi-bin/koha/opac-search.pl?&amp;sort_by=&amp;format=opensearchdescription"/>
+ <opensearch:Query role="request" searchTerms="" startPage="" />
+ <item>
+ <title> Matemática y estadística para economistas       </title>
+ <dc:identifier>ISBN:</dc:identifier>
+ 
+ <link>/cgi-bin/koha/opac-detail.pl?biblionumber=822772</link>
+ 
+ <description>
+
+
+
+
+
+
+
+
+
+	   <p>By Tintner, Gerhard. 
+	   México D. F. - México Interamericana 1973
+                        . 453 Páginas
+                        
+                         23x15x20 ctms.. 
+                        
+       </p>
+
+<p><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=822772">Place Hold on <em>Matemática y estadística para economistas</em></a></p>
+
+						</description>
+ <guid>/cgi-bin/koha/opac-detail.pl?biblionumber=822772</guid>
+ </item>
+ 
+ <atom:link rel="search" type="application/opensearchdescription+xml" href="/cgi-bin/koha/opac-search.pl?&amp;sort_by=&amp;format=opensearchdescription"/>
+ <opensearch:Query role="request" searchTerms="" startPage="" />
+ <item>
+ <title> Matemática moderna para economistas       </title>
+ <dc:identifier>ISBN:B8403182309</dc:identifier>
+ 
+ <link>/cgi-bin/koha/opac-detail.pl?biblionumber=822782</link>
+ 
+ <description>
+
+<img src="https://images-na.ssl-images-amazon.com/images/P/8403182309.01.TZZZZZZZ.jpg" alt="" />
+
+
+
+
+
+
+
+	   <p>By Alcaide, Angel. 
+	   Madrid - España Aguilar 1973
+                        . 485 Páginas
+                        
+                         24x17x30 ctms.. 
+                         B8403182309
+       </p>
+
+<p><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=822782">Place Hold on <em>Matemática moderna para economistas</em></a></p>
+
+						</description>
+ <guid>/cgi-bin/koha/opac-detail.pl?biblionumber=822782</guid>
+ </item>
+ 
+ <atom:link rel="search" type="application/opensearchdescription+xml" href="/cgi-bin/koha/opac-search.pl?&amp;sort_by=&amp;format=opensearchdescription"/>
+ <opensearch:Query role="request" searchTerms="" startPage="" />
+ <item>
+ <title> Matemáticas para economistas       </title>
+ <dc:identifier>ISBN:</dc:identifier>
+ 
+ <link>/cgi-bin/koha/opac-detail.pl?biblionumber=822794</link>
+ 
+ <description>
+
+
+
+
+
+
+
+
+
+	   <p>By Yamane, Taro. 
+	   Barcelona - España Ariel 1969
+                        . 582 Páginas
+                        
+                         23x16x44 ctms.. 
+                        
+       </p>
+
+<p><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=822794">Place Hold on <em>Matemáticas para economistas</em></a></p>
+
+						</description>
+ <guid>/cgi-bin/koha/opac-detail.pl?biblionumber=822794</guid>
+ </item>
+ 
+ <atom:link rel="search" type="application/opensearchdescription+xml" href="/cgi-bin/koha/opac-search.pl?&amp;sort_by=&amp;format=opensearchdescription"/>
+ <opensearch:Query role="request" searchTerms="" startPage="" />
+ <item>
+ <title> Análisis matemático para economistas       </title>
+ <dc:identifier>ISBN:</dc:identifier>
+ 
+ <link>/cgi-bin/koha/opac-detail.pl?biblionumber=822934</link>
+ 
+ <description>
+
+
+
+
+
+
+
+
+
+	   <p>By R. G. D. Allen. 
+	   Madrid - España Aguilar 1966
+                        . 548 Páginas
+                        
+                         21x14x39 ctms.. 
+                        
+       </p>
+
+<p><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=822934">Place Hold on <em>Análisis matemático para economistas</em></a></p>
+
+						</description>
+ <guid>/cgi-bin/koha/opac-detail.pl?biblionumber=822934</guid>
+ </item>
+ 
+ <atom:link rel="search" type="application/opensearchdescription+xml" href="/cgi-bin/koha/opac-search.pl?&amp;sort_by=&amp;format=opensearchdescription"/>
+ <opensearch:Query role="request" searchTerms="" startPage="" />
+ <item>
+ <title> Matemática para economistas   Tomo 1      </title>
+ <dc:identifier>ISBN:</dc:identifier>
+ 
+ <link>/cgi-bin/koha/opac-detail.pl?biblionumber=805253</link>
+ 
+ <description>
+
+
+
+
+
+
+
+
+
+	   <p>By Vegas P., Angel. 
+	   Madrid - España Dossat 1948
+                        . 527 Páginas
+                        
+                         24x17x30 ctms.. 
+                        
+       </p>
+
+<p><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=805253">Place Hold on <em>Matemática para economistas</em></a></p>
+
+						</description>
+ <guid>/cgi-bin/koha/opac-detail.pl?biblionumber=805253</guid>
+ </item>
+ 
+ <atom:link rel="search" type="application/opensearchdescription+xml" href="/cgi-bin/koha/opac-search.pl?&amp;sort_by=&amp;format=opensearchdescription"/>
+ <opensearch:Query role="request" searchTerms="" startPage="" />
+ <item>
+ <title> Elementos de matemáticas para economistas y estadígrafos       </title>
+ <dc:identifier>ISBN:</dc:identifier>
+ 
+ <link>/cgi-bin/koha/opac-detail.pl?biblionumber=818497</link>
+ 
+ <description>
+
+
+
+
+
+
+
+
+
+	   <p>By Crum, W. L.. 
+	   México Fondo De Cultura Economica 1948
+                        . 183 Páginas
+                        
+                         21x14x15 ctms.. 
+                        
+       </p>
+
+<p><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=818497">Place Hold on <em>Elementos de matemáticas para economistas y estadígrafos</em></a></p>
+
+						</description>
+ <guid>/cgi-bin/koha/opac-detail.pl?biblionumber=818497</guid>
+ </item>
+ 
+ <atom:link rel="search" type="application/opensearchdescription+xml" href="/cgi-bin/koha/opac-search.pl?&amp;sort_by=&amp;format=opensearchdescription"/>
+ <opensearch:Query role="request" searchTerms="" startPage="" />
+ <item>
+ <title> Análisis matemático para economistas       </title>
+ <dc:identifier>ISBN:</dc:identifier>
+ 
+ <link>/cgi-bin/koha/opac-detail.pl?biblionumber=822930</link>
+ 
+ <description>
+
+
+
+
+
+
+
+
+
+	   <p>By Allen, R.. 
+	   Madrid - España M.Aguilar 1946
+                        . 692 Páginas
+                        
+                         22x16x42 ctms.. 
+                        
+       </p>
+
+<p><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=822930">Place Hold on <em>Análisis matemático para economistas</em></a></p>
+
+						</description>
+ <guid>/cgi-bin/koha/opac-detail.pl?biblionumber=822930</guid>
+ </item>
+ 
+ <atom:link rel="search" type="application/opensearchdescription+xml" href="/cgi-bin/koha/opac-search.pl?&amp;sort_by=&amp;format=opensearchdescription"/>
+ <opensearch:Query role="request" searchTerms="" startPage="" />
+ <item>
+ <title> Matemáticas finitas para economistas y  administradores       </title>
+ <dc:identifier>ISBN:9684260121</dc:identifier>
+ 
+ <link>/cgi-bin/koha/opac-detail.pl?biblionumber=1063163</link>
+ 
+ <description>
+
+<img src="https://images-na.ssl-images-amazon.com/images/P/9684260121.01.TZZZZZZZ.jpg" alt="" />
+
+
+
+
+
+
+
+	   <p>By Hadley, D. 
+	   Mexico El Manual Moderno 1978
+                        . 503 Páginas
+                        
+                         25x17. 
+                         9684260121
+       </p>
+
+<p><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=1063163">Place Hold on <em>Matemáticas finitas para economistas y  administradores</em></a></p>
+
+						</description>
+ <guid>/cgi-bin/koha/opac-detail.pl?biblionumber=1063163</guid>
+ </item>
+ 
+ <atom:link rel="search" type="application/opensearchdescription+xml" href="/cgi-bin/koha/opac-search.pl?&amp;sort_by=&amp;format=opensearchdescription"/>
+ <opensearch:Query role="request" searchTerms="" startPage="" />
+ <item>
+ <title> Matemáticas finitas para economistas y  administradores       </title>
+ <dc:identifier>ISBN:9684260121</dc:identifier>
+ 
+ <link>/cgi-bin/koha/opac-detail.pl?biblionumber=1082334</link>
+ 
+ <description>
+
+<img src="https://images-na.ssl-images-amazon.com/images/P/9684260121.01.TZZZZZZZ.jpg" alt="" />
+
+
+
+
+
+
+
+	   <p>By Hadley, D. 
+	   Mexico El Manual Moderno 1978
+                        . 503 Páginas
+                        
+                         25x17. 
+                         9684260121
+       </p>
+
+<p><a href="/cgi-bin/koha/opac-reserve.pl?biblionumber=1082334">Place Hold on <em>Matemáticas finitas para economistas y  administradores</em></a></p>
+
+						</description>
+ <guid>/cgi-bin/koha/opac-detail.pl?biblionumber=1082334</guid>
+ </item>
+ 
+ </channel>
+</rss>
+
+
+
+
+
