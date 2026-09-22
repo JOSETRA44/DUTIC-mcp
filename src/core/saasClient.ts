@@ -11,8 +11,8 @@ import { APP_VERSION } from "./version.js";
  * Functions (con service_role) leen y escriben.
  */
 
-const SAAS_SUPABASE_URL = "https://udihgiwdddrtoqdwopcb.supabase.co";
-const SAAS_ANON_KEY =
+export const SAAS_SUPABASE_URL = "https://udihgiwdddrtoqdwopcb.supabase.co";
+export const SAAS_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkaWhnaXdkZGRydG9xZHdvcGNiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0Mjg5MDUsImV4cCI6MjEwMTAwNDkwNX0.ZmyvTVZm0mzywDjp3EhCUpzVkJgEmkmKd9JVSXvCFkE";
 
 const SAAS_FILE = join(DATA_DIR, "saas.json");

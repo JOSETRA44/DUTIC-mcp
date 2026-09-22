@@ -304,9 +304,10 @@ dutic lib show 823127                             # ficha: temas y cada ejemplar
 ```
 
 Para el operador del piloto existe además `dutic lib harvest`, que copia el catálogo completo
-(199 270 registros) al esquema `library` de Supabase en tandas nocturnas reanudables, y
-`--incremental` para el refresco diario. Requiere `DUTIC_LIBRARY_INGEST_KEY` y no se usa en un
-equipo normal.
+(199 270 registros) al esquema `library` de Supabase en tandas reanudables. Corre solo en
+GitHub Actions (tanda nocturna + refresco incremental diario, ver
+`.github/workflows/library-harvest.yml`) y no se usa en un equipo normal: requiere
+`DUTIC_LIBRARY_INGEST_TOKEN`, un token acotado que sólo puede escribir bibliografía.
 
 El portal tarda ~10 s en cada consulta nueva. La causa y cómo la mitigamos están en
 [docs/biblioteca-diagnostico.md](docs/biblioteca-diagnostico.md): caché en dos niveles, ráfagas

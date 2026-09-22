@@ -121,6 +121,7 @@ function renderRecord(f: Fetched<BiblioRecord | null>, id: string, elapsedMs: nu
 }
 
 const STOP_REASON: Record<string, string> = {
+  up_to_date: "el catálogo ya está al día (no se tocó el OPAC)",
   complete: "catálogo completo",
   budget: "se agotó el presupuesto de la tanda",
   window: "fuera de la ventana horaria",
@@ -240,12 +241,18 @@ export function registerBibliotecaCommands(program: Command): void {
     .option("--desde <offset>", "Fuerza el punto de partida, ignorando el cursor guardado.")
     .option("--bloque <n>", `Registros por petición (por defecto ${HARVEST_BLOCK_SIZE}).`)
     .option("--sin-ventana", "Permite correr fuera de la ventana 00:00-06:00.")
+    .option(
+      "--max-edad <dias>",
+      "No hace nada si el último barrido completo terminó hace menos de N días. " +
+        "Es lo que hace idempotente al cron nocturno.",
+    )
     .option("--json", "Salida en JSON.")
     .action(async (opts) => {
       const harvester = catalogHarvester();
       if (!harvester) {
-        out(`${mark.err()} Falta DUTIC_LIBRARY_INGEST_KEY: este comando es sólo para el operador del barrido.`);
-        out(c.dim("  La clave nunca se guarda en disco; se exporta en el entorno al correr la tanda."));
+        out(`${mark.err()} Falta DUTIC_LIBRARY_INGEST_TOKEN: este comando es sólo para el operador del barrido.`);
+        out(c.dim("  El token nunca se guarda en disco; se exporta en el entorno al correr la tanda."));
+        out(c.dim("  Se acuña con `node scripts/mint-harvest-token.mjs` (ver docs/biblioteca-diagnostico.md)."));
         process.exitCode = 1;
         return;
       }
@@ -263,6 +270,7 @@ export function registerBibliotecaCommands(program: Command): void {
           mode,
           budgetMs: minutos * 60_000,
           blockSize: opts.bloque ? Number(opts.bloque) : undefined,
+          maxAgeDays: opts.maxEdad ? Number(opts.maxEdad) : null,
           startOffset: opts.desde ? Number(opts.desde) : undefined,
           // El incremental son 2-3 peticiones: no necesita ventana nocturna.
           window: opts.sinVentana || mode === "incremental" ? null : { fromHour: 0, toHour: 6 },

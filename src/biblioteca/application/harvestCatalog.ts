@@ -36,7 +36,7 @@ const RETRY_DELAYS_MS = [5_000, 20_000];
 /** Bloques fallidos seguidos antes de rendirse y dejar el run como `failed`. */
 const MAX_CONSECUTIVE_FAILURES = 3;
 
-export type StoppedBy = "complete" | "budget" | "window" | "failures" | "error";
+export type StoppedBy = "complete" | "budget" | "window" | "failures" | "error" | "up_to_date";
 
 export interface HarvestOptions {
   mode?: "full" | "incremental";
@@ -47,6 +47,11 @@ export interface HarvestOptions {
   startOffset?: number;
   /** Ventana horaria permitida (hora local, `to` exclusivo). null = sin restricción. */
   window?: { fromHour: number; toHour: number } | null;
+  /**
+   * Si el último barrido completo terminó hace menos de estos días, no se hace nada.
+   * Es lo que hace idempotente al cron: la tanda nocturna sólo trabaja si hace falta.
+   */
+  maxAgeDays?: number | null;
   onProgress?: (p: HarvestProgress) => void;
 }
 
@@ -99,7 +104,8 @@ export class CatalogHarvester {
     const budgetMs = opts.budgetMs ?? Number.POSITIVE_INFINITY;
     const startedAt = this.clock.now();
 
-    const run = await this.deps.repository.startRun("full");
+    const run = await this.deps.repository.startRun("full", null, opts.maxAgeDays ?? null);
+    if (!run) return upToDate("full", this.clock.now() - startedAt);
     let offset = opts.startOffset ?? run.cursorOffset;
     let total = run.totalExpected;
     let recordsUpserted = 0;
@@ -201,6 +207,7 @@ export class CatalogHarvester {
     const startedAt = this.clock.now();
     const pageSize = opts.blockSize ?? INCREMENTAL_PAGE_SIZE;
     const run = await this.deps.repository.startRun("incremental");
+    if (!run) return upToDate("incremental", this.clock.now() - startedAt);
 
     let recordsUpserted = 0;
     let blocksOk = 0;
@@ -291,4 +298,20 @@ export class CatalogHarvester {
     const { fromHour, toHour } = window;
     return fromHour <= toHour ? hour >= fromHour && hour < toHour : hour >= fromHour || hour < toHour;
   }
+}
+
+/** El catálogo ya está al día: ni una petición al OPAC. */
+function upToDate(mode: "full" | "incremental", elapsedMs: number): HarvestResult {
+  return {
+    runId: 0,
+    mode,
+    status: "done",
+    stoppedBy: "up_to_date",
+    cursorOffset: 0,
+    total: null,
+    recordsUpserted: 0,
+    blocksOk: 0,
+    blocksFailed: 0,
+    elapsedMs,
+  };
 }

@@ -67,8 +67,18 @@ export type HarvestStatus = "paused" | "done" | "failed";
 
 /** Destino persistente del catálogo (hoy Postgres/Supabase). */
 export interface CatalogRepository {
-  /** Abre un barrido o retoma el que quedó a medias en ese modo. */
-  startRun(mode: "full" | "incremental", totalExpected?: number | null): Promise<HarvestRun>;
+  /**
+   * Abre un barrido o retoma el que quedó a medias en ese modo.
+   *
+   * Devuelve null cuando NO hay nada que hacer: con `maxAgeDays`, si el último barrido
+   * completo terminó hace menos de ese plazo. Es lo que permite dejar un cron nocturno
+   * encendido sin que vuelva a barrer el catálogo entero cada noche.
+   */
+  startRun(
+    mode: "full" | "incremental",
+    totalExpected?: number | null,
+    maxAgeDays?: number | null,
+  ): Promise<HarvestRun | null>;
   /**
    * Upsert de un bloque Y avance del cursor, atómicos. Devuelve cuántas filas escribió.
    * Si falla, el cursor NO avanza y la tanda siguiente reintenta ese mismo bloque.

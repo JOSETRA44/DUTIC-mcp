@@ -1,23 +1,30 @@
 name: Catálogo de biblioteca (barrido)
 
-# Copia el catálogo de la Biblioteca Virtual UNSA (Koha) al esquema `library` de Supabase.
-# Ver docs/biblioteca-diagnostico.md.
+# Mantiene al día la copia del catálogo de la Biblioteca Virtual UNSA (Koha) en el esquema
+# `library` de Supabase. Ver docs/biblioteca-diagnostico.md.
 #
-# ⚠️ ANTES DE ACTIVARLO, LEE ESTO
+# SE AUTOGESTIONA. Hay dos horarios y ninguno necesita que nadie vigile nada:
 #
-# Este workflow necesita el secreto `DUTIC_LIBRARY_INGEST_KEY`. Si usas la `service_role`
-# key del proyecto, ese secreto **salta TODO el RLS del proyecto entero**, incluidas las
-# tablas con datos personales del piloto (students, whatsapp_sessions, telemetry.*). No es
-# una clave "de biblioteca": es la llave maestra.
+#   · 02:30 (Lima), todos los días → refresco incremental. Pide las novedades más recientes
+#     y para en cuanto una página ya es conocida: 2-3 peticiones al OPAC.
+#   · 01:00 (Lima), todos los días → una tanda de 45 min del barrido completo, que retoma el
+#     cursor donde lo dejó la noche anterior. Con `--max-edad 30`, cuando el catálogo ya está
+#     cosechado el comando NO toca el OPAC y termina en segundos; treinta días después vuelve
+#     a barrer solo, para refrescar la foto de disponibilidad y recoger bajas.
 #
-# Por eso aquí:
-#   - NO corre en pull_request (un PR de un tercero nunca debe ver el secreto);
-#   - el cron viene DESACTIVADO: actívalo sólo cuando decidas con qué clave corre;
-#   - lo recomendable es acuñar un token acotado a un rol propio que sólo pueda ejecutar
-#     las funciones de ingesta, en vez de usar service_role. Mientras no exista ese token,
-#     correr el barrido desde tu propia máquina es la opción más segura.
+# El barrido respeta la ventana 00:00-06:00 en hora de Perú (por eso TZ=America/Lima): si
+# GitHub retrasa el job hasta el horario de clases, no carga el servidor de la universidad.
+#
+# SEGURIDAD. El secreto `DUTIC_LIBRARY_INGEST_TOKEN` NO es la service_role key: es un token
+# propio que sólo sirve para llamar a la Edge Function `library-ingest`, que únicamente sabe
+# escribir bibliografía. No puede leer `students`, `whatsapp_sessions` ni `telemetry`.
+# Se acuña con `node scripts/mint-harvest-token.mjs` y se revoca con
+# `select public.library_revoke_ingest_client('github-actions');`.
 
 on:
+  schedule:
+    - cron: "30 7 * * *" # 02:30 en Lima → incremental
+    - cron: "0 6 * * *" # 01:00 en Lima → tanda del barrido completo
   workflow_dispatch:
     inputs:
       modo:
@@ -33,9 +40,6 @@ on:
         description: "Ignorar la ventana 00:00-06:00 (hora de Perú)"
         type: boolean
         default: false
-  # Refresco diario de novedades: 02:30 en Lima (07:30 UTC). Descomenta para activarlo.
-  # schedule:
-  #   - cron: "30 7 * * *"
 
 permissions:
   contents: read
@@ -55,13 +59,13 @@ jobs:
       # El CLI comprueba la ventana horaria con la hora LOCAL del proceso; sin esto el
       # runner usaría UTC y la ventana caería cinco horas corrida.
       TZ: America/Lima
-      DUTIC_LIBRARY_INGEST_KEY: ${{ secrets.DUTIC_LIBRARY_INGEST_KEY }}
+      DUTIC_LIBRARY_INGEST_TOKEN: ${{ secrets.DUTIC_LIBRARY_INGEST_TOKEN }}
 
     steps:
-      - name: Comprobar que hay clave de ingesta
+      - name: Comprobar que hay token de ingesta
         run: |
-          if [ -z "$DUTIC_LIBRARY_INGEST_KEY" ]; then
-            echo "::error::Falta el secreto DUTIC_LIBRARY_INGEST_KEY; lee la cabecera de este workflow antes de crearlo."
+          if [ -z "$DUTIC_LIBRARY_INGEST_TOKEN" ]; then
+            echo "::error::Falta el secreto DUTIC_LIBRARY_INGEST_TOKEN (node scripts/mint-harvest-token.mjs)."
             exit 1
           fi
 
@@ -76,14 +80,36 @@ jobs:
         run: npm ci
 
       - name: Barrido
+        env:
+          # Qué disparó el job: el cron de la 01:00 hace tanda completa; todo lo demás,
+          # incremental (salvo que se pida otra cosa a mano).
+          CRON: ${{ github.event.schedule }}
+          MODO_MANUAL: ${{ inputs.modo }}
+          MINUTOS: ${{ inputs.minutos }}
+          SIN_VENTANA: ${{ inputs.sin_ventana }}
         run: |
-          MODO="${{ inputs.modo || 'incremental' }}"
-          ARGS=""
-          [ "$MODO" = "incremental" ] && ARGS="--incremental"
-          [ "$MODO" = "full" ] && ARGS="--minutos ${{ inputs.minutos || '30' }}"
-          [ "${{ inputs.sin_ventana }}" = "true" ] && ARGS="$ARGS --sin-ventana"
-          echo "dutic lib harvest $ARGS"
-          node dist/cli/index.js lib harvest $ARGS --json | tee resultado.json
+          set -o pipefail
+          if [ -n "$MODO_MANUAL" ]; then
+            MODO="$MODO_MANUAL"
+            MINUTOS="${MINUTOS:-30}"
+          elif [ "$CRON" = "0 6 * * *" ]; then
+            MODO="full"
+            MINUTOS="45"
+          else
+            MODO="incremental"
+          fi
+
+          ARGS="--json"
+          if [ "$MODO" = "full" ]; then
+            # --max-edad 30: si el catálogo ya está cosechado, no se toca el OPAC.
+            ARGS="$ARGS --minutos $MINUTOS --max-edad 30"
+          else
+            ARGS="$ARGS --incremental"
+          fi
+          [ "$SIN_VENTANA" = "true" ] && ARGS="$ARGS --sin-ventana"
+
+          echo "modo=$MODO"
+          node dist/cli/index.js lib harvest $ARGS | tee resultado.json
 
       - name: Resumen
         if: always()
@@ -105,8 +131,8 @@ jobs:
             "
           fi
 
-      # Una tanda que queda en `paused` es lo NORMAL (se acabó el presupuesto). Sólo se
-      # marca en rojo si el run terminó como `failed`.
+      # `paused` (se acabó el presupuesto), `up_to_date` (ya estaba al día) y `window` (fuera
+      # de horario) son resultados NORMALES de un cron. Sólo se marca en rojo un run `failed`.
       - name: Fallar si el run quedó en failed
         if: always()
         run: |
