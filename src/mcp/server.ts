@@ -80,6 +80,7 @@ import {
   removeDashboardBlock,
 } from "../domain/dashboard.js";
 import { getOnlinePresence, matchOnline } from "../domain/presence.js";
+import { libraryService } from "../biblioteca/composition.js";
 
 /**
  * En contexto MCP la renovación de sesión es "headless-only": si el SSO de Google sigue
@@ -138,14 +139,47 @@ function registerScoped<S extends z.ZodRawShape>(
     )) as never);
 }
 
+/**
+ * Lo que el SDK pasa a cada handler además de los argumentos. Sólo se usa para avisar progreso
+ * en operaciones lentas (la biblioteca tarda ~15 s por consulta).
+ */
+interface ToolExtra {
+  _meta?: { progressToken?: string | number };
+  sendNotification?: (n: { method: "notifications/progress"; params: Record<string, unknown> }) => Promise<void>;
+}
+
 /** Registra una herramienta SIN alcance de semestre, con la misma instrumentación. */
 function registerTool<S extends z.ZodRawShape>(
   name: string,
   config: { title: string; description: string; inputSchema: S },
-  handler: (args: z.objectOutputType<S, z.ZodTypeAny>) => Promise<ToolResult>,
+  handler: (args: z.objectOutputType<S, z.ZodTypeAny>, extra: ToolExtra) => Promise<ToolResult>,
 ): void {
-  server.registerTool(name, config as never, ((args: Record<string, unknown>) =>
-    telemetry.span("tool.call", name, () => handler(args as never))) as never);
+  server.registerTool(name, config as never, ((args: Record<string, unknown>, extra: ToolExtra) =>
+    telemetry.span("tool.call", name, () => handler(args as never, extra ?? {}))) as never);
+}
+
+/**
+ * Emite `notifications/progress` cada pocos segundos mientras corre `fn`, si el cliente pidió
+ * progreso (progressToken). Evita que el agente o el usuario den por colgada una espera larga.
+ */
+async function withProgress<T>(extra: ToolExtra, message: string, fn: () => Promise<T>): Promise<T> {
+  const token = extra._meta?.progressToken;
+  if (token === undefined || !extra.sendNotification) return fn();
+  const t0 = Date.now();
+  const timer = setInterval(() => {
+    const secs = Math.round((Date.now() - t0) / 1000);
+    extra
+      .sendNotification?.({
+        method: "notifications/progress",
+        params: { progressToken: token, progress: secs, message: `${message} (${secs} s)` },
+      })
+      .catch(() => {});
+  }, 3000);
+  try {
+    return await fn();
+  } finally {
+    clearInterval(timer);
+  }
 }
 
 /** Envuelve un handler traduciendo SessionExpiredError a un mensaje accionable. */
@@ -1296,6 +1330,97 @@ registerScoped(
   },
   async ({ block }) =>
     tool(() => withSession((s) => removeDashboardBlock(s, block), { mode: MCP_MODE })),
+);
+
+// --- Biblioteca Virtual UNSA (catálogo Koha) --------------------------------------------------
+// Sin sesión ni semestre: el catálogo es público. El OPAC tarda ~11 s fijos por petición
+// (ver docs/biblioteca-diagnostico.md); el servicio cachea, deduplica y sirve stale-while-revalidate.
+
+const LIBRARY_FIELDS = ["any", "title", "author", "subject", "isbn"] as const;
+
+/** Procedencia del dato, para que el agente sepa si puede estar desactualizado. */
+function provenance(f: { fetchedAt: number; stale: boolean; source: string; warning?: string }) {
+  return {
+    fetchedAt: new Date(f.fetchedAt).toISOString(),
+    source: f.source,
+    stale: f.stale,
+    ...(f.warning ? { warning: `El OPAC falló; se sirve la última copia guardada: ${f.warning}` } : {}),
+  };
+}
+
+registerTool(
+  "dutic_library_search",
+  {
+    title: "Buscar en la Biblioteca Virtual UNSA",
+    description:
+      "Busca libros en el catálogo de la Biblioteca Virtual de la UNSA (Koha) y dice en qué sede " +
+      "están, con signatura topográfica y nº de ejemplares prestables. Úsala para '¿hay tal libro " +
+      "en la biblioteca?', '¿dónde encuentro X?', 'libros de Y autor/tema', o para ubicar la " +
+      "bibliografía de un sílabo. El OPAC es MUY lento (~15 s por consulta nueva): pide de una vez " +
+      "los resultados que necesites con `limit` en vez de paginar, y no repitas la misma búsqueda " +
+      "(las repetidas salen de caché al instante). Las primeras 5 fichas quedan precargadas: " +
+      "dutic_library_record sobre ellas responde al instante. `stale: true` = copia guardada que " +
+      "se está actualizando; la disponibilidad podría haber cambiado.",
+    inputSchema: {
+      query: z.string().min(1).describe("Texto a buscar (título, autor, tema o ISBN)."),
+      field: z
+        .enum(LIBRARY_FIELDS)
+        .optional()
+        .describe("Dónde buscar: any (defecto), title, author, subject o isbn."),
+      limit: z
+        .number()
+        .int()
+        .min(1)
+        .max(200)
+        .optional()
+        .describe("Resultados a traer en UNA petición (defecto 30, máx. 200). Cada 20 extra suman ~1 s."),
+      offset: z.number().int().min(0).optional().describe("Saltar los primeros N resultados."),
+      refresh: z.boolean().optional().describe("Ignorar la caché (sólo si el usuario pide datos al minuto)."),
+    },
+  },
+  async ({ query, field, limit, offset, refresh }, extra) =>
+    tool(async () => {
+      const svc = libraryService();
+      const res = await withProgress(extra, "Consultando la Biblioteca Virtual UNSA", () =>
+        svc.search({ text: query, field, limit, offset }, { refresh }),
+      );
+      const page = res.data;
+      // La conexión al OPAC queda caliente <1 s tras la respuesta: se aprovecha para precargar en
+      // segundo plano las primeras fichas (~0.25 s c/u), y dutic_library_record sale al instante.
+      if (res.source === "network") void svc.prefetchRecords(page.results.map((r) => r.id));
+      return {
+        query: page.query,
+        total: page.total,
+        shown: page.results.length,
+        hasMore: page.hasMore,
+        ...provenance(res),
+        results: page.results,
+      };
+    }),
+);
+
+registerTool(
+  "dutic_library_record",
+  {
+    title: "Ficha de un libro de la Biblioteca Virtual UNSA",
+    description:
+      "Ficha completa de un registro del catálogo (id = el `id` de dutic_library_search): temas, " +
+      "descripción física, clasificación y CADA ejemplar con sede, signatura, estado (disponible / " +
+      "prestado) y fecha de vencimiento. Úsala cuando haga falta saber si hay un ejemplar libre " +
+      "ahora mismo o cuándo vuelve uno prestado. ~12 s si no está en caché.",
+    inputSchema: {
+      id: z.string().regex(/^\d+$/).describe("Id del registro (biblionumber)."),
+      refresh: z.boolean().optional().describe("Ignorar la caché y consultar el estado actual."),
+    },
+  },
+  async ({ id, refresh }, extra) =>
+    tool(async () => {
+      const res = await withProgress(extra, "Abriendo la ficha en la Biblioteca Virtual", () =>
+        libraryService().getRecord(id, { refresh }),
+      );
+      if (!res.data) return { found: false, message: `No existe el registro ${id} en el catálogo.` };
+      return { found: true, ...provenance(res), record: res.data };
+    }),
 );
 
 const bootCtx = resolveContext();
