@@ -144,6 +144,15 @@ Todas las del aula virtual admiten además `semester` (ver arriba):
 - `dutic_compare_grades` — compara el promedio de SISACAD (oficial) con el total que calcula Moodle,
   curso por curso. Útil para detectar si el aula virtual está desincronizada del registro oficial, o
   para avisar cuando Moodle aún no tiene calculado el total de un curso que SISACAD sí.
+- `dutic_library_search` — args: `query`, `field?` (any|title|author|subject|isbn), `limit?` (defecto
+  30, máx. 200), `offset?`, `refresh?`. **Catálogo de la Biblioteca Virtual UNSA** (Koha, público, sin
+  login): título, autores, año, editorial, y dónde está (sede, signatura, nº de ejemplares prestables).
+  Úsalo para "¿hay tal libro en la biblioteca?", "¿dónde encuentro X?" o para ubicar la bibliografía de
+  un sílabo. Es LENTO (~10-15 s por consulta nueva): pide todo de una vez con `limit`, no pagines ni
+  repitas la búsqueda. Las 5 primeras fichas quedan precargadas. `stale: true` = copia guardada.
+- `dutic_library_record` — args: `id`, `refresh?`. Ficha completa: temas, descripción y **cada ejemplar**
+  con estado (disponible / prestado) y fecha de vencimiento. Para "¿hay uno libre ahora?" o "¿cuándo
+  lo devuelven?".
 - `dutic_get_horario` — args: `cui?`, `depe?`, `escuela?`. **Horario de clases** del sistema de
   matrícula del extranet (el mismo login usuario+clave+escuela que la encuesta, sin CAPTCHA). Sin `cui`
   trae el del propio usuario; con `cui`, el de ese alumno (misma escuela por defecto; `depe` para
@@ -278,6 +287,8 @@ dutic hrs courses           # oferta del ciclo (todas las secciones, por año)
 dutic hrs courses 2501209A  # horario semanal de esa asignatura-sección
 dutic hrs aulas             # aulas de la escuela (código y nombre)
 dutic hrs aulas 105         # qué se dicta en ese aula (código o parte del nombre)
+dutic lib search <texto>    # Biblioteca Virtual UNSA (--por autor|titulo|tema|isbn, -n N, --fichas N)
+dutic lib show <id>         # ficha del libro y estado de cada ejemplar
 ```
 
 ## Fechas contradictorias: la trampa que hay que vigilar
