@@ -317,6 +317,47 @@ implementado), que es cuando el usuario de verdad quiere saber si hay un ejempla
 adelante la app quiere buscar por materia, lo razonable es enriquecer sólo los registros que se
 consultan, no los 199 270.
 
+## 6.quater Barrido automático en GitHub Actions
+
+El barrido corre solo, sin que nadie lo dispare (`.github/workflows/library-harvest.yml`):
+
+| Horario (Lima) | Qué hace |
+|---|---|
+| 02:30 diario | Refresco incremental: pide las novedades y para en cuanto una página ya es conocida (2-3 peticiones). |
+| 01:00 diario | Una tanda de 45 min del barrido completo, retomando el cursor de la noche anterior. |
+
+Es **idempotente por diseño**: con `--max-edad 30`, cuando el catálogo ya está cosechado el
+comando no toca el OPAC y termina en segundos; a los 30 días vuelve a barrer solo para
+refrescar la foto de disponibilidad y recoger bajas. La ventana 00:00-06:00 se sigue aplicando
+(`TZ=America/Lima`): si GitHub retrasa el job hasta el horario de clases, no corre.
+
+### El token de ingesta no es la service_role key
+
+Meter la `service_role` key en un secreto de CI habría sido poner ahí la llave maestra del
+proyecto: salta el RLS ENTERO, incluidas `students`, `whatsapp_sessions` y `telemetry`. En su
+lugar la escritura pasa por la Edge Function `library-ingest`
+(`saas/supabase/functions/library-ingest/index.ts`), que guarda el service_role del lado del
+servidor y valida un token propio:
+
+- El token viaja **en el cuerpo**, no en `Authorization`: ese header lo ocupa el anon key, que
+  es lo que el gateway verifica como JWT. Mismo patrón que `enroll`/`ingest`.
+- La base guarda **sólo el sha256** del token (`library.ingest_clients`). Leer esa tabla no
+  sirve para escribir.
+- Ese token sólo puede hacer cuatro cosas: abrir un run, ingerir un bloque, cerrarlo y
+  preguntar qué ids ya existen. No lee datos personales.
+- Revocar es un UPDATE (`library_revoke_ingest_client`), no una rotación de claves del
+  proyecto. **Verificado**: tras revocar, el mismo token recibe `invalid_token` de inmediato.
+- La función drena el cuerpo antes de responder: medido en este proyecto, responder sin
+  consumirlo deja la petición colgada ~160 s en el gateway en vez de dar un 413 limpio.
+
+Alta del token (el token en claro nunca sale de tu máquina):
+
+```bash
+node scripts/mint-harvest-token.mjs github-actions   # imprime TOKEN y HASH
+# el HASH se registra:  select public.library_register_ingest_client('github-actions', '<hash>');
+# el TOKEN va al secreto de GitHub: DUTIC_LIBRARY_INGEST_TOKEN
+```
+
 ## 7. Resultados de la implementación
 
 | Operación | Antes (navegador / cliente ingenuo) | Ahora |

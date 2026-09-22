@@ -69,8 +69,11 @@ class FakeRepository implements CatalogRepository {
   finished: { status: HarvestStatus; error: string | null; blocksFailed: number }[] = [];
   failIngestOnce = false;
 
-  async startRun(): Promise<HarvestRun> {
-    return { ...this.run };
+  /** null = "no hay nada que hacer" (el catálogo ya está al día). */
+  upToDate = false;
+
+  async startRun(): Promise<HarvestRun | null> {
+    return this.upToDate ? null : { ...this.run };
   }
 
   async ingestBlock(_runId: number, rows: BiblioSummary[], nextOffset: number, total: number | null) {
@@ -206,6 +209,21 @@ test("dentro de la ventana sí corre", async () => {
 
   assert.equal(res.status, "done");
   assert.ok(source.calls.length > 0);
+});
+
+test("cron nocturno: si el catálogo ya está al día no toca el OPAC", async () => {
+  const { harvester, repository, source } = setup();
+  repository.upToDate = true;
+
+  const res = await harvester.run({ maxAgeDays: 30, window: null });
+
+  assert.equal(res.stoppedBy, "up_to_date");
+  assert.equal(res.status, "done");
+  // Lo que de verdad importa: ni una petición al servidor de la biblioteca.
+  assert.equal(source.calls.length, 0);
+  assert.equal(res.recordsUpserted, 0);
+  // Tampoco se abre ni se cierra un run: no hubo barrido que registrar.
+  assert.equal(repository.finished.length, 0);
 });
 
 test("incremental: escribe sólo lo nuevo y para en cuanto la página ya es conocida", async () => {

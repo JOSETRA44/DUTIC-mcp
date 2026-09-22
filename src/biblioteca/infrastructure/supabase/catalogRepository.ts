@@ -1,45 +1,49 @@
 import type { BiblioSummary } from "../../domain/entities.js";
 import type { CatalogRepository, HarvestRun, HarvestStatus } from "../../application/ports.js";
+import { SAAS_ANON_KEY, SAAS_SUPABASE_URL } from "../../../core/saasClient.js";
 
 /**
- * Destino del catálogo en Supabase (Postgres), por PostgREST y con `fetch` directo, igual
- * que `src/core/saasClient.ts` (sin dependencias nuevas).
+ * Destino del catálogo en Supabase, a través de la Edge Function `library-ingest`
+ * (saas/supabase/functions/library-ingest/index.ts).
  *
- * SEGURIDAD. Escribir exige la `service_role` key, que vive SÓLO en el entorno del operador
- * que corre el barrido (`DUTIC_LIBRARY_INGEST_KEY`): nunca en el repositorio, ni en
- * `~/.dutic`, ni en el paquete npm, ni en un log. Los usuarios del CLI y del MCP jamás
- * escriben aquí; leen por `public.library_search`, que es la única función que `anon` puede
- * ejecutar. Las tablas viven en el esquema `library`, que PostgREST no expone.
+ * POR QUÉ NO SE ESCRIBE DIRECTO CONTRA PostgREST. Hacerlo exigiría la `service_role` key en
+ * quien corra el barrido — y eso, en GitHub Actions, significa poner en un secreto de CI una
+ * llave que salta el RLS del proyecto ENTERO (incluidas las tablas con datos personales del
+ * piloto). Con la función, el token que viaja a CI sólo sabe escribir bibliografía, y
+ * revocarlo es un UPDATE en `library.ingest_clients`, no una rotación de claves.
  *
- * El esquema y las funciones están en
- * saas/supabase/migrations/20260922031500_library_catalog.sql.
+ * El token va EN EL CUERPO, no en Authorization: ese header lo ocupa el anon key, que es lo
+ * que el gateway de Supabase verifica como JWT. Mismo patrón que `enroll`/`ingest`.
  */
 
-const DEFAULT_SUPABASE_URL = "https://udihgiwdddrtoqdwopcb.supabase.co";
+const FUNCTION_NAME = "library-ingest";
 
 export class SupabaseCatalogRepository implements CatalogRepository {
   constructor(
-    private readonly serviceKey: string,
-    private readonly baseUrl: string = process.env.DUTIC_LIBRARY_SUPABASE_URL?.trim() || DEFAULT_SUPABASE_URL,
+    private readonly token: string,
+    private readonly baseUrl: string = process.env.DUTIC_LIBRARY_SUPABASE_URL?.trim() || SAAS_SUPABASE_URL,
   ) {
-    if (!serviceKey) throw new Error("Falta la clave de ingesta del catálogo.");
+    if (!token) throw new Error("Falta el token de ingesta del catálogo.");
   }
 
-  async startRun(mode: "full" | "incremental", totalExpected: number | null = null): Promise<HarvestRun> {
-    const run = (await this.rpc("library_harvest_start", {
-      p_mode: mode,
-      p_total: totalExpected,
-    })) as {
-      id: number;
-      cursor_offset: number;
-      records_upserted: number;
-      total_expected: number | null;
-    };
+  async startRun(
+    mode: "full" | "incremental",
+    totalExpected: number | null = null,
+    maxAgeDays: number | null = null,
+  ): Promise<HarvestRun | null> {
+    const { run } = (await this.call({
+      action: "start",
+      mode,
+      total: totalExpected,
+      maxAgeDays,
+    })) as { run: Record<string, unknown> | null };
+
+    if (!run || run.skip === true) return null;
     return {
       id: Number(run.id),
       cursorOffset: Number(run.cursor_offset ?? 0),
       recordsUpserted: Number(run.records_upserted ?? 0),
-      totalExpected: run.total_expected ?? null,
+      totalExpected: (run.total_expected as number | null) ?? null,
     };
   }
 
@@ -49,12 +53,13 @@ export class SupabaseCatalogRepository implements CatalogRepository {
     nextOffset: number,
     total: number | null,
   ): Promise<number> {
-    const written = (await this.rpc("library_ingest_batch", {
-      p_run: runId,
-      p_rows: rows.map(toRow),
-      p_next_offset: nextOffset,
-      p_total: total,
-    })) as number;
+    const { written } = (await this.call({
+      action: "batch",
+      run: runId,
+      rows: rows.map(toRow),
+      nextOffset,
+      total,
+    })) as { written: number };
     return Number(written ?? 0);
   }
 
@@ -64,39 +69,57 @@ export class SupabaseCatalogRepository implements CatalogRepository {
     error: string | null = null,
     blocksFailed = 0,
   ): Promise<void> {
-    await this.rpc("library_harvest_finish", {
-      p_run: runId,
-      p_status: status,
+    await this.call({
+      action: "finish",
+      run: runId,
+      status,
       // Un mensaje de error puede traer una URL larga; se recorta para no inflar la fila.
-      p_error: error ? error.slice(0, 500) : null,
-      p_blocks_failed: blocksFailed,
+      error: error ? error.slice(0, 500) : null,
+      blocksFailed,
     });
   }
 
   async knownIds(ids: string[]): Promise<Set<string>> {
     const numeric = ids.map(Number).filter(Number.isFinite);
     if (numeric.length === 0) return new Set();
-    const found = (await this.rpc("library_known_ids", { p_ids: numeric })) as number[] | null;
+    const { ids: found } = (await this.call({ action: "known_ids", ids: numeric })) as {
+      ids: number[] | null;
+    };
     return new Set((found ?? []).map(String));
   }
 
-  private async rpc(fn: string, body: unknown): Promise<unknown> {
-    const res = await fetch(`${this.baseUrl}/rest/v1/rpc/${fn}`, {
+  private async call(body: Record<string, unknown>): Promise<unknown> {
+    const res = await fetch(`${this.baseUrl}/functions/v1/${FUNCTION_NAME}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        apikey: this.serviceKey,
-        Authorization: `Bearer ${this.serviceKey}`,
+        apikey: SAAS_ANON_KEY,
+        Authorization: `Bearer ${SAAS_ANON_KEY}`,
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify({ ...body, token: this.token }),
+      // Un bloque de 500 filas puede tardar en escribirse; el OPAC es el lento, no esto.
       signal: AbortSignal.timeout(60_000),
     });
+
     const text = await res.text();
-    if (!res.ok) {
-      // NUNCA se incluye la clave en el mensaje, aunque el servidor la devolviera.
-      throw new Error(`Supabase ${fn}: HTTP ${res.status} ${text.slice(0, 300)}`);
+    let data: Record<string, unknown> = {};
+    try {
+      data = text ? JSON.parse(text) : {};
+    } catch {
+      /* respuesta no-JSON: se informa por status */
     }
-    return text ? JSON.parse(text) : null;
+
+    if (!res.ok) {
+      // NUNCA se incluye el token en el mensaje, aunque el servidor lo devolviera.
+      const code = typeof data.error === "string" ? data.error : `HTTP ${res.status}`;
+      const detail = typeof data.detail === "string" ? ` (${data.detail})` : "";
+      throw new Error(
+        code === "invalid_token"
+          ? "El token de ingesta no es válido o fue revocado."
+          : `library-ingest: ${code}${detail}`,
+      );
+    }
+    return data;
   }
 }
 

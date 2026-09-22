@@ -23,11 +23,12 @@ export interface LibraryOptions {
 }
 
 /**
- * Clave de ingesta del catálogo: SÓLO en el entorno del operador que corre el barrido.
- * Si no está, el harvester no se arma (y `dutic lib harvest` lo dice en vez de fallar raro).
+ * Token de ingesta del catálogo. NO es la service_role key: es un token propio que sólo
+ * puede llamar a la Edge Function `library-ingest` y que se revoca con un UPDATE. Vive en el
+ * entorno de quien corre el barrido (tu máquina, o el secreto de GitHub Actions).
  */
 export function ingestKey(): string | null {
-  return process.env.DUTIC_LIBRARY_INGEST_KEY?.trim() || null;
+  return process.env.DUTIC_LIBRARY_INGEST_TOKEN?.trim() || null;
 }
 
 /**
