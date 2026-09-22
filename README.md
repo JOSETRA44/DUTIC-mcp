@@ -128,6 +128,8 @@ dutic search "estadistica"
 | `dutic hrs show` / `status` | Último horario descargado (sin red) / estado de credenciales y caché |
 | `dutic hrs courses [codigo]` | Oferta del ciclo (todas las secciones, por año) / horario de una asignatura-sección |
 | `dutic hrs aulas [aula]` | Aulas de la escuela / qué se dicta en un aula (por código o parte del nombre) |
+| `dutic lib search <texto>` | **Biblioteca Virtual UNSA**: libros con sede, signatura y ejemplares (`--por autor\|titulo\|tema\|isbn`, `--fichas N`) |
+| `dutic lib show <id>` | Ficha de un libro: temas y cada ejemplar con su estado (disponible/prestado) y vencimiento |
 | `dutic task <cmid>` | Detalle: consigna, fechas, adjuntos, conflicto de fechas |
 | `dutic grades [id]` | Notas: resumen de todos los cursos, o detalle de uno |
 | `dutic courses` | Cursos matriculados |
@@ -209,7 +211,7 @@ Si tu cliente no resuelve comandos del PATH, usa la ruta absoluta que imprime `d
 `{ "command": "node", "args": ["<ruta>/dist/mcp/server.js"] }`
 </details>
 
-**43 herramientas**: semestres (`dutic_semester_list`, `dutic_semester_use`,
+**45 herramientas**: biblioteca (`dutic_library_search`, `dutic_library_record`), semestres (`dutic_semester_list`, `dutic_semester_use`,
 `dutic_semester_current`, `dutic_semester_discover`), novedades (`dutic_check_changes`), notas SISACAD (`dutic_get_sisacad_grades`,
 `dutic_compare_grades`), horario (`dutic_get_horario`, `dutic_get_course_catalog`,
 `dutic_get_subject_schedule`, `dutic_get_aula_schedule`), perfil propio (`dutic_whoami`), tareas
@@ -286,6 +288,26 @@ dutic hrs aulas 105    # qué asignaturas se dictan en esa aula y cuándo (por c
   escuela se acepta por nombre o por código y se valida contra el select real del login.
 - Guarda las credenciales en `~/.dutic/sisacad-login.json` (permisos 600) y el último horario en
   `~/.dutic/horario.json` — nunca se versionan.
+
+---
+
+## Biblioteca Virtual UNSA
+
+Busca en el catálogo Koha de `bibliotecavirtual.unsa.edu.pe:8081` sin sesión: es público.
+
+```bash
+dutic lib search matematica para economistas     # título, autor, año, sede, signatura y nº de ejemplares
+dutic lib search --por autor chiang -n 50         # por autor, 50 resultados en UNA petición
+dutic lib search --por isbn 978-958-778-162-5     # ISBN con o sin guiones
+dutic lib search econometria --fichas 5           # además precarga 5 fichas (~0.3 s c/u)
+dutic lib show 823127                             # ficha: temas y cada ejemplar con su estado
+```
+
+El portal tarda ~10 s en cada consulta nueva. La causa y cómo la mitigamos están en
+[docs/biblioteca-diagnostico.md](docs/biblioteca-diagnostico.md): caché en dos niveles, ráfagas
+secuenciales por la conexión caliente y precarga de fichas. Una búsqueda repetida (aunque cambien
+las tildes) sale de caché al instante. `--refresh` fuerza la consulta y `dutic lib cache-clear`
+borra la caché (`~/.dutic/biblioteca/cache`).
 
 ---
 
