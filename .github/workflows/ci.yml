@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["20", "22"]
+
+    env:
+      # `playwright` descarga ~300 MB de navegadores en su postinstall y aquí no se usa:
+      # los tests no tocan red ni navegador (fixtures en test/fixtures/).
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      # `npm ci` dispara `prepare` (tsc), así que esto ya compila el proyecto.
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit -p .
+
+      # Ojo: el glob va ENTRECOMILLADO a propósito. Sin comillas lo expande el shell y
+      # `src/**/*.test.ts` sólo alcanza un nivel, saltándose en silencio los tests que viven
+      # más hondo (src/biblioteca/**). Entrecomillado lo resuelve el runner de Node.
+      - name: Tests
+        run: npm test
+
+      - name: Verificar que el CLI arranca
+        run: node dist/cli/index.js --version
