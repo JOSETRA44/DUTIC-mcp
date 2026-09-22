@@ -1,12 +1,25 @@
-import type { CatalogGateway, GatewaySearchResult } from "../../application/ports.js";
+import type {
+  CatalogGateway,
+  CatalogHarvestSource,
+  GatewaySearchResult,
+  HarvestBlock,
+} from "../../application/ports.js";
 import type { BiblioRecord, BiblioSummary, SearchQuery } from "../../domain/entities.js";
 import { LibraryProtocolError, LibraryUnavailableError } from "../../domain/errors.js";
 import { kohaGet } from "./kohaHttp.js";
 import { parseDetail, parseSearchPage } from "./kohaParsers.js";
-import { biblioIdFromUrl, detailUrl, KOHA_BASE_URL, searchUrl } from "./kohaUrls.js";
+import {
+  biblioIdFromUrl,
+  detailUrl,
+  harvestUrl,
+  HARVEST_QUERY,
+  KOHA_BASE_URL,
+  newestUrl,
+  searchUrl,
+} from "./kohaUrls.js";
 
-/** Adaptador del OPAC Koha 19.11 de la UNSA al puerto `CatalogGateway`. */
-export class KohaGateway implements CatalogGateway {
+/** Adaptador del OPAC Koha 19.11 de la UNSA: puerta de consulta y de cosecha. */
+export class KohaGateway implements CatalogGateway, CatalogHarvestSource {
   constructor(private readonly baseUrl: string = KOHA_BASE_URL) {}
 
   async search(query: SearchQuery): Promise<GatewaySearchResult> {
@@ -29,6 +42,16 @@ export class KohaGateway implements CatalogGateway {
     return { page: parseSearchPage(res.text, query, this.baseUrl) };
   }
 
+  /** CatalogHarvestSource: bloque por desplazamiento, en el orden estable del OPAC. */
+  fetchBlock(offset: number, limit: number): Promise<HarvestBlock> {
+    return fetchListing(harvestUrl(this.baseUrl, offset, limit), this.baseUrl, offset, limit);
+  }
+
+  /** CatalogHarvestSource: los más recientes, para el refresco incremental. */
+  fetchNewest(limit: number, offset = 0): Promise<HarvestBlock> {
+    return fetchListing(newestUrl(this.baseUrl, limit, offset), this.baseUrl, offset, limit);
+  }
+
   async getRecord(id: string): Promise<BiblioRecord | null> {
     const res = await kohaGet(detailUrl(this.baseUrl, id), this.baseUrl);
     // Un biblionumber inexistente responde 404 o redirige a la página de error.
@@ -38,6 +61,25 @@ export class KohaGateway implements CatalogGateway {
     }
     return parseDetail(res.text, id, this.baseUrl);
   }
+}
+
+/** Pide una página del barrido y la parsea con el mismo parser que la búsqueda normal. */
+async function fetchListing(
+  url: string,
+  baseUrl: string,
+  offset: number,
+  limit: number,
+): Promise<HarvestBlock> {
+  const res = await kohaGet(url, baseUrl);
+  if (res.status !== 200) {
+    throw new LibraryUnavailableError(`El bloque del barrido respondió HTTP ${res.status}.`);
+  }
+  const page = parseSearchPage(
+    res.text,
+    { text: HARVEST_QUERY, field: "any", limit, offset },
+    baseUrl,
+  );
+  return { total: page.total, results: page.results };
 }
 
 function isRedirect(status: number): boolean {
