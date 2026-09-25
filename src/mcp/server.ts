@@ -1435,6 +1435,7 @@ process.stderr.write(
 server.server.oninitialized = () => {
   const client = server.server.getClientVersion();
   telemetry.setMcpClient(client?.name, client?.version);
+  telemetry.record({ kind: "mcp.session", name: "initialize", status: "ok" });
 };
 
 // Envío periódico que no mantiene vivo el proceso. El servidor dura lo que la sesión del agente;

@@ -2,7 +2,12 @@
 //
 // Registra a un estudiante para el piloto de notificaciones. La llama `dutic saas enroll`
 // desde la PC del propio estudiante; nunca recibe la cookie ni el sesskey de Moodle, sólo
-// la identidad ya resuelta localmente (unsa_user_id + nombre).
+// la identidad ya resuelta localmente (unsa_user_id + nombre + correo institucional).
+//
+// IDENTIDAD ESTABLE (medido con datos reales el 2026-09-23). El `unsa_user_id` es POR AULA:
+// la misma persona es 12048 en un semestre y 12292 en el siguiente. Por eso se guarda también
+// el correo institucional, que no cambia de ciclo, y es lo que permite reconocer a un
+// participante del piloto en su nuevo semestre.
 //
 // SEGURIDAD (auditoría 2026-09-11, hallazgo C1). La versión anterior devolvía el
 // enroll_token de cualquier estudiante ya inscrito a quien enviara su unsaUserId, y ese
@@ -121,18 +126,32 @@ function randomLinkCode(): string {
   return Array.from(crypto.getRandomValues(new Uint8Array(6)), (b) => LINK_ALPHABET[b & 31]).join("");
 }
 
+/** Correo institucional normalizado, o `null` si no vino o no tiene forma de correo. */
+function cleanEmail(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const email = value.trim().toLowerCase();
+  return email.length <= 200 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : null;
+}
+
 type DbError = { code?: string; message?: string } | null;
 const isUniqueViolation = (error: DbError) => error?.code === "23505";
 
+/** Guarda el correo estable de quien ya estaba inscrito (su id de Moodle cambia cada ciclo). */
+async function rememberEmail(studentId: string, email: string | null): Promise<void> {
+  if (!email) return;
+  await supabase.from("students").update({ email }).eq("id", studentId);
+}
+
 // ── Casos ──────────────────────────────────────────────────────────────────────────
 
-async function createStudent(unsaUserId: number, fullName: string): Promise<Response> {
+async function createStudent(unsaUserId: number, fullName: string, email: string | null): Promise<Response> {
   for (let attempt = 0; attempt < 3; attempt++) {
     const enrollToken = randomToken();
     const linkCode = randomLinkCode();
     const { error } = await supabase.from("students").insert({
       unsa_user_id: unsaUserId,
       full_name: fullName,
+      email,
       enroll_token_hash: await sha256Hex(enrollToken),
       link_code: linkCode,
       status: "pending_link",
@@ -153,7 +172,7 @@ async function createStudent(unsaUserId: number, fullName: string): Promise<Resp
 }
 
 /** Fila nunca vinculada y abandonada: se le rotan token y código. */
-async function restartPending(studentId: string, fullName: string): Promise<Response> {
+async function restartPending(studentId: string, fullName: string, email: string | null): Promise<Response> {
   for (let attempt = 0; attempt < 3; attempt++) {
     const enrollToken = randomToken();
     const linkCode = randomLinkCode();
@@ -161,6 +180,7 @@ async function restartPending(studentId: string, fullName: string): Promise<Resp
       .from("students")
       .update({
         full_name: fullName,
+        email,
         enroll_token_hash: await sha256Hex(enrollToken),
         enroll_token: null,
         link_code: linkCode,
@@ -226,6 +246,7 @@ Deno.serve(async (req: Request) => {
   }
 
   const { unsaUserId, fullName, clientVersion, enrollToken } = body ?? {};
+  const email = cleanEmail(body?.email);
   if (
     typeof unsaUserId !== "number" ||
     !Number.isInteger(unsaUserId) ||
@@ -251,7 +272,7 @@ Deno.serve(async (req: Request) => {
     .maybeSingle();
   if (lookupError) return json({ error: "lookup_failed" }, 500);
 
-  if (!existing) return createStudent(unsaUserId, fullName.trim());
+  if (!existing) return createStudent(unsaUserId, fullName.trim(), email);
 
   if (typeof clientVersion !== "string") {
     return json(
@@ -263,8 +284,10 @@ Deno.serve(async (req: Request) => {
     );
   }
 
-  // Quien ya tiene el token no necesita otro: se confirma, no se reenvía.
+  // Quien ya tiene el token no necesita otro: se confirma, no se reenvía. Se aprovecha para
+  // guardar su correo estable, que las inscripciones anteriores no traían.
   if (typeof enrollToken === "string" && (await sha256Hex(enrollToken)) === existing.enroll_token_hash) {
+    await rememberEmail(existing.id, email);
     return json({
       status: existing.status,
       linkCode: existing.status === "pending_link" ? existing.link_code : null,
@@ -286,7 +309,7 @@ Deno.serve(async (req: Request) => {
         409,
       );
     }
-    return restartPending(existing.id, fullName.trim());
+    return restartPending(existing.id, fullName.trim(), email);
   }
 
   return requestReenroll(existing.id);

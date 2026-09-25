@@ -7,6 +7,14 @@ import { DEFAULT_LIMIT, MAX_LIMIT } from "../biblioteca/domain/query.js";
 import { banner, c, mark, rule, statusLine, table } from "./ui.js";
 
 const out = (msg = "") => process.stdout.write(msg + "\n");
+/**
+ * Adornos para humanos (banners, avisos) — SIEMPRE por stderr.
+ *
+ * Con `--json`, stdout debe llevar el JSON y NADA más: el workflow del barrido hace
+ * `dutic lib harvest --json | tee resultado.json` y luego lo parsea. Un banner impreso en
+ * stdout rompía ese archivo con `Unexpected token '┌'`.
+ */
+const log = (msg = "") => process.stderr.write(msg + "\n");
 
 /** Nombres en español del CLI → campos del dominio. */
 const FIELDS: Record<string, SearchField> = {
@@ -234,7 +242,7 @@ export function registerBibliotecaCommands(program: Command): void {
     .alias("cosechar")
     .description(
       "[operador] Copia el catálogo completo a la base de datos, por tandas reanudables. " +
-        "Requiere DUTIC_LIBRARY_INGEST_KEY.",
+        "Requiere DUTIC_LIBRARY_INGEST_TOKEN.",
     )
     .option("--minutos <n>", "Presupuesto de la tanda; al agotarse queda en pausa con su cursor.", "30")
     .option("--incremental", "Sólo los registros nuevos (2-3 peticiones). Para el cron diario.")
@@ -248,19 +256,27 @@ export function registerBibliotecaCommands(program: Command): void {
     )
     .option("--json", "Salida en JSON.")
     .action(async (opts) => {
+      const jsonMode = Boolean(opts.json);
+      // En modo JSON, por stdout no sale ni un carácter que no sea el resultado.
+      const chrome = jsonMode ? log : out;
+      const fail = (message: string) => {
+        if (jsonMode) out(JSON.stringify({ error: message }));
+        else out(`${mark.err()} ${message}`);
+        process.exitCode = 1;
+      };
+
       const harvester = catalogHarvester();
       if (!harvester) {
-        out(`${mark.err()} Falta DUTIC_LIBRARY_INGEST_TOKEN: este comando es sólo para el operador del barrido.`);
-        out(c.dim("  El token nunca se guarda en disco; se exporta en el entorno al correr la tanda."));
-        out(c.dim("  Se acuña con `node scripts/mint-harvest-token.mjs` (ver docs/biblioteca-diagnostico.md)."));
-        process.exitCode = 1;
+        fail("Falta DUTIC_LIBRARY_INGEST_TOKEN: este comando es sólo para el operador del barrido.");
+        log(c.dim("  El token nunca se guarda en disco; se exporta en el entorno al correr la tanda."));
+        log(c.dim("  Se acuña con `node scripts/mint-harvest-token.mjs` (ver docs/biblioteca-diagnostico.md)."));
         return;
       }
       const minutos = Math.max(1, Number(opts.minutos) || 30);
       const mode = opts.incremental ? "incremental" : "full";
-      out(banner("Barrido del catálogo", `${mode} · presupuesto ${minutos} min`));
+      chrome(banner("Barrido del catálogo", `${mode} · presupuesto ${minutos} min`));
       if (!opts.sinVentana && mode === "full") {
-        out(c.dim("Ventana 00:00-06:00 (usa --sin-ventana para ignorarla).") + "\n");
+        chrome(c.dim("Ventana 00:00-06:00 (usa --sin-ventana para ignorarla).") + "\n");
       }
 
       const status = statusLine();
@@ -283,12 +299,11 @@ export function registerBibliotecaCommands(program: Command): void {
           },
         });
         status.done();
-        if (opts.json) out(JSON.stringify(res, null, 2));
+        if (jsonMode) out(JSON.stringify(res, null, 2));
         else renderHarvest(res);
       } catch (err) {
         status.done();
-        out(`${mark.err()} ${(err as Error).message}`);
-        process.exitCode = 1;
+        fail((err as Error).message);
       }
     });
 

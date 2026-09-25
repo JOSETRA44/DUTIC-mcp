@@ -11,21 +11,21 @@ import { homedir } from "node:os";
  *      de su carpeta personal, que en Windows lleva su nombre. No es una decisión de producto:
  *      si esto falla, la telemetría es una fuga.
  *
- *   2. DATOS PERSONALES Y ACADÉMICOS (`redactPersonal`) — aquí sí hay un equilibrio: cuanto
- *      más se borra, menos sirve el error para depurar.
+ *   2. DATOS PERSONALES Y ACADÉMICOS (`redactPersonal`) — aquí hay un equilibrio, y está
+ *      resuelto abajo, en su propio comentario.
  */
 
 /** Largo final de un mensaje. Un error que no se entiende en 500 caracteres es un stack, no un mensaje. */
 export const MAX_MESSAGE_LENGTH = 500;
 
 /**
- * Interruptor de toda la telemetría. Mientras sea `false`, dutic NI REGISTRA NI ENVÍA eventos.
+ * Interruptor de toda la telemetría. Con `false`, dutic NI REGISTRA NI ENVÍA eventos.
  *
- * Existe porque el saneado se aplica al registrar: un evento guardado en disco con la política
- * vacía seguiría sin sanear el día que se envíe. Ponlo en `true` en el mismo cambio en que
- * implementes `redactPersonal` (ver el TODO de abajo).
+ * Existe porque el saneado se aplica al REGISTRAR: un evento guardado en disco con la política
+ * a medias seguiría sin sanear el día que se enviara. Se enciende en el mismo cambio en que la
+ * política queda implementada y probada, que es el caso desde 2026-09-23.
  */
-export const PERSONAL_POLICY_READY: boolean = false;
+export const PERSONAL_POLICY_READY: boolean = true;
 
 /**
  * Tope previo al saneado. Se recorta ANTES para acotar el trabajo de las expresiones, pero con
@@ -62,34 +62,38 @@ export function redactSecrets(text: string, home: string = homedir()): string {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   TODO(josé) — nivel 2: qué datos personales y académicos se borran.
+   Nivel 2: datos personales y académicos.
 
-   Aquí llegan textos YA sin secretos. Ejemplos del tipo de mensaje que produce dutic
-   (inventados, pero con la forma real):
+   Aquí llegan textos YA sin secretos: mensajes de error y stacks. La regla que ordena las
+   decisiones es "¿esto señala a una persona, o ayuda a reproducir el fallo?".
 
-     · "HTTP 404 en https://aulavirtual.unsa.edu.pe/2026B/user/view.php?id=10432&course=2911"
-     · "No se encontró el perfil de ana.perez@unsa.edu.pe"
-     · "La tarea \"Informe final de Econometría\" no tiene fecha de cierre"
-     · "Participante 70412345 sin correo"
+   · Correos → FUERA. Identifican a alguien y jamás explican un error de scraping.
+   · Ids de PERSONA en URLs (`user/view.php?id=`, `profile.php?id=`, `userid=`) → FUERA. Son
+     el identificador de un tercero, y el fallo se reproduce igual sin él.
+   · Ids de CURSO o de módulo (`course=`, `course/view.php?id=`, `cmid=`) → SE QUEDAN. No
+     señalan a nadie y son justo lo que permite repetir la petición que falló.
+   · Números sueltos de 8 o más cifras (DNI, CUI, teléfonos, números de WhatsApp) → FUERA.
+   · Texto entre comillas (nombres de tareas y cursos) → SE QUEDA: suele ser lo que explica el
+     fallo ("la tarea X no tiene fecha"), y el nombre de un curso no es un dato personal. Los
+     nombres de personas no llegan por esta vía: los argumentos y resultados de las herramientas
+     no se envían nunca, y los mensajes de error del scraping hablan de páginas, no de gente.
 
-   La tensión: cada cosa que borras vuelve el error menos útil para reproducirlo, y cada
-   cosa que dejas es un dato de alguien que viaja a nuestra base.
-
-   · Correos → probablemente fuera (`<email>`): identifican a una persona y casi nunca
-     explican un fallo.
-   · ids en URLs → el `id` de user/view.php es de una PERSONA; el de course/view.php es
-     de un CURSO, rara vez sensible y muy útil para reproducir un fallo de scraping.
-     ¿Los tratas distinto?
-   · Texto entre comillas (tareas, cursos, a veces nombres) → suele ser lo que explica
-     el fallo, pero puede ser el nombre de un compañero.
-   · Números sueltos de 8+ dígitos (DNI, CUI, teléfonos) → ¿fuera?
-
-   Implementa `redactPersonal` (5-10 líneas) con la política que te parezca justa, y
-   activa los casos `todo` de scrub.test.ts que la describan. Hasta que esto exista, el
-   transporte de la telemetría no se conecta a ninguna llamada.
+   En caso de duda, borrar: un error menos preciso se depura con el `install_id` y su traza; un
+   dato personal enviado no se puede deshacer.
    ──────────────────────────────────────────────────────────────────────────── */
 export function redactPersonal(text: string): string {
-  return text;
+  return (
+    text
+      // Correos (incluye los jid de WhatsApp, 5190…@s.whatsapp.net).
+      .replace(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g, "<correo>")
+      // Id de una PERSONA dentro de una URL del aula.
+      .replace(/((?:user\/(?:view|profile|editadvanced|edit)|profile)\.php\?[^\s"'<>]*?\bid=)\d+/gi, "$1<persona>")
+      // Id de persona como parámetro suelto, en cualquier orden de la cadena.
+      .replace(/\b(userid|user_id|unsauserid|moodle_user_id|senderpn|scanned_by)=\d+/gi, "$1=<persona>")
+      // Documentos, teléfonos y demás números largos sueltos. No toca ids de curso ni cmid,
+      // que en este Moodle son de 4 a 6 cifras.
+      .replace(/(?<![\w?=&/-])\d{8,15}(?![\w-])/g, "<numero>")
+  );
 }
 
 /** Saneado completo de un mensaje antes de salir del equipo. */

@@ -509,6 +509,10 @@ avisa, y puedes ver exactamente qué hace con `dutic telemetry status`.
 - **Identidad, sólo si aceptas.** Tras `dutic login` se te pregunta una vez si quieres asociar tu
   nombre y correo institucional; sin ese "sí", tu cuenta es un seudónimo (HMAC) imposible de revertir
   desde nuestra base. Cámbialo cuando quieras con `dutic telemetry identity on|off`.
+- **Si entras al piloto, quedas identificado.** `dutic saas enroll` asocia tu nombre y correo
+  institucional a la telemetría y te lo dice al hacerlo: para avisarte por WhatsApp ya compartes
+  esos datos, y sin identidad no podríamos ayudarte cuando algo te falle. Se revierte con
+  `dutic telemetry identity off`.
 - **Sin sorpresas en segundo plano.** Los eventos se guardan en `~/.dutic/telemetry/` y se envían en
   lotes con un tiempo máximo corto; sin red, esperan. Nunca bloquean ni retrasan un comando.
 - **Apagarla:** `dutic telemetry off`, o las variables `DUTIC_TELEMETRY=0` o `DO_NOT_TRACK=1`. En CI

@@ -3,8 +3,8 @@ import { test } from "node:test";
 import { MAX_MESSAGE_LENGTH, redactPersonal, redactSecrets, scrub } from "./scrub.js";
 
 /**
- * Pruebas del saneado. Las de secretos son obligatorias: si alguna falla, la telemetría
- * filtraría credenciales. Las de datos personales están como `todo` hasta decidir la política.
+ * Pruebas del saneado. Si alguna falla, la telemetría filtraría credenciales o datos de una
+ * persona: son el contrato que permite tener `PERSONAL_POLICY_READY = true`.
  */
 
 const HOME = "C:\\Users\\ana";
@@ -50,16 +50,39 @@ test("scrub: un secreto largo cerca del límite no se filtra a medias", () => {
   assert.ok(!out.includes("ZZZZ"), out);
 });
 
-// ── Nivel 2: activa (quita `todo`) los que describan la política que implementes ──
+// ── Nivel 2: datos personales y académicos ────────────────────────────────────────
 
-test("personal: los correos no salen del equipo", { todo: true }, () => {
-  assert.ok(!redactPersonal("No se encontró el perfil de ana.perez@unsa.edu.pe").includes("ana.perez"));
+test("personal: los correos no salen del equipo", () => {
+  const out = redactPersonal("No se encontró el perfil de ana.perez@unsa.edu.pe");
+  assert.equal(out, "No se encontró el perfil de <correo>");
 });
 
-test("personal: el id de una persona en una URL no sale del equipo", { todo: true }, () => {
-  assert.ok(!redactPersonal("HTTP 404 en /2026B/user/view.php?id=10432&course=2911").includes("10432"));
+test("personal: el número de WhatsApp de un jid tampoco", () => {
+  const out = redactPersonal("no se pudo enviar a 51987654321@s.whatsapp.net");
+  assert.ok(!out.includes("51987654321"), out);
 });
 
-test("personal: los números largos sueltos (DNI, CUI, teléfono) no salen", { todo: true }, () => {
-  assert.ok(!redactPersonal("Participante 70412345 sin correo").includes("70412345"));
+test("personal: el id de una persona en una URL no sale del equipo", () => {
+  const out = redactPersonal("HTTP 404 en /2026B/user/view.php?id=10432&course=2911");
+  assert.ok(out.includes("id=<persona>"), out);
+  assert.ok(out.includes("course=2911"), "el curso sí se conserva: reproduce el fallo");
+});
+
+test("personal: parámetros con nombre de persona, en cualquier orden", () => {
+  assert.ok(redactPersonal("scan userid=13263 ok").includes("userid=<persona>"));
+  assert.ok(redactPersonal("payload {moodle_user_id=12048}").includes("moodle_user_id=<persona>"));
+});
+
+test("personal: los números largos sueltos (DNI, CUI, teléfono) no salen", () => {
+  assert.equal(redactPersonal("Participante 70412345 sin correo"), "Participante <numero> sin correo");
+});
+
+test("personal: lo que reproduce el fallo se conserva", () => {
+  const out = redactPersonal('HTTP 500 en /2026B/mod/assign/view.php?id=64821 — "Informe final" sin fecha');
+  assert.ok(out.includes("id=64821"), "el cmid de una tarea no señala a nadie");
+  assert.ok(out.includes('"Informe final"'), "el nombre de la tarea explica el fallo");
+});
+
+test("personal: el id de un curso de 4-6 cifras sobrevive", () => {
+  assert.equal(redactPersonal("course/view.php?id=2279"), "course/view.php?id=2279");
 });
