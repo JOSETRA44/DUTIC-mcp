@@ -180,10 +180,26 @@ por dos personas se marca `conflict` y nunca se reasigna en silencio.
 - stdout del MCP intacto.
 - `next build` de la consola.
 
+### Estado al 2026-09-23: encendida
+
+- `PERSONAL_POLICY_READY = true`. La política de datos personales está implementada y probada:
+  correos, ids de persona en URLs y números largos sueltos se borran; ids de curso, cmid y nombres
+  de tarea se conservan porque son lo que reproduce el fallo.
+- Verificado **con datos reales**: instalación registrada, eventos de comandos y de `http.error`,
+  grupos de error y cuenta guardada como seudónimo mientras no hubo consentimiento.
+- **Identidad del piloto.** `dutic saas enroll` concede el consentimiento de identidad y lo dice en
+  voz alta: quien entra al piloto ya comparte nombre y WhatsApp para recibir los avisos, y sin
+  identidad no se le puede ayudar cuando algo le falle. Reversible con
+  `dutic telemetry identity off`.
+- **Clave estable entre semestres.** Medido en producción: el primer participante se inscribió con
+  `unsa_user_id` = 12048 y hoy su cuenta es 12292. El id de Moodle es por aula, así que el piloto
+  guarda además el correo institucional (`students.email`, `enroll` v9) y la consola cruza por
+  ese correo, con el id como respaldo.
+
 ### Pendiente
 
-1. **Política de datos personales:** implementar `redactPersonal` en `src/telemetry/scrub.ts` y
-   poner `PERSONAL_POLICY_READY = true`. Hasta entonces dutic no registra ni envía nada.
-2. **Fase 1 (identidad con Google):** requiere configurar el proveedor Google en Supabase; después,
-   la función `identity-link` y el enlace PKCE dentro de `dutic login`.
+1. **Fase 1 (identidad verificada con Google):** configurar el proveedor en Supabase; después,
+   la función `identity-link` y el enlace PKCE dentro de `dutic login`. Hasta entonces las cuentas
+   quedan como `declared`.
+2. **Publicar 0.4.0 en npm**, que es lo que instalan los participantes nuevos.
 3. **Contract** de la columna `students.enroll_token` tras verificar pushes reales.

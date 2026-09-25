@@ -4,6 +4,8 @@ import { enrollStudent, loadSaasEnrollment, pushChanges } from "../core/saasClie
 import { checkChanges } from "../domain/watch.js";
 import { setCacheRefresh } from "../core/cache.js";
 import { getMyProfile } from "../domain/people.js";
+import { loadState, updateState } from "../telemetry/consent.js";
+import { record } from "../telemetry/index.js";
 import { banner, c, mark, statusLine } from "./ui.js";
 import { installAutoQuietly } from "./auto.js";
 
@@ -35,8 +37,24 @@ export function registerSaasCommands(program: Command): void {
             out(`${mark.err()} No se pudo resolver tu userId de Moodle.`);
             return;
           }
-          const enrollment = await enrollStudent(profile.userId, profile.name);
+          const enrollment = await enrollStudent(profile.userId, profile.name, profile.email);
           status.done();
+          // Embudo del piloto: cuántos llegan a inscribirse y en qué estado quedan.
+          record({ kind: "saas.enroll", name: "enroll", status: "ok", attrs: { state: enrollment.status } });
+
+          // El piloto es, por definición, identificado: quien se inscribe ya nos da su nombre y
+          // su WhatsApp para recibir los avisos. Que la telemetría siguiera siendo anónima para
+          // esa misma persona no protegería nada y nos impediría ayudarle cuando algo le falle.
+          // Se dice en voz alta y se puede revertir en cualquier momento.
+          if (loadState().identity === "unasked") {
+            updateState({ identity: "granted" });
+            out(
+              `
+${mark.info()} Como participante del piloto, tus avisos de error quedan asociados a tu nombre ` +
+                `y correo institucional, para poder ayudarte si algo falla.`,
+            );
+            out(`  ${c.dim("Si prefieres que no: dutic telemetry identity off")}`);
+          }
           out(banner("Piloto de notificaciones"));
           if (enrollment.status === "pending_link") {
             out(`${mark.info()} Registrado como ${c.cyan(profile.name)}.`);
@@ -95,6 +113,7 @@ export function registerSaasCommands(program: Command): void {
             return;
           }
           const result = await pushChanges(enrollment.enrollToken, snapshot, changes);
+          record({ kind: "saas.push", name: "push", status: "ok", attrs: { queued: result.notificationsQueued } });
           out(`${mark.ok()} Enviado — ${result.notificationsQueued} novedad(es) en cola.`);
         },
         { mode: opts.headlessOnly ? "headless-only" : "interactive", login: { onStatus: log } },

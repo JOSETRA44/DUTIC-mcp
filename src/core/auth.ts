@@ -2,6 +2,7 @@ import { observeIdentity } from "../domain/identity.js";
 import { span } from "../telemetry/index.js";
 import { SessionExpiredError } from "./errors.js";
 import { loginWithPlaywright, type LoginOptions } from "./login.js";
+import { loadIdentity } from "./identity.js";
 import { isValid, loadSession, type Session } from "./session.js";
 
 export type AuthMode =
@@ -22,6 +23,15 @@ async function rememberIdentity(session: Session): Promise<Session> {
 }
 
 /**
+ * Observa la identidad la primera vez que hace falta. Las instalaciones anteriores a que dutic
+ * la guardara tienen sesión pero no `identity.json`, y sin eso sus eventos no sabrían de qué
+ * cuenta salen. Cuesta una petición, una sola vez por semestre.
+ */
+async function ensureIdentityKnown(session: Session): Promise<Session> {
+  return loadIdentity() ? session : rememberIdentity(session);
+}
+
+/**
  * Devuelve una sesión válida, renovándola según el modo:
  *  - "interactive" (por defecto): headless y, si falla, login visible (reusa el perfil
  *    persistente; SSO de Google normalmente vivo → sin reescribir credenciales).
@@ -37,7 +47,7 @@ export async function ensureSession(
 ): Promise<Session> {
   const { mode = "interactive", login } = opts;
   const existing = await loadSession();
-  if (isValid(existing)) return existing;
+  if (isValid(existing)) return ensureIdentityKnown(existing);
 
   if (mode === "none") throw new SessionExpiredError();
 

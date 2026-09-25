@@ -206,7 +206,6 @@ export function flush(options: { budgetMs?: number } = {}): Promise<void> {
 }
 
 async function send(budgetMs: number): Promise<void> {
-  const deadline = Date.now() + budgetMs;
   const pending = queue();
 
   const dropped = pending.enforceCap();
@@ -216,6 +215,11 @@ async function send(budgetMs: number): Promise<void> {
 
   const credential = await ensureInstall();
   if (!credential) return;
+
+  // El presupuesto se cuenta DESDE AQUÍ: dar de alta la instalación es una ida y vuelta que
+  // ocurre una sola vez en la vida del equipo, y si se descontara del tiempo de envío el primer
+  // comando siempre dejaría sus eventos sin mandar.
+  const deadline = Date.now() + budgetMs;
 
   for (const file of pending.claim()) {
     if (Date.now() >= deadline) {

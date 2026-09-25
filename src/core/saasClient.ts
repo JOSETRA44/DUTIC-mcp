@@ -80,13 +80,20 @@ async function callFunction(
  * Si hay un token guardado para ESTA cuenta se envía como prueba: el servidor ya no
  * devuelve tokens existentes a quien sólo conoce el unsaUserId.
  */
-export async function enrollStudent(unsaUserId: number, fullName: string): Promise<SaasEnrollment> {
+export async function enrollStudent(
+  unsaUserId: number,
+  fullName: string,
+  email?: string | null,
+): Promise<SaasEnrollment> {
   const previous = await loadSaasEnrollment();
   const knownToken = previous?.unsaUserId === unsaUserId ? previous.enrollToken : undefined;
 
   const data = await callFunction("enroll", {
     unsaUserId,
     fullName,
+    // El id de Moodle cambia con cada semestre; el correo institucional no. Es lo que permite
+    // reconocer a un participante del piloto cuando empieza un ciclo nuevo.
+    email: email ?? undefined,
     clientVersion: APP_VERSION,
     enrollToken: knownToken,
   });
