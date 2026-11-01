@@ -103,9 +103,6 @@ dutic study <courseId> --dest ./materiales
 
 # Forzar busqueda de nuevos cursos matriculados
 dutic courses --refresh
-
-# Buscar un curso o docente en la base de datos local
-dutic search "estadistica"
 ```
 
 ---
@@ -136,7 +133,6 @@ dutic search "estadistica"
 | `dutic profile <userId>` | Perfil por id (docentes incluidos): correo, **rol**, cursos — resuelve el curso en común solo, sin `--course` |
 | `dutic teachers <id>` | Docentes del curso |
 | `dutic search <query>` | Busca cursos o docentes en la base de datos local |
-| `dutic scan-courses` | Escanea cursos por rango de IDs para armar tu base de datos y respaldar en la nube |
 | `dutic fetch <url>` | Explora cualquier página del aula por URL (cambiar ids, ver lo que no tiene botón) |
 | `dutic pull <id>` | Descarga todos los materiales |
 | `dutic auto install` / `status` / `uninstall` | Revisión automática en segundo plano (tarea programada, sin daemon) |
@@ -171,11 +167,6 @@ dutic materials 2279 --refresh
 # Quien es y en que cursos coincido con el? (correo + todos los cursos compartidos)
 dutic person "Piero"
 
-# Escanear perfiles de cursos (1 al 5000) para crear tu propia base de datos offline
-dutic scan-courses --from 1 --to 5000
-
-# Quien ensena Estadistica? (requiere haber ejecutado scan-courses primero)
-dutic search "Estadistica"
 ```
 
 ---
