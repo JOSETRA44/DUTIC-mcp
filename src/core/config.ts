@@ -25,12 +25,6 @@ export const CHROME_USER_AGENT =
 export const EXTRANET_HOST = "extranet.unsa.edu.pe";
 export const ENCUESTA_BASE = `http://${EXTRANET_HOST}/encuesta2`;
 
-/**
- * Página del horario de SISACAD. A diferencia del login de matrícula —cuya carpeta se versiona
- * por período y por eso la deriva el contexto (`ctx.matriculaBase`)— esta ruta no cambia de ciclo.
- */
-export const SISACAD_HORARIO_BASE = `http://${EXTRANET_HOST}/sisacad/horario`;
-
 // --- Rutas de estado local ---
 // Se re-exportan desde `core/paths.ts`, que define el layout completo (global vs. por semestre).
 export {
@@ -38,5 +32,4 @@ export {
   BROWSER_PROFILE_DIR,
   ENCUESTA_FILE,
   ENCUESTA_LEDGER_FILE,
-  SISACAD_LOGIN_FILE,
 } from "./paths.js";

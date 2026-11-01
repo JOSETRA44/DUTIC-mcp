@@ -7,8 +7,8 @@ import type { SemesterId } from "./semester.js";
  * Layout del estado local en disco. La regla que lo ordena todo:
  *
  *   GLOBAL   — lo que identifica a la PERSONA y no cambia de ciclo a ciclo: el perfil del
- *              navegador (SSO de Google), las credenciales de extranet/SISACAD, la cuenta SaaS.
- *   SCOPED   — lo que describe un PERÍODO ACADÉMICO: sesión de Moodle, cursos, notas, horario,
+ *              navegador (SSO de Google), las credenciales de la encuesta, la cuenta SaaS.
+ *   SCOPED   — lo que describe un PERÍODO ACADÉMICO: sesión de Moodle, cursos, notas,
  *              línea base de cambios, caché.
  *
  * Antes todo era plano en `~/.dutic/`, así que entrar a 2026B pisaba la sesión y los datos de
@@ -19,7 +19,6 @@ import type { SemesterId } from "./semester.js";
  *     semesters.json           registro de semestres + cuál está activo       [global]
  *     encuesta.json            credenciales + política de la encuesta         [global]
  *     encuesta-log.json        ledger append-only de envíos                   [global]
- *     sisacad-login.json       credenciales de matrícula                      [global]
  *     saas.json                cuenta SaaS                                    [global]
  *     auto.log                 log del daemon                                 [global]
  *     semesters/
@@ -27,7 +26,6 @@ import type { SemesterId } from "./semester.js";
  *         session.json         cookie MoodleSession + sesskey + siteUrl
  *         courses-db.json      cursos escaneados
  *         snapshot.json        línea base de `watch`
- *         horario.json         último horario descargado
  *         sisacad.json         notas capturadas del SISACAD de notas
  *         cache/               caché de scraping
  *       2026B/  ...
@@ -54,9 +52,6 @@ export const ENCUESTA_FILE = join(DATA_DIR, "encuesta.json");
  */
 export const ENCUESTA_LEDGER_FILE = join(DATA_DIR, "encuesta-log.json");
 
-/** Credenciales del sistema de matrícula (usuario, clave, escuela) — chmod 600. */
-export const SISACAD_LOGIN_FILE = join(DATA_DIR, "sisacad-login.json");
-
 // --- Estado por semestre ---
 
 export interface ScopedPaths {
@@ -65,7 +60,6 @@ export interface ScopedPaths {
   session: string;
   coursesDb: string;
   snapshot: string;
-  horario: string;
   sisacadGrades: string;
   cacheDir: string;
   /** Quién es el usuario EN ESTE semestre (id de Moodle, nombre). Ver `core/identity.ts`. */
@@ -83,7 +77,6 @@ export function scopedPaths(id: SemesterId): ScopedPaths {
     session: join(dir, "session.json"),
     coursesDb: join(dir, "courses-db.json"),
     snapshot: join(dir, "snapshot.json"),
-    horario: join(dir, "horario.json"),
     sisacadGrades: join(dir, "sisacad.json"),
     cacheDir: join(dir, "cache"),
     identity: join(dir, "identity.json"),
@@ -107,7 +100,6 @@ const LEGACY_MOVES: [legacy: string, key: keyof ScopedPaths][] = [
   ["session.json", "session"],
   ["courses-db.json", "coursesDb"],
   ["snapshot.json", "snapshot"],
-  ["horario.json", "horario"],
   ["sisacad.json", "sisacadGrades"],
 ];
 

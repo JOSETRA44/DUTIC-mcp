@@ -116,18 +116,26 @@ jobs:
         run: |
           if [ -f resultado.json ]; then
             node -e "
-              const r = require('./resultado.json');
-              const l = [
-                '| métrica | valor |', '|---|---|',
-                \`| run | #\${r.runId} (\${r.mode}) |\`,
-                \`| estado | \${r.status} — \${r.stoppedBy} |\`,
-                \`| filas escritas | \${r.recordsUpserted} |\`,
-                \`| bloques ok / fallidos | \${r.blocksOk} / \${r.blocksFailed} |\`,
-                \`| cursor | \${r.cursorOffset}\${r.total ? ' de ' + r.total : ''} |\`,
-                \`| duración | \${(r.elapsedMs / 60000).toFixed(1)} min |\`,
-              ];
+              const fs = require('fs');
+              let r;
+              try {
+                r = JSON.parse(fs.readFileSync('resultado.json', 'utf8'));
+              } catch (e) {
+                fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, 'Salida ilegible: ' + e.message + '\n');
+                process.exit(0);
+              }
+              // Dos formas posibles: el resultado de un barrido, o {error} si abortó antes.
+              const l = ['| métrica | valor |', '|---|---|'];
+              if (r.status) {
+                l.push(\`| run | #\${r.runId} (\${r.mode}) |\`);
+                l.push(\`| estado | \${r.status} — \${r.stoppedBy} |\`);
+                l.push(\`| filas escritas | \${r.recordsUpserted} |\`);
+                l.push(\`| bloques ok / fallidos | \${r.blocksOk} / \${r.blocksFailed} |\`);
+                l.push(\`| cursor | \${r.cursorOffset}\${r.total ? ' de ' + r.total : ''} |\`);
+                l.push(\`| duración | \${(r.elapsedMs / 60000).toFixed(1)} min |\`);
+              }
               if (r.error) l.push(\`| error | \${r.error} |\`);
-              require('fs').appendFileSync(process.env.GITHUB_STEP_SUMMARY, l.join('\n') + '\n');
+              fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, l.join('\n') + '\n');
             "
           fi
 
@@ -136,7 +144,10 @@ jobs:
       - name: Fallar si el run quedó en failed
         if: always()
         run: |
-          if [ -f resultado.json ] && [ "$(node -p "require('./resultado.json').status")" = "failed" ]; then
-            echo "::error::El barrido terminó como failed: $(node -p "require('./resultado.json').error || ''")"
-            exit 1
+          if [ -f resultado.json ]; then
+            STATUS="$(node -p "JSON.parse(require('fs').readFileSync('resultado.json','utf8')).status || ''" 2>/dev/null || echo '')"
+            if [ "$STATUS" = "failed" ]; then
+              echo "::error::El barrido terminó como failed: $(node -p "JSON.parse(require('fs').readFileSync('resultado.json','utf8')).error || ''")"
+              exit 1
+            fi
           fi

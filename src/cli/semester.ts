@@ -138,8 +138,7 @@ export function registerSemesterCommands(program: Command): void {
     .command("add <semestre>")
     .description("Registra un semestre a mano, sin sondear el servidor.")
     .option("--label <texto>", "Etiqueta libre para reconocerlo en la lista.")
-    .option("--matricula-path <ruta>", "Carpeta del login de matrícula, si no sigue el patrón.")
-    .action((raw: string, opts: { label?: string; matriculaPath?: string }) => {
+    .action((raw: string, opts: { label?: string }) => {
       const id = normalizeSemester(raw);
       if (!id) {
         out(`${mark.err()} "${raw}" no es un semestre válido (se espera 2026A, 2026-B, 2026II).`);
@@ -148,7 +147,6 @@ export function registerSemesterCommands(program: Command): void {
       }
       upsertSemester(id, {
         label: opts.label ?? null,
-        matriculaPath: opts.matriculaPath ?? null,
       });
       out(`${mark.ok()} Registrado ${c.cyan(formatSemesterLabel(id))}.`);
     });
@@ -225,7 +223,7 @@ ${mark.warn()} ${unknown.length} período(s) sin comprobar (servidor caído o re
   sem
     .command("forget <semestre>")
     .description("Quita un semestre del registro. Con --purge borra también sus datos locales.")
-    .option("--purge", "Borrar el directorio del semestre (sesión, cursos, notas, horario).")
+    .option("--purge", "Borrar el directorio del semestre (sesión, cursos, notas y caché).")
     .option("--yes", "No pedir confirmación para --purge.")
     .action(async (raw: string, opts: { purge?: boolean; yes?: boolean }) => {
       const id = normalizeSemester(raw);
@@ -239,7 +237,7 @@ ${mark.warn()} ${unknown.length} período(s) sin comprobar (servidor caído o re
         out(
           `${mark.warn()} ${c.bold("--purge")} borra TODOS los datos locales de ${formatSemesterLabel(id)}:`,
         );
-        out(`  ${c.dim("sesión, cursos escaneados, notas, horario y caché.")}`);
+        out(`  ${c.dim("sesión, cursos escaneados, notas y caché.")}`);
         out(`  ${mark.arrow()} Repite con ${c.cyan("--yes")} si es lo que quieres.`);
         process.exitCode = 1;
         return;

@@ -2,7 +2,6 @@ import { strict as assert } from "node:assert";
 import { test } from "node:test";
 import {
   compareSemesters,
-  defaultMatriculaPath,
   formatSemesterLabel,
   inferSemesterFromDate,
   latestSemester,
@@ -85,11 +84,6 @@ test("extrae el semestre de una URL del aula (la fuente que manda)", () => {
   assert.equal(semesterFromUrl("https://aulavirtual.unsa.edu.pe/2025B/course/view.php?id=1"), "2025B");
   assert.equal(semesterFromUrl("https://aulavirtual.unsa.edu.pe/my"), null);
   assert.equal(semesterFromUrl(null), null);
-});
-
-test("deriva la carpeta de matrícula de SISACAD sin configuración manual", () => {
-  assert.equal(defaultMatriculaPath("2026B"), "matr_int_2026b_v2.00");
-  assert.equal(defaultMatriculaPath("2025A"), "matr_int_2025a_v2.00");
 });
 
 test("la etiqueta legible no se usa nunca como identificador", () => {

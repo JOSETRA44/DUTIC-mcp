@@ -144,14 +144,3 @@ export function semesterFromUrl(url: string | null | undefined): SemesterId | nu
   const m = /\/(\d{4}[ABab])(?:\/|$)/.exec(url);
   return m ? normalizeSemester(m[1]) : null;
 }
-
-/**
- * Ruta del login de matrícula de SISACAD para un semestre ("matr_int_2026b_v2.00"). El sistema
- * de matrícula versiona su carpeta por período; el patrón se ha mantenido estable, así que se
- * deriva en vez de exigir configuración manual cada ciclo (que es lo que se hacía antes).
- */
-export function defaultMatriculaPath(id: SemesterId): string {
-  const p = parseSemester(id);
-  if (!p) return "matr_int_2026b_v2.00";
-  return `matr_int_${p.year}${p.half.toLowerCase()}_v2.00`;
-}

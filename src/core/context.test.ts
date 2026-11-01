@@ -78,9 +78,6 @@ test("cada semestre tiene su propio directorio de estado", () => {
   assert.notEqual(a.paths.session, b.paths.session);
   assert.ok(a.paths.session.startsWith(join(ROOT, "semesters", "2026A")));
   assert.ok(b.paths.cacheDir.startsWith(join(ROOT, "semesters", "2026B")));
-  // La carpeta de matrícula de SISACAD se deriva del período, no de una constante compartida.
-  assert.ok(a.matriculaBase.endsWith("matr_int_2026a_v2.00"));
-  assert.ok(b.matriculaBase.endsWith("matr_int_2026b_v2.00"));
 });
 
 test("la sesión guardada decide el semestre cuando no hay nada configurado", () => {

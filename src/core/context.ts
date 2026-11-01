@@ -11,13 +11,11 @@ import {
 } from "./paths.js";
 import { getActiveSemester, getEntry, touchSemester } from "./registry.js";
 import {
-  defaultMatriculaPath,
   inferSemesterFromDate,
   normalizeSemester,
   semesterFromUrl,
   type SemesterId,
 } from "./semester.js";
-import { EXTRANET_HOST } from "./config.js";
 
 /**
  * CONTEXTO DE SEMESTRE: el objeto que dice, para la operación en curso, en qué período estamos y
@@ -51,8 +49,6 @@ export interface SemesterContext {
   siteUrl: string;
   /** Página de login (donde está el botón de Google OAuth). */
   loginUrl: string;
-  /** Base del login de matrícula en SISACAD para este período. */
-  matriculaBase: string;
   /** Rutas del estado en disco, todas dentro de `~/.dutic/semesters/<id>/`. */
   paths: ScopedPaths;
   /** De dónde salió el semestre — se muestra en `status` para que nadie adivine. */
@@ -105,14 +101,11 @@ export function resolveSemesterId(override?: string | null): {
 export function contextFor(id: SemesterId, source: ContextSource = "override"): SemesterContext {
   const entry = getEntry(id);
   const siteUrl = `https://${HOST}/${id}`;
-  const matriculaPath =
-    process.env.DUTIC_MATRICULA_PATH?.trim() || entry?.matriculaPath || defaultMatriculaPath(id);
   return {
     id,
     label: entry?.label ?? null,
     siteUrl,
     loginUrl: `${siteUrl}/login/index.php`,
-    matriculaBase: `http://${EXTRANET_HOST}/sisacad/${matriculaPath}`,
     paths: scopedPaths(id),
     source,
   };

@@ -56,7 +56,6 @@ import { MCP_SERVER_PATH, runSetup } from "./setup.js";
 import { registerSaasCommands } from "./saas.js";
 import { registerAutoCommands } from "./auto.js";
 import { registerEncuestaCommands } from "./encuesta.js";
-import { registerHorarioCommands } from "./horario.js";
 import { registerAulaCommands } from "./aula.js";
 import { registerBibliotecaCommands } from "./biblioteca.js";
 import { registerSemesterCommands } from "./semester.js";
@@ -92,7 +91,7 @@ program
     "Semestre sobre el que operar (2026A, 2026-B, 2026II). Por defecto, el activo.",
   )
   // El contexto de semestre se fija ANTES de que corra ningún subcomando: a partir de aquí,
-  // cualquier módulo que toque disco (sesión, caché, cursos, horario) resuelve sus rutas dentro
+  // cualquier módulo que toque disco (sesión, caché, cursos, notas) resuelve sus rutas dentro
   // del período correcto sin que haya que pasárselo por parámetro. Ver core/context.ts.
   .hook("preAction", (thisCommand) => {
     const o = thisCommand.opts();
@@ -1234,7 +1233,6 @@ registerAutoCommands(program);
 registerEncuestaCommands(program);
 registerSemesterCommands(program);
 registerAulaCommands(program);
-registerHorarioCommands(program);
 registerBibliotecaCommands(program);
 
 // Telemetría al final a propósito: su `preAction` corre DESPUÉS del que fija el semestre, así

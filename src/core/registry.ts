@@ -13,8 +13,7 @@ import {
 /**
  * Registro de semestres: `~/.dutic/semesters.json`. Responde a dos preguntas —"¿qué períodos
  * conoce esta instalación?" y "¿en cuál estoy trabajando ahora?"— y guarda lo aprendido de cada
- * uno (que existe de verdad en el servidor, cuándo se usó por última vez, si tiene ruta de
- * matrícula propia).
+ * uno (que existe de verdad en el servidor y cuándo se usó por última vez).
  *
  * Deliberadamente SÍNCRONO. Es un archivo diminuto que se lee al resolver el contexto, en el
  * camino crítico de cada comando; hacerlo async obligaría a que `currentContext()` fuese async y
@@ -27,8 +26,6 @@ const SemesterEntrySchema = z.object({
   label: z.string().nullable().default(null),
   /** true si se confirmó contra el servidor que el aula de ese período existe. */
   verified: z.boolean().default(false),
-  /** Ruta del login de matrícula, si difiere del patrón derivado. */
-  matriculaPath: z.string().nullable().default(null),
   addedAt: z.number(),
   /** epoch ms del último uso; ordena la lista por relevancia. */
   lastUsedAt: z.number().nullable().default(null),
@@ -98,8 +95,6 @@ export function upsertSemester(
     id,
     label: patch.label !== undefined ? patch.label : (prev?.label ?? null),
     verified: patch.verified !== undefined ? patch.verified : (prev?.verified ?? false),
-    matriculaPath:
-      patch.matriculaPath !== undefined ? patch.matriculaPath : (prev?.matriculaPath ?? null),
     addedAt: prev?.addedAt ?? Date.now(),
     lastUsedAt: patch.lastUsedAt !== undefined ? patch.lastUsedAt : (prev?.lastUsedAt ?? null),
   };
@@ -121,7 +116,6 @@ export function setActiveSemester(id: SemesterId): void {
       id,
       label: null,
       verified: false,
-      matriculaPath: null,
       addedAt: Date.now(),
       lastUsedAt: Date.now(),
     };

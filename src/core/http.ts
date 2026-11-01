@@ -1,4 +1,4 @@
-import { Agent } from "undici";
+import { Agent, fetch } from "undici";
 import { record } from "../telemetry/index.js";
 import { HOST } from "./config.js";
 import { SessionExpiredError } from "./errors.js";

@@ -153,24 +153,6 @@ Todas las del aula virtual admiten además `semester` (ver arriba):
 - `dutic_library_record` — args: `id`, `refresh?`. Ficha completa: temas, descripción y **cada ejemplar**
   con estado (disponible / prestado) y fecha de vencimiento. Para "¿hay uno libre ahora?" o "¿cuándo
   lo devuelven?".
-- `dutic_get_horario` — args: `cui?`, `depe?`, `escuela?`. **Horario de clases** del sistema de
-  matrícula del extranet (el mismo login usuario+clave+escuela que la encuesta, sin CAPTCHA). Sin `cui`
-  trae el del propio usuario; con `cui`, el de ese alumno (misma escuela por defecto; `depe` para
-  otras, p.ej. 470 = ECONOMÍA, o `escuela` por nombre/código, p.ej. BIOLOGÍA). Cada bloque: día, hora
-  inicio/fin, asignatura y aula. Requiere credenciales guardadas con `dutic hrs login`; si faltan,
-  avisa en vez de fallar. Úsalo para "¿cuándo tengo X?", "¿qué clases tengo el lunes?" o el horario de
-  un compañero cuyo CUI conozcas.
-- `dutic_get_course_catalog` — args: `depe?`, `escuela?`. **Oferta del ciclo** de una Escuela/Programa
-  del sistema de matrícula: todas las secciones de cada asignatura, agrupadas por año. Sin args usa la
-  escuela del login; con `escuela` ("BIOLOGÍA") o `depe` consulta otra carrera. Úsalo para "¿qué se
-  dicta este ciclo en X?", "¿qué asignaturas tiene BIOLOGÍA?" o para descubrir el código de una
-  asignatura (luego va a `dutic_get_subject_schedule`).
-- `dutic_get_subject_schedule` — args: `codigo`, `depe?`, `escuela?`. Horario semanal de una
-  **asignatura-sección** (p.ej. '2501209A'): días, horas y aulas. El código pelado ('2501209') se
-  resuelve contra la oferta; si hay varias secciones, hay que pasar el código completo.
-- `dutic_get_aula_schedule` — args: `aula`, `depe?`, `escuela?`. Qué asignaturas (y secciones) se
-  dictan en un **aula** y cuándo. Acepta código interno ('15446') o parte del nombre ('105', 'MTA_A')
-  sin distinguir acentos; si coincide con varias aulas, avisa para ser más específico.
 - `dutic_get_grades` — args: `courseId?`. **Calificaciones**: sin `courseId`, resumen de todos los
   cursos (nota total + cuántos ítems por calificar); con `courseId`, detalle por ítem (nota, rango, %).
   Úsalo cuando el usuario pregunte por sus notas, promedio, o cómo va.
@@ -278,15 +260,6 @@ dutic encuesta policy set --escala Siempre --calificacion 18   # política por d
 dutic encuesta fill --todas # SIMULA el llenado de todas (no envía nada)
 dutic encuesta fill --todas --enviar --si-es-irreversible      # envía de verdad
 
-dutic hrs                   # tu horario de clases (sistema de matrícula del extranet)
-dutic hrs <CUI>             # horario de ese alumno (misma escuela)
-dutic hrs login             # guarda y verifica usuario/clave/escuela (clave sin eco)
-dutic hrs show              # último horario descargado, sin consultar el sistema
-dutic hrs status            # credenciales guardadas y caché
-dutic hrs courses           # oferta del ciclo (todas las secciones, por año)
-dutic hrs courses 2501209A  # horario semanal de esa asignatura-sección
-dutic hrs aulas             # aulas de la escuela (código y nombre)
-dutic hrs aulas 105         # qué se dicta en ese aula (código o parte del nombre)
 dutic lib search <texto>    # Biblioteca Virtual UNSA (--por autor|titulo|tema|isbn, -n N, --fichas N)
 dutic lib show <id>         # ficha del libro y estado de cada ejemplar
 ```
@@ -325,8 +298,8 @@ DUTIC expone por URL más de lo que se ve navegando con botones. Aprovéchalo co
 y los perfiles:
 
 - El **perfil de una persona** (`dutic_find_person` / `dutic_get_person_profile`) lista TODOS sus
-  cursos con su course id — incluidos cursos en los que TÚ no estás matriculado. Así puedes ver el
-  "horario" completo de un compañero o descubrir cursos/secciones que no aparecen en tu navegación.
+  cursos con su course id — incluidos cursos en los que TÚ no estás matriculado. Así puedes ver la
+  lista completa de cursos de un compañero o descubrir cursos/secciones que no aparecen en tu navegación.
 - Para **docentes**: no salen en las listas de participantes, pero con su `userId` (ya conocido —
   de una tarea calificada, un link que el usuario te pase, etc.) `dutic_get_person_profile` revela
   sus cursos, correo y **rol** ("Profesor" confirma que es docente), **sin necesitar `courseId`**:
@@ -396,37 +369,6 @@ Cada envío queda registrado en `~/.dutic/encuesta-log.json`, que es la única p
 porque el sistema no da acuse de recibo. Si un envío sale `unknown`, **no lo reintentes**: dile al
 usuario que lo compruebe en la web.
 
-## Horario de clases (`dutic hrs`)
-
-El horario vive en el **sistema de matrícula** del extranet (`extranet.unsa.edu.pe/sisacad`), un
-sistema aparte del aula virtual y de SISACAD de notas: login usuario + clave + Escuela/Programa
-**sin CAPTCHA** (las mismas credenciales de matrícula que la encuesta, pero se guardan aparte).
-Una vez con `dutic hrs login` hecho, `dutic hrs` muestra el horario del usuario y `dutic hrs <CUI>`
-el de ese alumno (la URL del sistema acepta cambiar el `codi_usua`).
-
-- Cada bloque trae día, hora de inicio/fin, asignatura y aula; las clases largas (varias horas
-  seguidas) vienen como un solo bloque con la franja inicial.
-- Para otra Escuela/Programa hay que pasar `--escuela` por nombre ("BIOLOGÍA") o código ("4020"), o
-  `--depe` con su código de dependencia (la depe se deriva del código de escuela dividiendo por 10:
-  4700→470, 4020→402). El sistema acepta consultar el horario de CUALQUIER escuela.
-- `dutic hrs courses` lista la **oferta del ciclo** de una escuela (asignaturas con todas sus
-  secciones, por año); `dutic hrs courses <codigo>` el horario de una asignatura-sección (el código
-  pelado se resuelve; si hay varias secciones pide el código completo, p.ej. 2501209A).
-- `dutic hrs aulas` lista las aulas de la escuela; `dutic hrs aulas <aula>` qué se dicta en una
-  (por código interno o parte del nombre, sin acentos; si coincide con varias, avisa).
-- El login responde el mensaje oficial si las credenciales son inválidas ("Cuenta NO ES Valida"),
-  y la escuela se puede dar por nombre ("ECONOMÍA") o por código ("4700").
-- Es una consulta a un dato académico público del propio estudiante por su CUI; úsalo con un CUI
-  que el usuario ya conozca, no para recorrer rangos.
-- **No abrir `alumno/datos.php` del sistema de matrícula con CUIs ajenos**: el menú "Datos
-  Personales" es un formulario de edición que acepta cualquier `cui` (verificado: 200 con datos de
-  otro alumno y sin ninguno inexistente), es decir, control de acceso roto. Hoy los campos
-  sensibles (DNI, dirección, teléfono, colegio) están vacíos para todos, así que no hay fuga real
-  de PII; el riesgo serio es el de ESCRITURA (`datos_guardar.php`): alterar el registro de otro
-  estudiante. No probar la escritura (modifica datos reales) y no consultar la página de otros —
-  se reporta a la UNSA, no se explota. El horario y la oferta académica sí son datos académicos
-  legítimos.
-
 ## Piloto de notificaciones por WhatsApp (`dutic saas enroll` / `dutic saas push`)
 
 Experimento opt-in, separado del resto: avisa por WhatsApp cuando `dutic watch` detecta tareas o
@@ -479,7 +421,7 @@ curso 1 h, notas 20 min.
 - El semestre (p. ej. `2026A`) va en la URL del aula y cambia cada período. Se auto-detecta tras
   el login y se recuerda, así que en el uso normal no hay que gestionarlo; sólo importa cuando el
   usuario pregunta por un ciclo anterior (ver "Semestres" arriba).
-- Los datos de cada período están **aislados** en disco: sesión, cursos, notas, horario y caché.
+- Los datos de cada período están **aislados** en disco: sesión, cursos, notas y caché.
   Cambiar de semestre no borra nada del anterior, y volver a él lo encuentra tal cual estaba.
 - Algunos cursos aparecen **duplicados** con nombres casi iguales (uno con acentos, otro sin):
   es un error de registro de la OTI (la oficina de TI de la UNSA), no un fallo de la herramienta.

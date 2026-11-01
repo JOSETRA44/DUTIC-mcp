@@ -1,4 +1,4 @@
-import { Agent } from "undici";
+import { Agent, fetch } from "undici";
 import { CHROME_USER_AGENT } from "../../../core/config.js";
 import { LibraryProtocolError, LibraryUnavailableError } from "../../domain/errors.js";
 

@@ -1,5 +1,6 @@
 import { CHROME_USER_AGENT } from "./config.js";
 import { MoodleApiError, NetworkError, SessionExpiredError } from "./errors.js";
+import { fetch } from "undici";
 import { unsaAgent } from "./http.js";
 import type { Session } from "./session.js";
 
