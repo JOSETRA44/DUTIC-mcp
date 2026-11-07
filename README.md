@@ -2,7 +2,7 @@
 
 **Servidor MCP + CLI para el aula virtual DUTIC (Moodle) de la UNSA.**
 Tus tareas —incluidas las **ocultas**—, notas, materiales de estudio y compañeros, en la terminal
-y disponibles para agentes de IA (Claude Code, Antigravity, OpenCode, mimocode…).
+y disponibles para agentes de IA (Claude Code, Antigravity, OpenCode, mimocode, GitHub copilt, warpin etc).
 
 ```
 ┌─────────────────────────────────────────────┐
